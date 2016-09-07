@@ -4,8 +4,22 @@ from filesystems import Path, native
 
 
 class TestNative(TestCase):
+
+    fs = native.FS()
+
     def test_it_opens_local_files(self):
         path = Path.from_string(__file__)
-        fs = native.FS()
-        with fs.open(path) as got, open(__file__) as expected:
+        with self.fs.open(path) as got, open(__file__) as expected:
             self.assertEqual(got.read(), expected.read())
+
+    def test_directory(self):
+        directory = Path.from_string(__file__).parent()
+        self.assertEqual(
+            dict(
+                exists=self.fs.exists(path=directory),
+                is_dir=self.fs.is_dir(path=directory),
+                is_file=self.fs.is_file(path=directory),
+                is_link=self.fs.is_link(path=directory),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=False),
+        )
