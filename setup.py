@@ -28,6 +28,7 @@ setup(
     author_email="Julian@GrayVines.com",
     packages=find_packages(),
     setup_requires=["vcversioner>=2.16.0.0"],
+    install_requires=["characteristic", "pyrsistent"],
     vcversioner={"version_module_paths": ["filesystems/_version.py"]},
     classifiers=classifiers,
 )

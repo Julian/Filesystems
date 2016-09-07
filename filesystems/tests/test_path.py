@@ -1,0 +1,23 @@
+from unittest import TestCase
+import os
+
+from filesystems import Path
+
+
+class TestPath(TestCase):
+    def test_descendant(self):
+        self.assertEqual(Path("a", "b").descendant("c"), Path("a", "b", "c"))
+
+    def test_multi_descendant(self):
+        self.assertEqual(Path("a").descendant("b", "c"), Path("a", "b", "c"))
+
+    def test_from_string(self):
+        self.assertEqual(Path.from_string("/a/b/c"), Path("a", "b", "c"))
+
+    def test_from_relative_string(self):
+        self.assertEqual(
+            Path.from_string("a/b/c"), Path.cwd().descendant("a", "b", "c"),
+        )
+
+    def test_cwd(self):
+        self.assertEqual(Path.cwd(), Path.from_string(os.getcwd()))
