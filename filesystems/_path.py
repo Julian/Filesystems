@@ -19,6 +19,10 @@ class Path(object):
         return cls.from_string(os.getcwd())
 
     @classmethod
+    def root(cls):
+        return cls()
+
+    @classmethod
     def from_string(cls, path):
         """
         Create a path out of an OS-specific string.
@@ -30,3 +34,6 @@ class Path(object):
 
     def descendant(self, *segments):
         return self.__class__(*self.segments.extend(segments))
+
+    def parent(self):
+        return self.__class__(*self.segments[:-1])
