@@ -10,6 +10,9 @@ class FS(object):
     def open(self, path):
         return open(str(path))
 
+    def create_directory(self, path):
+        os.mkdir(str(path))
+
     def exists(self, path):
         return os.path.exists(str(path))
 
