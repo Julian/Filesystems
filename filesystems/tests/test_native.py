@@ -1,6 +1,4 @@
-from tempfile import mkdtemp
 from unittest import TestCase
-import shutil
 
 from filesystems import Path, native
 
@@ -15,14 +13,30 @@ class TestNative(TestCase):
             self.assertEqual(got.read(), expected.read())
 
     def test_create_directory(self):
-        tempdir = mkdtemp()
-        self.addCleanup(shutil.rmtree, tempdir)
+        tempdir = self.fs.temporary_directory()
+        self.addCleanup(self.fs.remove, tempdir)
 
-        child = Path.from_string(tempdir).descendant("directory")
-        self.assertFalse(self.fs.is_dir(child))
+        child = tempdir.descendant("directory")
+        self.assertFalse(self.fs.is_dir(path=child))
 
-        self.fs.create_directory(child)
-        self.assertTrue(self.fs.is_dir(child))
+        self.fs.create_directory(path=child)
+        self.assertTrue(self.fs.is_dir(path=child))
+
+    def test_remove_directory(self):
+        tempdir = self.fs.temporary_directory()
+        self.assertTrue(self.fs.exists(path=tempdir))
+
+        self.fs.remove(path=tempdir)
+        self.assertFalse(self.fs.exists(path=tempdir))
+
+    def test_remove_non_empty_directory(self):
+        tempdir = self.fs.temporary_directory()
+        self.assertTrue(self.fs.exists(path=tempdir))
+
+        tempdir.descendant("a", "b")
+
+        self.fs.remove(path=tempdir)
+        self.assertFalse(self.fs.exists(path=tempdir))
 
     def test_directory(self):
         directory = Path.from_string(__file__).parent()
