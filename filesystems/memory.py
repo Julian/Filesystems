@@ -93,14 +93,6 @@ FS = common.create(
 )
 
 
-def listdir(self, path):
-    # FIXME: Inefficient
-    return {
-        child.segments[-1] for child in self._contents
-        if child.parent() == path
-    }
-
-
 class _BytesIOIsTerrible(BytesIO):
     def close(self):
         self._hereismyvalue = self.getvalue()
