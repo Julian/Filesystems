@@ -1,44 +1,67 @@
 import os
 import tempfile
 
-from filesystems import Path
-from filesystems.common import children
+from filesystems import Path, common, exceptions
 
 
-class FS(object):
-    """
-    The native local filesystem.
-
-    """
-
-    def open(self, path, mode="rb"):
+def _open_file(fs, path, mode):
+    try:
         return open(str(path), mode)
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path)
+        raise
 
-    def remove(self, path):
-        if self.is_dir(path=path) and not self.is_link(path=path):
-            for child in children(fs=self, path=path):
-                self.remove(path=child)
-            os.rmdir(str(path))
-        else:
-            os.remove(str(path))
 
-    def create_directory(self, path):
+def _remove_file(fs, path):
+    try:
+        os.remove(str(path))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path)
+        raise
+
+
+def _create_directory(fs, path):
+    try:
         os.mkdir(str(path))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileExists.errno:
+            raise exceptions.FileExists(path)
+        raise
 
-    def listdir(self, path):
+
+def _list_directory(fs, path):
+    try:
         return os.listdir(str(path))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path)
+        raise
 
-    def temporary_directory(self):
-        return Path.from_string(tempfile.mkdtemp())
 
-    def exists(self, path):
-        return os.path.exists(str(path))
+def _remove_empty_directory(fs, path):
+    try:
+        os.rmdir(str(path))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.DirectoryNotEmpty.errno:
+            raise exceptions.DirectoryNotEmpty(path)
+        elif error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path)
+        raise
 
-    def is_dir(self, path):
-        return os.path.isdir(str(path))
 
-    def is_file(self, path):
-        return os.path.isfile(str(path))
+FS = common.create(
+    open_file=_open_file,
+    remove_file=_remove_file,
 
-    def is_link(self, path):
-        return os.path.islink(str(path))
+    create_directory=_create_directory,
+    list_directory=_list_directory,
+    remove_empty_directory=_remove_empty_directory,
+    temporary_directory=lambda fs: Path.from_string(tempfile.mkdtemp()),
+
+    exists=lambda fs, path: os.path.exists(str(path)),
+    is_dir=lambda fs, path: os.path.isdir(str(path)),
+    is_file=lambda fs, path: os.path.isfile(str(path)),
+    is_link=lambda fs, path: os.path.islink(str(path)),
+)

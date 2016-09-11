@@ -2,63 +2,103 @@ from io import BytesIO
 from uuid import uuid4
 
 from characteristic import Attribute, attributes
-from pyrsistent import m
+from pyrsistent import m, pset
 
-from filesystems import Path
+from filesystems import Path, common, exceptions
 
 
-@attributes(
-    [Attribute(name="_contents", default_value=m(), exclude_from_repr=True)],
+def _open_file(fs, path, mode):
+    parent = path.parent()
+    contents = fs._state.get(parent)
+    if contents is None:
+        raise exceptions.FileNotFound(path)
+
+    if mode == "w" or mode == "wb":
+        file = _BytesIOIsTerrible()
+        fs._state = fs._state.set(parent, contents.set(path, file))
+        return file
+
+    file = contents.get(path)
+    if file is None:
+        raise exceptions.FileNotFound(path)
+    return BytesIO(file._hereismyvalue)
+
+
+def _remove_file(fs, path):
+    parent = path.parent()
+    contents = fs._state.get(parent)
+    if contents is None:
+        raise exceptions.FileNotFound(path)
+
+    if path not in contents:
+        raise exceptions.FileNotFound(path)
+
+    fs._state = fs._state.set(parent, contents.remove(path))
+
+
+def _temporary_directory(fs):
+    # TODO: Maybe this isn't good enough.
+    directory = Path(uuid4().hex)
+    fs.create_directory(path=directory)
+    return directory
+
+
+def _create_directory(fs, path):
+    if path in fs._state:
+        raise exceptions.FileExists(path)
+    fs._state = fs._state.set(path, m())
+
+
+def _list_directory(fs, path):
+    if path not in fs._state:
+        raise exceptions.FileNotFound(path)
+    # FIXME: Inefficient
+    return pset(child.basename() for child in fs._state[path]) | pset(
+        subdirectory.basename() for subdirectory in fs._state
+        if subdirectory.parent() == path
+    )
+
+
+def _remove(fs, path):
+    if path not in fs._state:
+        raise exceptions.FileNotFound(path)
+    fs._state = fs._state.remove(path)
+
+
+def _remove_empty_directory(fs, path):
+    if _list_directory(fs=fs, path=path):
+        raise exceptions.DirectoryNotEmpty(path)
+    _remove(fs=fs, path=path)
+
+
+FS = common.create(
+    state=m(),
+
+    open_file=_open_file,
+    remove_file=_remove_file,
+
+    create_directory=_create_directory,
+    list_directory=_list_directory,
+    remove_empty_directory=_remove_empty_directory,
+    temporary_directory=_temporary_directory,
+
+    remove=_remove,
+
+    exists=lambda fs, path: (
+        path in fs._state or path in fs._state.get(path.parent(), m())
+    ),
+    is_dir=lambda fs, path: path in fs._state,
+    is_file=lambda fs, path: path in fs._state.get(path.parent(), m()),
+    is_link=lambda fs, path: False,
 )
-class FS(object):
-    """
-    An in-memory filesystem.
 
-    """
 
-    def open(self, path, mode="rb"):
-        if mode == "w" or mode == "wb":
-            # XXX: non-existant parent
-            contents = _BytesIOIsTerrible()
-            self._contents = self._contents.set(path, (contents, None))
-            return contents
-
-        contents, _ = self._contents[path]
-        return BytesIO(contents._hereismyvalue)
-
-    def listdir(self, path):
-        # FIXME: Inefficient
-        return {
-            child.segments[-1] for child in self._contents
-            if child.parent() == path
-        }
-
-    def remove(self, path):
-        self._contents = self._contents.remove(path)
-
-    def create_directory(self, path):
-        self._contents = self._contents.set(path, (None, None))
-
-    def temporary_directory(self):
-        # TODO: Maybe this isn't good enough.
-        directory = Path(uuid4().hex)
-        self.create_directory(path=directory)
-        return directory
-
-    def exists(self, path):
-        return path in self._contents
-
-    def is_dir(self, path):
-        if not self.exists(path):
-            return False
-        contents, _ = self._contents[path]
-        return contents is None
-
-    def is_file(self, path):
-        return False
-
-    def is_link(self, path):
-        return False
+def listdir(self, path):
+    # FIXME: Inefficient
+    return {
+        child.segments[-1] for child in self._contents
+        if child.parent() == path
+    }
 
 
 class _BytesIOIsTerrible(BytesIO):
