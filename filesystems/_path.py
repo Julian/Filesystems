@@ -32,6 +32,9 @@ class Path(object):
         segments = os.path.abspath(path).lstrip(os.sep).split(os.sep)
         return cls(*segments)
 
+    def basename(self):
+        return (self.segments or [""])[-1]
+
     def descendant(self, *segments):
         return self.__class__(*self.segments.extend(segments))
 

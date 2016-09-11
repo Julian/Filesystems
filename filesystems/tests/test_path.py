@@ -30,3 +30,9 @@ class TestPath(TestCase):
 
     def test_root(self):
         self.assertEqual(Path.root(), Path())
+
+    def test_basename(self):
+        self.assertEqual(Path("a", "b").basename(), "b")
+
+    def test_root_basename(self):
+        self.assertEqual(Path().basename(), "")
