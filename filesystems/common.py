@@ -16,6 +16,8 @@ def recursive_remove(fs, path):
 
 
 def create(
+    name,
+
     open_file,
     remove_file,
 
@@ -32,7 +34,6 @@ def create(
     remove=recursive_remove,
 
     state=None,
-
 ):
     """
     Create a new kind of filesystem.
@@ -41,7 +42,7 @@ def create(
 
     return attributes([Attribute(name="_state", default_value=state)])(
         type(
-            "FS", (object,), dict(
+            name, (object,), dict(
                 open=lambda fs, path, mode="rb": open_file(
                     fs=fs, path=path, mode=mode,
                 ),

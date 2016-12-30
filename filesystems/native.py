@@ -52,6 +52,8 @@ def _remove_empty_directory(fs, path):
 
 
 FS = common.create(
+    name="NativeFS",
+
     open_file=_open_file,
     remove_file=_remove_file,
 

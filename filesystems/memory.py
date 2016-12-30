@@ -72,6 +72,7 @@ def _remove_empty_directory(fs, path):
 
 
 FS = common.create(
+    name="MemoryFS",
     state=m(),
 
     open_file=_open_file,
