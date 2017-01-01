@@ -12,10 +12,10 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
 
         with fs.open(tempdir.descendant("unittesting"), "wb") as f:
-            f.write("some things!")
+            f.write(b"some things!")
 
         with fs.open(tempdir.descendant("unittesting")) as g:
-            self.assertEqual(g.read(), "some things!")
+            self.assertEqual(g.read(), b"some things!")
 
     def test_open_non_existing_file(self):
         fs = self.FS()
