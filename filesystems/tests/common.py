@@ -312,3 +312,16 @@ class TestFS(object):
         fs.touch(path=c)
 
         self.assertEqual(fs.children(path=tempdir), {a, b})
+
+    def test_contents_of(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
+            f.write(b"some more things!")
+
+        self.assertEqual(
+            fs.contents_of(tempdir.descendant("unittesting")),
+            b"some more things!",
+        )

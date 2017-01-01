@@ -64,6 +64,7 @@ def create(
 
                 touch=_touch,
                 children=_children,
+                contents_of=_open_and_read,
             ),
         ),
     )
@@ -75,3 +76,8 @@ def _children(fs, path):
 
 def _touch(fs, path):
     fs.open(path=path, mode="wb").close()
+
+
+def _open_and_read(fs, path):
+    with fs.open(path=path) as file:
+        return file.read()
