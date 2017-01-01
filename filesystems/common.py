@@ -40,7 +40,15 @@ def create(
 
     """
 
-    return attributes([Attribute(name="_state", default_value=state)])(
+    return attributes(
+        [
+            Attribute(
+                name="_state",
+                default_value=state,
+                exclude_from_repr=True,
+            ),
+        ],
+    )(
         type(
             name, (object,), dict(
                 open=lambda fs, path, mode="rb": open_file(
