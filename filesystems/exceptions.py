@@ -1,14 +1,13 @@
 import errno
 import os
 
-from characteristic import Attribute, attributes
+import attr
 
 
-@attributes([Attribute(name="value", exclude_from_init=True)])
+@attr.s
 class _FileSystemError(Exception):
-    def __init__(self, value=None):
-        super(_FileSystemError, self).__init__(value)
-        self.value = value
+
+    value = attr.ib(default=None)
 
     def __str__(self):
         if self.value is None:

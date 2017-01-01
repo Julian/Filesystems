@@ -1,7 +1,6 @@
 from io import BytesIO
 from uuid import uuid4
 
-from characteristic import Attribute, attributes
 from pyrsistent import m, pset
 
 from filesystems import Path, common, exceptions

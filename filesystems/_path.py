@@ -1,12 +1,10 @@
 import os
 
-from characteristic import Attribute, attributes
 from pyrsistent import pvector
+import attr
 
 
-@attributes(
-    [Attribute(name="segments", exclude_from_init=True)],
-)
+@attr.s(these={"segments": attr.ib()}, init=False)
 class Path(object):
     def __init__(self, *segments):
         self.segments = pvector(segments)

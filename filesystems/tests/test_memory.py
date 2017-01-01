@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from filesystems import Path, memory
+from filesystems import memory
 from filesystems.tests.common import TestFS
 
 

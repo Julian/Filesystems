@@ -1,4 +1,4 @@
-from characteristic import Attribute, attributes
+import attr
 
 
 def recursive_remove(fs, path):
@@ -40,17 +40,11 @@ def create(
 
     """
 
-    return attributes(
-        [
-            Attribute(
-                name="_state",
-                default_value=state,
-                exclude_from_repr=True,
-            ),
-        ],
-    )(
+    return attr.s(
         type(
             name, (object,), dict(
+                _state=attr.ib(default=state, repr=False),
+
                 open=lambda fs, path, mode="rb": open_file(
                     fs=fs, path=path, mode=mode,
                 ),
