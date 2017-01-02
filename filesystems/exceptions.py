@@ -28,3 +28,8 @@ class FileExists(_FileSystemError):
 class DirectoryNotEmpty(_FileSystemError):
     errno = errno.ENOTEMPTY
     message = os.strerror(errno)
+
+
+class NotADirectory(_FileSystemError):
+    errno = errno.ENOTDIR
+    message = os.strerror(errno)

@@ -37,6 +37,8 @@ def _list_directory(fs, path):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path)
         raise
 
 

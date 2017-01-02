@@ -279,6 +279,22 @@ class TestFS(object):
             os.strerror(errno.ENOENT) + ": " + str(directory),
         )
 
+    def test_list_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        not_a_dir = tempdir.descendant("not_a_dir")
+        fs.touch(not_a_dir)
+
+        with self.assertRaises(exceptions.NotADirectory) as e:
+            fs.list_directory(not_a_dir)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
+        )
+
     def test_touch(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
