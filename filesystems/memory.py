@@ -43,7 +43,7 @@ def _temporary_directory(fs):
 
 
 def _create_directory(fs, path):
-    if path in fs._state:
+    if fs.exists(path=path):
         raise exceptions.FileExists(path)
     fs._state = fs._state.set(path, m())
 
