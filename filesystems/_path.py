@@ -33,6 +33,18 @@ class Path(object):
     def basename(self):
         return (self.segments or [""])[-1]
 
+    def heritage(self):
+        """
+        The (top-down) direct ancestors of this path, including itself.
+
+        """
+
+        segments = pvector()
+        for segment in self.segments[:-1]:
+            segments = segments.append(segment)
+            yield self.__class__(*segments)
+        yield self
+
     def descendant(self, *segments):
         return self.__class__(*self.segments.extend(segments))
 
