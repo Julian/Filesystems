@@ -128,7 +128,7 @@ class _State(object):
 
 FS = common.create(
     name="MemoryFS",
-    state=_State(),
+    state=_State,
 
     open_file=lambda fs, *args, **kw: fs._state.open_file(*args, **kw),
     remove_file=lambda fs, *args, **kw: fs._state.remove_file(*args, **kw),

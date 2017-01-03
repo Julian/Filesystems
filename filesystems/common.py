@@ -36,7 +36,7 @@ def create(
 
     remove=recursive_remove,
 
-    state=None,
+    state=lambda: None,
 ):
     """
     Create a new kind of filesystem.
@@ -46,7 +46,7 @@ def create(
     return attr.s(
         type(
             name, (object,), dict(
-                _state=attr.ib(default=state, repr=False),
+                _state=attr.ib(default=attr.Factory(state), repr=False),
 
                 open=lambda fs, path, mode="rb": open_file(
                     fs=fs, path=path, mode=mode,
