@@ -1,7 +1,7 @@
 from io import BytesIO
 from uuid import uuid4
 
-from pyrsistent import m, pset
+from pyrsistent import pmap, pset
 import attr
 
 from filesystems import Path, common, exceptions
@@ -16,8 +16,8 @@ class _State(object):
 
     """
 
-    _tree = attr.ib(default=m())
-    _links = attr.ib(default=m())
+    _tree = pmap([(Path.root(), pmap())])
+    _links = pmap()
 
     def open_file(self, path, mode):
         path = self.realpath(path=path)
@@ -51,7 +51,7 @@ class _State(object):
     def create_directory(self, path):
         if self.exists(path=path):
             raise exceptions.FileExists(path)
-        self._tree = self._tree.set(path, m())
+        self._tree = self._tree.set(path, pmap())
 
     def list_directory(self, path):
         if self.is_file(path=path):
@@ -113,7 +113,7 @@ class _State(object):
 
     def is_file(self, path):
         real = self.realpath(path=path)
-        return real in self._tree.get(real.parent(), m())
+        return real in self._tree.get(real.parent(), pmap())
 
     def is_link(self, path):
         return path in self._links

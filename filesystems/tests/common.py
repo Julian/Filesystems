@@ -195,10 +195,6 @@ class TestFS(object):
         source = tempdir.descendant("source")
         self.assertEqual(fs.realpath(source), source)
 
-    def test_realpath_root(self):
-        fs = self.FS()
-        self.assertEqual(fs.realpath(Path.root()), Path.root())
-
     def test_circular_links(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -634,3 +630,14 @@ class TestFS(object):
             fs.contents_of(tempdir.descendant("unittesting")),
             b"some more things!",
         )
+
+    # With how crazy computers are, I'm not actually 100% sure that
+    # these tests for the behavior of the root directory will always be
+    # the case. But, onward we go.
+    def test_root_always_exists(self):
+        fs = self.FS()
+        self.assertTrue(fs.exists(Path.root()))
+
+    def test_realpath_root(self):
+        fs = self.FS()
+        self.assertEqual(fs.realpath(Path.root()), Path.root())
