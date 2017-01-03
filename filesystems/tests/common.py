@@ -2,7 +2,7 @@ from unittest import skip
 import errno
 import os
 
-from filesystems import exceptions
+from filesystems import Path, exceptions
 
 
 class TestFS(object):
@@ -85,6 +85,281 @@ class TestFS(object):
             str(e.exception),
             os.strerror(errno.ENOENT) + ": " + str(child),
         )
+
+    def test_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.touch(source)
+        fs.link(source=source, to=to)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=to),
+                is_dir=fs.is_dir(path=to),
+                is_file=fs.is_file(path=to),
+                is_link=fs.is_link(path=to),
+            ), dict(
+                exists=True,
+                is_dir=False,
+                is_file=True,
+                is_link=True,
+            ),
+        )
+
+    def test_link_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.create_directory(source)
+        fs.link(source=source, to=to)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=to),
+                is_dir=fs.is_dir(path=to),
+                is_file=fs.is_file(path=to),
+                is_link=fs.is_link(path=to),
+            ), dict(
+                exists=True,
+                is_dir=True,
+                is_file=False,
+                is_link=True,
+            ),
+        )
+
+    def test_link_nonexistant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=to),
+                is_dir=fs.is_dir(path=to),
+                is_file=fs.is_file(path=to),
+                is_link=fs.is_link(path=to),
+            ), dict(
+                exists=False,
+                is_dir=False,
+                is_file=False,
+                is_link=True,
+            ),
+        )
+
+    def test_multiple_links(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source = tempdir.descendant("source")
+        first = tempdir.descendant("first")
+        second = tempdir.descendant("second")
+        third = tempdir.descendant("third")
+
+        fs.link(source=source, to=first)
+        fs.link(source=first, to=second)
+        fs.link(source=second, to=third)
+
+        with fs.open(source, "wb") as f:
+            f.write(b"some things way over here!")
+
+        self.assertEqual(fs.contents_of(third), b"some things way over here!")
+
+    def test_link_child(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.create_directory(source)
+        fs.link(source=source, to=to)
+
+        self.assertEqual(
+            fs.realpath(to.descendant("child")),
+            source.descendant("child"),
+        )
+
+    def test_realpath_normal_path(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source = tempdir.descendant("source")
+        self.assertEqual(fs.realpath(source), source)
+
+    def test_realpath_root(self):
+        fs = self.FS()
+        self.assertEqual(fs.realpath(Path.root()), Path.root())
+
+    def test_circular_links(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        stuck = tempdir.descendant("stuck")
+        on = tempdir.descendant("on")
+        loop = tempdir.descendant("loop")
+
+        fs.link(source=stuck, to=on)
+        fs.link(source=on, to=loop)
+        fs.link(source=loop, to=stuck)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.realpath(stuck)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ELOOP) + ": " + str(stuck),
+        )
+
+    def test_direct_circular_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.realpath(loop)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+        )
+
+    def test_link_into_a_circle(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        dont = tempdir.descendant("dont")
+        fall = tempdir.descendant("fall")
+        into = tempdir.descendant("into")
+        the = tempdir.descendant("the")
+        hole = tempdir.descendant("hole")
+
+        fs.link(source=fall, to=dont)
+        fs.link(source=into, to=fall)
+        fs.link(source=the, to=into)
+        fs.link(source=the, to=hole)
+        fs.link(source=hole, to=the)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.realpath(dont)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ELOOP) + ": " + str(the),
+        )
+
+    def test_circular_loop_child(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.realpath(loop.descendant("child"))
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+        )
+
+    def test_read_from_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        with fs.open(source, "wb") as f:
+            f.write(b"some things over here!")
+
+        self.assertEqual(fs.contents_of(to), b"some things over here!")
+
+    def test_write_to_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        with fs.open(to, "wb") as f:
+            f.write(b"some things over here!")
+
+        self.assertEqual(fs.contents_of(source), b"some things over here!")
+
+    def test_read_from_loop(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.open(path=loop)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+        )
+
+    def test_write_to_loop(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.open(path=loop, mode="wb")
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+        )
+
+    def test_link_nonexistant_parent(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source = tempdir.descendant("source")
+        orphan = tempdir.descendant("nonexistant", "orphan")
+
+        with self.assertRaises(exceptions.FileNotFound) as e:
+            fs.link(source=source, to=orphan)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOENT) + ": " + str(orphan.parent()),
+        )
+
+    def test_realpath(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        self.assertEqual(fs.realpath(to), source)
 
     @skip("No symlink support yet.")
     def test_remove_does_not_follow_directory_links(self):
@@ -338,12 +613,14 @@ class TestFS(object):
         a = tempdir.descendant("a")
         b = tempdir.descendant("b")
         c = tempdir.descendant("b", "c")
+        d = tempdir.descendant("d")
 
         fs.touch(path=a)
         fs.create_directory(path=b)
         fs.touch(path=c)
+        fs.link(source=c, to=d)
 
-        self.assertEqual(fs.children(path=tempdir), {a, b})
+        self.assertEqual(fs.children(path=tempdir), {a, b, d})
 
     def test_contents_of(self):
         fs = self.FS()

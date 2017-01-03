@@ -26,6 +26,9 @@ def create(
     remove_empty_directory,
     temporary_directory,
 
+    link,
+    realpath,
+
     exists,
     is_dir,
     is_file,
@@ -56,6 +59,9 @@ def create(
                 list_directory=list_directory,
                 remove_empty_directory=remove_empty_directory,
                 temporary_directory=temporary_directory,
+
+                link=link,
+                realpath=realpath,
 
                 exists=exists,
                 is_dir=is_dir,

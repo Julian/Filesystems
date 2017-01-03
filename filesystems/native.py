@@ -10,6 +10,8 @@ def _open_file(fs, path, mode):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(path)
         raise
 
 
@@ -53,6 +55,36 @@ def _remove_empty_directory(fs, path):
         raise
 
 
+def _link(fs, source, to):
+    try:
+        os.symlink(str(source), str(to))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(to.parent())
+        raise
+
+
+def _realpath(fs, path):
+    """
+    .. warning::
+
+        The ``os.path`` module's realpath does not error or warn about
+        loops, but we do, following the behavior of GNU ``realpath(1)``!
+
+    """
+
+    real = Path.root()
+    for segment in path.segments:
+        seen = current, = {str(real.descendant(segment))}
+        while os.path.islink(current):
+            current = os.readlink(current)
+            if current in seen:
+                raise exceptions.SymbolicLoop(current)
+            seen.add(current)
+        real = Path.from_string(current)
+    return real
+
+
 FS = common.create(
     name="NativeFS",
 
@@ -63,6 +95,9 @@ FS = common.create(
     list_directory=_list_directory,
     remove_empty_directory=_remove_empty_directory,
     temporary_directory=lambda fs: Path.from_string(tempfile.mkdtemp()),
+
+    link=_link,
+    realpath=_realpath,
 
     exists=lambda fs, path: os.path.exists(str(path)),
     is_dir=lambda fs, path: os.path.isdir(str(path)),

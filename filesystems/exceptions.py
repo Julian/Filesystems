@@ -33,3 +33,8 @@ class DirectoryNotEmpty(_FileSystemError):
 class NotADirectory(_FileSystemError):
     errno = errno.ENOTDIR
     message = os.strerror(errno)
+
+
+class SymbolicLoop(_FileSystemError):
+    errno = errno.ELOOP
+    message = os.strerror(errno)
