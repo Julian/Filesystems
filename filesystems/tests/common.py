@@ -550,6 +550,12 @@ class TestFS(object):
 
         self.assertEqual(set(fs.list_directory(tempdir)), {"a", "b"})
 
+    def test_list_empty_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        self.assertEqual(set(fs.list_directory(tempdir)), set())
+
     def test_list_non_existing_directory(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()

@@ -63,6 +63,7 @@ class _State(object):
         return pset(child.basename() for child in self._tree[path]) | pset(
             subdirectory.basename() for subdirectory in self._tree
             if subdirectory.parent() == path
+            and subdirectory != path
         )
 
     def remove_empty_directory(self, path):
