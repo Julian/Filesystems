@@ -33,6 +33,9 @@ class Path(object):
     def basename(self):
         return (self.segments or [""])[-1]
 
+    def dirname(self):
+        return str(self.parent())
+
     def heritage(self):
         """
         The (top-down) direct ancestors of this path, including itself.

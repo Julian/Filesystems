@@ -49,3 +49,9 @@ class TestPath(TestCase):
 
     def test_root_basename(self):
         self.assertEqual(Path().basename(), "")
+
+    def test_dirname(self):
+        self.assertEqual(Path("a", "b", "c").dirname(), "/a/b")
+
+    def test_root_dirname(self):
+        self.assertEqual(Path().dirname(), "/")
