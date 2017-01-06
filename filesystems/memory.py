@@ -121,8 +121,10 @@ class _State(object):
 
     def _tree_with(self, path):
         parent = path.parent()
-        if parent not in self._tree:
+        if not self.exists(path=parent):
             raise exceptions.FileNotFound(parent)
+        elif not self.is_dir(path=parent):
+            raise exceptions.NotADirectory(parent)
         return self._tree.set(parent, self._tree[parent].set(path, None))
 
 

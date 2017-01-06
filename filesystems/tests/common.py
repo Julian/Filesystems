@@ -187,6 +187,22 @@ class TestFS(object):
             source.descendant("child"),
         )
 
+    def test_link_descendant_of_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source = tempdir.descendant("source")
+        not_a_dir = tempdir.descendant("dir")
+        fs.touch(not_a_dir)
+        with self.assertRaises(exceptions.NotADirectory) as e:
+            fs.link(source=source, to=not_a_dir.descendant("to"))
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
+        )
+
     def test_realpath_normal_path(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
