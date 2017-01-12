@@ -49,6 +49,52 @@ class TestFS(object):
             )
         )
 
+    def test_create_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.create(tempdir.descendant("unittesting")) as f:
+            f.write(b"some things!")
+
+        with fs.open(tempdir.descendant("unittesting")) as g:
+            self.assertEqual(g.read(), b"some things!")
+
+    def test_create_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.create(tempdir.descendant("unittesting")):
+            pass
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.create(tempdir.descendant("unittesting"))
+
+        self.assertEqual(
+            str(e.exception), (
+                os.strerror(errno.EEXIST) +
+                ": " +
+                str(tempdir.descendant("unittesting"))
+            ),
+        )
+
+    def test_create_non_existing_nested_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with self.assertRaises(exceptions.FileNotFound) as e:
+            fs.create(tempdir.descendant("unittesting", "file"))
+
+        self.assertEqual(
+            str(e.exception), (
+                os.strerror(errno.ENOENT) +
+                ": " +
+                str(tempdir.descendant("unittesting", "file"))
+            )
+        )
+
     def test_remove(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -314,6 +360,21 @@ class TestFS(object):
             f.write(b"some things over here!")
 
         self.assertEqual(fs.contents_of(source), b"some things over here!")
+
+    def test_write_to_created_child(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.create_directory(source)
+        fs.link(source=source, to=to)
+
+        child = to.descendant("child")
+        with fs.create(child) as f:
+            f.write(b"some things over here!")
+
+        self.assertEqual(fs.contents_of(child), b"some things over here!")
 
     def test_read_from_loop(self):
         fs = self.FS()

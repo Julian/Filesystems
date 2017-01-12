@@ -4,6 +4,21 @@ import tempfile
 from filesystems import Path, common, exceptions
 
 
+def _create_file(fs, path):
+    try:
+        fd = os.open(
+            str(path),
+            os.O_EXCL | os.O_CREAT | os.O_RDWR | getattr(os, "O_BINARY", 0),
+        )
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path)
+        if error.errno == exceptions.FileExists.errno:
+            raise exceptions.FileExists(path)
+        raise
+
+    return os.fdopen(fd, "w+b")
+
 def _open_file(fs, path, mode):
     try:
         return open(str(path), mode)
@@ -90,6 +105,7 @@ def _realpath(fs, path):
 FS = common.create(
     name="NativeFS",
 
+    create_file=_create_file,
     open_file=_open_file,
     remove_file=_remove_file,
 

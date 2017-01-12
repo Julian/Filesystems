@@ -19,6 +19,7 @@ def create(
     name,
 
     open_file,
+    create_file,
     remove_file,
 
     create_directory,
@@ -48,6 +49,7 @@ def create(
             name, (object,), dict(
                 _state=attr.ib(default=attr.Factory(state), repr=False),
 
+                create=create_file,
                 open=lambda fs, path, mode="rb": open_file(
                     fs=fs, path=path, mode=mode,
                 ),

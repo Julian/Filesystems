@@ -19,6 +19,19 @@ class _State(object):
     _tree = pmap([(Path.root(), pmap())])
     _links = pmap()
 
+    def create_file(self, path):
+        path = self.realpath(path=path)
+
+        parent = path.parent()
+        contents = self._tree.get(parent)
+        if contents is None:
+            raise exceptions.FileNotFound(path)
+        file = _BytesIOIsTerrible()
+        if path in contents:
+            raise exceptions.FileExists(path)
+        self._tree = self._tree.set(parent, contents.set(path, file))
+        return file
+
     def open_file(self, path, mode):
         path = self.realpath(path=path)
 
@@ -132,6 +145,7 @@ FS = common.create(
     name="MemoryFS",
     state=_State,
 
+    create_file=lambda fs, *args, **kw: fs._state.create_file(*args, **kw),
     open_file=lambda fs, *args, **kw: fs._state.open_file(*args, **kw),
     remove_file=lambda fs, *args, **kw: fs._state.remove_file(*args, **kw),
 
