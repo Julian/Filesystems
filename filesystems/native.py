@@ -19,6 +19,7 @@ def _create_file(fs, path):
 
     return os.fdopen(fd, "w+b")
 
+
 def _open_file(fs, path, mode):
     try:
         return open(str(path), mode)
