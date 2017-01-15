@@ -53,3 +53,8 @@ class Path(object):
 
     def parent(self):
         return self.__class__(*self.segments[:-1])
+
+    def sibling(self, name):
+        if not self.segments:
+            raise ValueError("The root file path has no siblings.")
+        return self.parent().descendant(name)

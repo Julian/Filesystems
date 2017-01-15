@@ -17,6 +17,13 @@ class TestPath(TestCase):
     def test_parent_of_root(self):
         self.assertEqual(Path.root().parent(), Path.root())
 
+    def test_sibling(self):
+        self.assertEqual(Path("a", "b").sibling("c"), Path("a", "c"))
+
+    def test_sibling_of_root(self):
+        with self.assertRaises(ValueError):
+            Path.root().sibling("c")
+
     def test_heritage(self):
         self.assertEqual(
             list(Path("a", "b", "c", "d").heritage()), [
