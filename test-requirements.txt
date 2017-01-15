@@ -1,1 +1,0 @@
-git+https://github.com/Julian/testscenarios.git#egg=testscenarios
