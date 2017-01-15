@@ -111,14 +111,6 @@ class _State(object):
             real = current
         return real
 
-        seen = {path}
-        while self.is_link(path):
-            path = self._links[path]
-            if path in seen:
-                raise exceptions.SymbolicLoop(path)
-            seen.add(path)
-        return path
-
     def exists(self, path):
         return self.is_file(path=path) or self.is_dir(path=path)
 
