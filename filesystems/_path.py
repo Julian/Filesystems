@@ -58,3 +58,30 @@ class Path(object):
         if not self.segments:
             raise ValueError("The root file path has no siblings.")
         return self.parent().descendant(name)
+
+    def relative_to(self, path):
+        """
+        Resolve this path against another ``Path``.
+
+        A ``Path`` is always absolute, and therefore always resolves to itself.
+
+        """
+
+        return self
+
+
+@attr.s(these={"segments": attr.ib()}, init=False)
+class RelativePath(object):
+    def __init__(self, *segments):
+        self.segments = pvector(segments)
+
+    def __str__(self):
+        return os.sep.join(self.segments)
+
+    def relative_to(self, path):
+        """
+        Resolve this path against another ``Path``.
+
+        """
+
+        return path.descendant(*self.segments)

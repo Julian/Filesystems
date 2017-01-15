@@ -2,6 +2,7 @@ from unittest import TestCase
 import os
 
 from filesystems import Path
+from filesystems._path import RelativePath
 
 
 class TestPath(TestCase):
@@ -24,6 +25,12 @@ class TestPath(TestCase):
         with self.assertRaises(ValueError):
             Path.root().sibling("c")
 
+    def test_relative_to(self):
+        self.assertEqual(
+            Path("a", "b", "c").relative_to(Path("d", "e")),
+            Path("a", "b", "c"),
+        )
+
     def test_heritage(self):
         self.assertEqual(
             list(Path("a", "b", "c", "d").heritage()), [
@@ -41,6 +48,9 @@ class TestPath(TestCase):
         self.assertEqual(
             Path.from_string("a/b/c"), Path.cwd().descendant("a", "b", "c"),
         )
+
+    def test_str(self):
+        self.assertEqual(str(Path.from_string("/a/b/c")), "/a/b/c")
 
     def test_cwd(self):
         self.assertEqual(Path.cwd(), Path.from_string(os.getcwd()))
@@ -62,3 +72,14 @@ class TestPath(TestCase):
 
     def test_root_dirname(self):
         self.assertEqual(Path().dirname(), "/")
+
+
+class TestRelativePath(TestCase):
+    def test_relative_to(self):
+        self.assertEqual(
+            RelativePath("a", "b", "c").relative_to(Path("d", "e")),
+            Path("d", "e", "a", "b", "c"),
+        )
+
+    def test_str(self):
+        self.assertEqual(str(RelativePath("a", "b", "c")), "a/b/c")

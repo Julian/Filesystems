@@ -104,7 +104,7 @@ class _State(object):
         for segment in path.segments:
             seen = current, = {real.descendant(segment)}
             while self.is_link(path=current):
-                current = self._links[current]
+                current = self._links[current].relative_to(current.parent())
                 if current in seen:
                     raise exceptions.SymbolicLoop(current)
                 seen.add(current)

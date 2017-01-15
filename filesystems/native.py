@@ -95,7 +95,9 @@ def _realpath(fs, path):
     for segment in path.segments:
         seen = current, = {str(real.descendant(segment))}
         while os.path.islink(current):
-            current = os.readlink(current)
+            current = os.path.join(
+                os.path.dirname(current), os.readlink(current),
+            )
             if current in seen:
                 raise exceptions.SymbolicLoop(current)
             seen.add(current)

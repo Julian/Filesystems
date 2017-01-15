@@ -3,6 +3,7 @@ import errno
 import os
 
 from filesystems import Path, exceptions
+from filesystems._path import RelativePath
 
 
 class TestFS(object):
@@ -136,6 +137,7 @@ class TestFS(object):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
 
         source, to = tempdir.descendant("source"), tempdir.descendant("to")
         fs.touch(source)
@@ -249,18 +251,11 @@ class TestFS(object):
             os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
         )
 
-    def test_realpath_normal_path(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        source = tempdir.descendant("source")
-        self.assertEqual(fs.realpath(source), source)
-
     def test_circular_links(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
 
         stuck = tempdir.descendant("stuck")
         on = tempdir.descendant("on")
@@ -282,6 +277,7 @@ class TestFS(object):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
 
         loop = tempdir.descendant("loop")
         fs.link(source=loop, to=loop)
@@ -298,6 +294,7 @@ class TestFS(object):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
 
         dont = tempdir.descendant("dont")
         fall = tempdir.descendant("fall")
@@ -323,6 +320,7 @@ class TestFS(object):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
 
         loop = tempdir.descendant("loop")
         fs.link(source=loop, to=loop)
@@ -433,6 +431,29 @@ class TestFS(object):
         fs.link(source=source, to=to)
 
         self.assertEqual(fs.realpath(to), source)
+
+    def test_realpath_relative(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        source, to = RelativePath("source", "dir"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        self.assertEqual(
+            fs.realpath(to),
+            to.sibling("source").descendant("dir"),
+        )
+
+    def test_realpath_normal_path(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        source = tempdir.descendant("source")
+        self.assertEqual(fs.realpath(source), source)
 
     @skip("No symlink support yet.")
     def test_remove_does_not_follow_directory_links(self):
