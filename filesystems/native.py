@@ -79,6 +79,8 @@ def _link(fs, source, to):
             raise exceptions.FileNotFound(to.parent())
         elif error.errno == exceptions.NotADirectory.errno:
             raise exceptions.NotADirectory(to.parent())
+        elif error.errno == exceptions.FileExists.errno:
+            raise exceptions.FileExists(to)
         raise
 
 

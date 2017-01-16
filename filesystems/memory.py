@@ -96,6 +96,8 @@ class _State(object):
         self._tree = self._tree.remove(path)
 
     def link(self, source, to):
+        if self.exists(path=to) or self.is_link(path=to):
+            raise exceptions.FileExists(to)
         self._tree = self._tree_with(path=to)
         self._links = self._links.set(to, source)
 

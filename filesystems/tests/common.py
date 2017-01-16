@@ -180,6 +180,80 @@ class TestFS(object):
             ),
         )
 
+    def test_link_nonexisting_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=to),
+                is_dir=fs.is_dir(path=to),
+                is_file=fs.is_file(path=to),
+                is_link=fs.is_link(path=to),
+            ), dict(
+                exists=False,
+                is_dir=False,
+                is_file=False,
+                is_link=True,
+            ),
+        )
+
+    def test_link_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.link(source=source, to=to)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(to),
+        )
+
+    def test_link_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.touch(path=to)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.link(source=source, to=to)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(to),
+        )
+
+    def test_link_existing_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.create_directory(path=to)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.link(source=source, to=to)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(to),
+        )
+
     def test_link_nonexistant(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
