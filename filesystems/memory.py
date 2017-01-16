@@ -91,9 +91,12 @@ class _State(object):
         return directory
 
     def remove(self, path):
-        if path not in self._tree:
+        if self.is_link(path=path):
+            self._links = self._links.remove(path)
+        elif path not in self._tree:
             raise exceptions.FileNotFound(path)
-        self._tree = self._tree.remove(path)
+        else:
+            self._tree = self._tree.remove(path)
 
     def link(self, source, to):
         if self.exists(path=to) or self.is_link(path=to):

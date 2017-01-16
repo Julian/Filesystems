@@ -1,4 +1,3 @@
-from unittest import skip
 import errno
 import os
 
@@ -562,7 +561,6 @@ class TestFS(object):
         source = tempdir.descendant("source")
         self.assertEqual(fs.realpath(source), source)
 
-    @skip("No symlink support yet.")
     def test_remove_does_not_follow_directory_links(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -573,7 +571,7 @@ class TestFS(object):
         fs.touch(directory.descendant("a"))
 
         link = tempdir.descendant("link")
-        fs.symlink(source=directory, target=link)
+        fs.link(source=directory, to=link)
         self.assertTrue(fs.is_link(path=link))
 
         fs.remove(path=link)
