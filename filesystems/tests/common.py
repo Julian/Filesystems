@@ -61,7 +61,7 @@ class TestFS(object):
         with fs.open(tempdir.descendant("unittesting")) as g:
             self.assertEqual(g.read(), b"some things!")
 
-    def test_create_existing_file(self):
+    def test_create_file_existing_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -78,6 +78,39 @@ class TestFS(object):
                 ": " +
                 str(tempdir.descendant("unittesting"))
             ),
+        )
+
+    def test_create_file_existing_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        fs.create_directory(tempdir.descendant("unittesting"))
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.create(tempdir.descendant("unittesting"))
+
+        self.assertEqual(
+            str(e.exception), (
+                os.strerror(errno.EEXIST) +
+                ": " +
+                str(tempdir.descendant("unittesting"))
+            ),
+        )
+
+    def test_create_file_existing_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.create(to)
+
+        self.assertEqual(
+            str(e.exception), os.strerror(errno.EEXIST) + ": " + str(to),
         )
 
     def test_create_non_existing_nested_file(self):

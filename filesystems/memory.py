@@ -20,15 +20,15 @@ class _State(object):
     _links = pmap()
 
     def create_file(self, path):
-        path = self.realpath(path=path)
+        if self.exists(path=path) or self.is_link(path=path):
+            raise exceptions.FileExists(path)
 
+        path = self.realpath(path=path)
         parent = path.parent()
         contents = self._tree.get(parent)
         if contents is None:
             raise exceptions.FileNotFound(path)
         file = _BytesIOIsTerrible()
-        if path in contents:
-            raise exceptions.FileExists(path)
         self._tree = self._tree.set(parent, contents.set(path, file))
         return file
 
