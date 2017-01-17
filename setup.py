@@ -29,6 +29,7 @@ setup(
     packages=find_packages(),
     setup_requires=["vcversioner>=2.16.0.0"],
     install_requires=["attrs", "pyrsistent"],
+    extras_require=dict(click=["click"]),
     vcversioner={"version_module_paths": ["filesystems/_version.py"]},
     classifiers=classifiers,
 )
