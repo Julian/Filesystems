@@ -1,3 +1,4 @@
+from pyrsistent import pset
 import attr
 
 
@@ -79,7 +80,7 @@ def create(
 
 
 def _children(fs, path):
-    return {path.descendant(p) for p in fs.list_directory(path=path)}
+    return pset(path.descendant(p) for p in fs.list_directory(path=path))
 
 
 def _touch(fs, path):

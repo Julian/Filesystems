@@ -1,6 +1,8 @@
 import errno
 import os
 
+from pyrsistent import s
+
 from filesystems import Path, exceptions
 from filesystems._path import RelativePath
 
@@ -148,7 +150,7 @@ class TestFS(object):
 
         fs.remove(directory)
 
-        self.assertEqual(fs.children(path=tempdir), set())
+        self.assertEqual(fs.children(path=tempdir), s())
 
     def test_remove_non_existing_thing(self):
         fs = self.FS()
@@ -577,7 +579,7 @@ class TestFS(object):
         fs.remove(path=link)
 
         self.assertEqual(
-            fs.children(path=directory), {directory.descendant("a")},
+            fs.children(path=directory), s(directory.descendant("a")),
         )
 
     def test_create_directory(self):
@@ -825,7 +827,7 @@ class TestFS(object):
         fs.touch(path=c)
         fs.link(source=c, to=d)
 
-        self.assertEqual(fs.children(path=tempdir), {a, b, d})
+        self.assertEqual(fs.children(path=tempdir), s(a, b, d))
 
     def test_contents_of(self):
         fs = self.FS()
