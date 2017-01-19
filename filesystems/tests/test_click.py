@@ -28,7 +28,7 @@ def parse(type, value):
     def main(converted):
         result.append(converted)
 
-    print click.testing.CliRunner().invoke(main, args=(value,))
+    click.testing.CliRunner().invoke(main, args=(value,))
 
     if len(result) != 1:
         raise Exception("Did not produce one value, this shouldn't happen.")
