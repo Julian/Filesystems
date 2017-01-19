@@ -1,3 +1,5 @@
+from fnmatch import fnmatch
+
 from pyrsistent import pset
 import attr
 
@@ -73,6 +75,7 @@ def create(
 
                 touch=_touch,
                 children=_children,
+                glob_children=_glob_children,
                 contents_of=_open_and_read,
             ),
         ),
@@ -81,6 +84,14 @@ def create(
 
 def _children(fs, path):
     return pset(path.descendant(p) for p in fs.list_directory(path=path))
+
+
+def _glob_children(fs, path, glob):
+    return pset(
+        path.descendant(p)
+        for p in fs.list_directory(path=path)
+        if fnmatch(p, glob)
+    )
 
 
 def _touch(fs, path):

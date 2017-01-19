@@ -829,6 +829,28 @@ class TestFS(object):
 
         self.assertEqual(fs.children(path=tempdir), s(a, b, d))
 
+    def test_glob_children(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        a = tempdir.descendant("a")
+        b = tempdir.descendant("b")
+        c = tempdir.descendant("b", "c")
+        abc = tempdir.descendant("abc")
+        fedcba = tempdir.descendant("fedcba")
+
+        fs.touch(path=a)
+        fs.create_directory(path=b)
+        fs.touch(path=c)
+        fs.touch(path=abc)
+        fs.touch(path=fedcba)
+
+        self.assertEqual(
+            fs.glob_children(path=tempdir, glob="*b*"),
+            s(b, abc, fedcba),
+        )
+
     def test_contents_of(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
