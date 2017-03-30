@@ -64,6 +64,11 @@ class _State(object):
     def create_directory(self, path):
         if self.exists(path=path):
             raise exceptions.FileExists(path)
+
+        parent = path.parent()
+        if not self.exists(path=parent):
+            raise exceptions.FileNotFound(parent)
+
         self._tree = self._tree.set(path, pmap())
 
     def list_directory(self, path):

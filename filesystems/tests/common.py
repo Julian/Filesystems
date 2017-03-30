@@ -635,6 +635,24 @@ class TestFS(object):
             os.strerror(errno.EEXIST) + ": " + str(not_a_dir),
         )
 
+    def test_create_directory_parent_does_not_exist(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir.descendant("some", "child", "dir")
+        self.assertFalse(fs.is_dir(path=directory.parent()))
+
+        with self.assertRaises(exceptions.FileNotFound) as e:
+            fs.create_directory(path=directory)
+
+        # Putting the first dir that doesn't exist would require some
+        # traversal, so just stick with the parent for now.
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOENT) + ": " + str(directory.parent()),
+        )
+
     def test_remove_empty_directory(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()

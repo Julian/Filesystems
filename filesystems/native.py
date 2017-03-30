@@ -13,7 +13,7 @@ def _create_file(fs, path):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
-        if error.errno == exceptions.FileExists.errno:
+        elif error.errno == exceptions.FileExists.errno:
             raise exceptions.FileExists(path)
         raise
 
@@ -44,7 +44,9 @@ def _create_directory(fs, path):
     try:
         os.mkdir(str(path))
     except (IOError, OSError) as error:
-        if error.errno == exceptions.FileExists.errno:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path.parent())
+        elif error.errno == exceptions.FileExists.errno:
             raise exceptions.FileExists(path)
         raise
 
