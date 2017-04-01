@@ -46,9 +46,19 @@ class _State(object):
             return file
 
         file = contents.get(path)
-        if file is None:
+
+        if mode == "a" or mode == "ab":
+            if file is None:
+                combined = _BytesIOIsTerrible()
+            else:
+                combined = _BytesIOIsTerrible()
+                combined.write(file._hereismyvalue)
+            self._tree = self._tree.set(parent, contents.set(path, combined))
+            return combined
+        elif file is None:
             raise exceptions.FileNotFound(path)
-        return BytesIO(file._hereismyvalue)
+        else:
+            return BytesIO(file._hereismyvalue)
 
     def remove_file(self, path):
         parent = path.parent()

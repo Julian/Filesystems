@@ -19,7 +19,7 @@ class TestFS(object):
         with fs.open(tempdir.descendant("unittesting")) as g:
             self.assertEqual(g.read(), b"some things!")
 
-    def test_open_non_existing_file(self):
+    def test_open_read_non_existing_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -35,13 +35,43 @@ class TestFS(object):
             ),
         )
 
-    def test_open_non_existing_nested_file(self):
+    def test_open_read_non_existing_nested_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
         with self.assertRaises(exceptions.FileNotFound) as e:
             fs.open(tempdir.descendant("unittesting", "file"))
+
+        self.assertEqual(
+            str(e.exception), (
+                os.strerror(errno.ENOENT) +
+                ": " +
+                str(tempdir.descendant("unittesting", "file"))
+            )
+        )
+
+    def test_open_append_non_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "ab") as f:
+            f.write(b"some ")
+
+        with fs.open(tempdir.descendant("unittesting"), "ab") as f:
+            f.write(b"things!")
+
+        with fs.open(tempdir.descendant("unittesting")) as g:
+            self.assertEqual(g.read(), b"some things!")
+
+    def test_open_append_non_existing_nested_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with self.assertRaises(exceptions.FileNotFound) as e:
+            fs.open(tempdir.descendant("unittesting", "file"), "ab")
 
         self.assertEqual(
             str(e.exception), (
