@@ -16,11 +16,7 @@ def _create_file(fs, path):
         elif error.errno == exceptions.FileExists.errno:
             raise exceptions.FileExists(path)
         elif error.errno == exceptions.SymbolicLoop.errno:
-            fs.realpath(path=path)
-            raise RuntimeError(
-                "Received an ELOOP but couldn't find the loop. "
-                "This should never happen, file a bug."
-            )
+            raise exceptions.SymbolicLoop(path.parent())
         raise
 
     return os.fdopen(fd, "w+b")

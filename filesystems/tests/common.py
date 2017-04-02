@@ -553,12 +553,16 @@ class TestFS(object):
         fs.link(source=loop, to=loop)
 
         with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.create(path=loop.descendant("child"))
+            fs.create(path=loop.descendant("child", "path"))
 
-        self.assertEqual(
-            str(e.exception),
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
-        )
+            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
 
     def test_link_nonexistant_parent(self):
         fs = self.FS()
