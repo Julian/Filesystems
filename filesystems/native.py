@@ -4,12 +4,12 @@ import tempfile
 from filesystems import Path, common, exceptions
 
 
+_CREATE_FLAGS = os.O_EXCL | os.O_CREAT | os.O_RDWR | getattr(os, "O_BINARY", 0)
+
+
 def _create_file(fs, path):
     try:
-        fd = os.open(
-            str(path),
-            os.O_EXCL | os.O_CREAT | os.O_RDWR | getattr(os, "O_BINARY", 0),
-        )
+        fd = os.open(str(path), _CREATE_FLAGS)
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
