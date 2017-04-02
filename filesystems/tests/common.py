@@ -544,6 +544,22 @@ class TestFS(object):
             os.strerror(errno.ELOOP) + ": " + str(loop),
         )
 
+    def test_create_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.create(path=loop.descendant("child"))
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+        )
+
     def test_link_nonexistant_parent(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
