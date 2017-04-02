@@ -1,12 +1,16 @@
 from __future__ import absolute_import
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
-import click.testing
+try:
+    import click.testing
+except ImportError:
+    click = None
+else:
+    from filesystems import Path
+    import filesystems.click
 
-from filesystems import Path
-import filesystems.click
 
-
+@skipIf(click is None, "Click support not present.")
 class TestClick(TestCase):
     def test_path(self):
         path = parse(type=filesystems.click.PATH, value="some/path/provided")
