@@ -4,7 +4,7 @@ import os
 import attr
 
 
-@attr.s
+@attr.s(hash=True)
 class _FileSystemError(Exception):
 
     value = attr.ib(default=None)

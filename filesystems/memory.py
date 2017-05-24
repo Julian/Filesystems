@@ -7,7 +7,7 @@ import attr
 from filesystems import Path, common, exceptions
 
 
-@attr.s
+@attr.s(hash=True)
 class _State(object):
     """
     The state of a memory filesystem.

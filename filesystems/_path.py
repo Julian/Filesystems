@@ -4,7 +4,7 @@ from pyrsistent import pvector
 import attr
 
 
-@attr.s(these={"segments": attr.ib()}, init=False)
+@attr.s(these={"segments": attr.ib()}, init=False, hash=True)
 class Path(object):
     def __init__(self, *segments):
         self.segments = pvector(segments)
@@ -70,7 +70,7 @@ class Path(object):
         return self
 
 
-@attr.s(these={"segments": attr.ib()}, init=False)
+@attr.s(these={"segments": attr.ib()}, init=False, hash=True)
 class RelativePath(object):
     def __init__(self, *segments):
         self.segments = pvector(segments)

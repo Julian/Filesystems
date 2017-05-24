@@ -47,7 +47,7 @@ def create(
 
     """
 
-    return attr.s(
+    return attr.s(hash=True)(
         type(
             name, (object,), dict(
                 _state=attr.ib(default=attr.Factory(state), repr=False),
