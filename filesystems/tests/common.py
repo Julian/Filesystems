@@ -1005,3 +1005,14 @@ class TestFS(object):
         self.assertEqual(
             str(e.exception), os.strerror(errno.ENOENT) + ": " + str(child),
         )
+
+    def test_readlink_relative(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        source, to = RelativePath("source", "dir"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+
+        self.assertEqual(fs.readlink(to), source)

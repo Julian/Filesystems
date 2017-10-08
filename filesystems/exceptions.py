@@ -4,6 +4,13 @@ import os
 import attr
 
 
+class InvalidPath(Exception):
+    """
+    The given string path is not valid.
+
+    """
+
+
 @attr.s(hash=True)
 class _FileSystemError(Exception):
 

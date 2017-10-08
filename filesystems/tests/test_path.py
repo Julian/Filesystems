@@ -1,7 +1,7 @@
 from unittest import TestCase
 import os
 
-from filesystems import Path
+from filesystems import Path, exceptions
 from filesystems._path import RelativePath
 
 
@@ -44,10 +44,32 @@ class TestPath(TestCase):
     def test_from_string(self):
         self.assertEqual(Path.from_string("/a/b/c"), Path("a", "b", "c"))
 
-    def test_from_relative_string(self):
+    def test_from_string_relative(self):
         self.assertEqual(
-            Path.from_string("a/b/c"), Path.cwd().descendant("a", "b", "c"),
+            Path.from_string("a/b/c"), RelativePath("a", "b", "c"),
         )
+
+    def test_from_string_repeated_separator(self):
+        self.assertEqual(
+            Path.from_string("///a//b/c//"),
+            Path("", "", "a", "", "b", "c", "", ""),
+        )
+
+    def test_from_string_relative_repeated_separator(self):
+        self.assertEqual(
+            Path.from_string("a///b//c"),
+            RelativePath("a", "", "", "b",  "", "c"),
+        )
+
+    def test_from_string_parent(self):
+        self.assertEqual(
+            Path.from_string("../a/b/../b"),
+            RelativePath("..", "a", "b", "..", "b"),
+        )
+
+    def test_from_empty_string(self):
+        with self.assertRaises(exceptions.InvalidPath):
+            Path.from_string("")
 
     def test_str(self):
         self.assertEqual(str(Path.from_string("/a/b/c")), "/a/b/c")

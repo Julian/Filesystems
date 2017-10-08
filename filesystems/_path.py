@@ -3,6 +3,8 @@ import os
 from pyrsistent import pvector
 import attr
 
+from filesystems.exceptions import InvalidPath
+
 
 @attr.s(these={"segments": attr.ib()}, init=False, hash=True)
 class Path(object):
@@ -27,8 +29,13 @@ class Path(object):
 
         """
 
-        segments = os.path.abspath(path).lstrip(os.sep).split(os.sep)
-        return cls(*segments)
+        if not path:
+            raise InvalidPath(path)
+
+        split = path.split(os.sep)
+        if split[0]:
+            return RelativePath(*split)
+        return cls(*split[1:])
 
     def basename(self):
         return (self.segments or [""])[-1]
