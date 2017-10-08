@@ -35,6 +35,11 @@ class NotADirectory(_FileSystemError):
     message = os.strerror(errno)
 
 
+class NotASymlink(_FileSystemError):
+    errno = errno.EINVAL
+    message = os.strerror(errno)
+
+
 class SymbolicLoop(_FileSystemError):
     errno = errno.ELOOP
     message = os.strerror(errno)

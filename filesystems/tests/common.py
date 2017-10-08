@@ -942,3 +942,66 @@ class TestFS(object):
     def test_realpath_root(self):
         fs = self.FS()
         self.assertEqual(fs.realpath(Path.root()), Path.root())
+
+    def test_readlink_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        fs.link(source=source, to=to)
+        self.assertEqual(fs.readlink(to), source)
+
+    def test_readlink_nested_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source = tempdir.descendant("source")
+        first = tempdir.descendant("first")
+        second = tempdir.descendant("second")
+        third = tempdir.descendant("third")
+
+        fs.link(source=source, to=first)
+        fs.link(source=first, to=second)
+        fs.link(source=second, to=third)
+        self.assertEqual(fs.readlink(third), second)
+
+    def test_readlink_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        child = tempdir.descendant("child")
+        fs.touch(child)
+        with self.assertRaises(exceptions.NotASymlink) as e:
+            fs.readlink(child)
+
+        self.assertEqual(
+            str(e.exception), os.strerror(errno.EINVAL) + ": " + str(child),
+        )
+
+    def test_readlink_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with self.assertRaises(exceptions.NotASymlink) as e:
+            fs.readlink(tempdir)
+
+        self.assertEqual(
+            str(e.exception), os.strerror(errno.EINVAL) + ": " + str(tempdir),
+        )
+
+    def test_readlink_non_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        child = tempdir.descendant("child")
+        with self.assertRaises(exceptions.FileNotFound) as e:
+            fs.readlink(child)
+
+        self.assertEqual(
+            str(e.exception), os.strerror(errno.ENOENT) + ": " + str(child),
+        )

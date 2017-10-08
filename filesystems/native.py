@@ -88,6 +88,19 @@ def _link(fs, source, to):
         raise
 
 
+def _readlink(fs, path):
+    try:
+        value = os.readlink(str(path))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.NotASymlink.errno:
+            raise exceptions.NotASymlink(path)
+        raise
+    else:
+        return Path.from_string(value)
+
+
 def _realpath(fs, path):
     """
     .. warning::
@@ -124,6 +137,7 @@ FS = common.create(
     temporary_directory=lambda fs: Path.from_string(tempfile.mkdtemp()),
 
     link=_link,
+    readlink=_readlink,
     realpath=_realpath,
 
     exists=lambda fs, path: os.path.exists(str(path)),

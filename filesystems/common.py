@@ -31,6 +31,7 @@ def create(
     temporary_directory,
 
     link,
+    readlink,
     realpath,
 
     exists,
@@ -66,6 +67,7 @@ def create(
                 temporary_directory=temporary_directory,
 
                 link=link,
+                readlink=readlink,
                 realpath=realpath,
 
                 exists=exists,

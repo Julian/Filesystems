@@ -119,6 +119,15 @@ class _State(object):
         self._tree = self._tree_with(path=to)
         self._links = self._links.set(to, source)
 
+    def readlink(self, path):
+        value = self._links.get(path)
+        if value is None:
+            if self.exists(path=path):
+                raise exceptions.NotASymlink(path)
+            else:
+                raise exceptions.FileNotFound(path)
+        return value
+
     def realpath(self, path):
         real = Path.root()
         for segment in path.segments:
@@ -175,6 +184,7 @@ FS = common.create(
     ),
 
     link=lambda fs, *args, **kw: fs._state.link(*args, **kw),
+    readlink=lambda fs, *args, **kw: fs._state.readlink(*args, **kw),
     realpath=lambda fs, *args, **kw: fs._state.realpath(*args, **kw),
 
     remove=lambda fs, *args, **kw: fs._state.remove(*args, **kw),
