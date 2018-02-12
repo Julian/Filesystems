@@ -187,8 +187,6 @@ FS = common.create(
     readlink=lambda fs, *args, **kw: fs._state.readlink(*args, **kw),
     realpath=lambda fs, *args, **kw: fs._state.realpath(*args, **kw),
 
-    remove=lambda fs, *args, **kw: fs._state.remove(*args, **kw),
-
     exists=lambda fs, *args, **kw: fs._state.exists(*args, **kw),
     is_dir=lambda fs, *args, **kw: fs._state.is_dir(*args, **kw),
     is_file=lambda fs, *args, **kw: fs._state.is_file(*args, **kw),

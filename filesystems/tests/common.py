@@ -3,7 +3,7 @@ import os
 
 from pyrsistent import s
 
-from filesystems import Path, exceptions
+from filesystems import Path, common, exceptions
 from filesystems._path import RelativePath
 
 
@@ -748,6 +748,18 @@ class TestFS(object):
             str(e.exception),
             os.strerror(errno.ENOENT) + ": " + str(directory),
         )
+
+    def test_remove_on_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        child = tempdir.descendant("child")
+        fs.touch(path=child)
+        self.assertTrue(fs.exists(path=child))
+
+        fs.remove(path=child)
+        self.assertFalse(fs.exists(path=child))
 
     def test_remove_file(self):
         fs = self.FS()

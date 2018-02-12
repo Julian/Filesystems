@@ -4,18 +4,18 @@ from pyrsistent import pset
 import attr
 
 
-def recursive_remove(fs, path):
+def _recursive_remove(fs, path):
     """
     A recursive, non-atomic directory removal.
 
     """
 
-    if fs.is_dir(path=path) and not fs.is_link(path=path):
+    if not fs.is_link(path=path) and fs.is_dir(path=path):
         for child in fs.children(path=path):
-            recursive_remove(fs=fs, path=child)
-        fs.remove_empty_directory(str(path))
+            _recursive_remove(fs=fs, path=child)
+        fs.remove_empty_directory(path=path)
     else:
-        fs.remove_file(str(path))
+        fs.remove_file(path=path)
 
 
 def create(
@@ -39,7 +39,7 @@ def create(
     is_file,
     is_link,
 
-    remove=recursive_remove,
+    remove=_recursive_remove,
 
     state=lambda: None,
 ):
