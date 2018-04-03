@@ -29,5 +29,8 @@ install:
   - pip install -e .
   - ps: Update-AppveyorBuild -Version "v$(python -c 'import sys; import filesystems; sys.stdout.write(filesystems.__version__)') b$Env:APPVEYOR_BUILD_NUMBER"
 
+build_script:
+  - echo NOP
+
 test_script:
   - tox
