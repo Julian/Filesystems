@@ -42,29 +42,62 @@ class TestPath(TestCase):
         )
 
     def test_from_string(self):
-        self.assertEqual(Path.from_string("/a/b/c"), Path("a", "b", "c"))
+        self.assertEqual(
+            Path.from_string(os.sep + os.sep.join("abc")),
+            Path("a", "b", "c"),
+        )
 
     def test_from_string_relative(self):
         self.assertEqual(
-            Path.from_string("a/b/c"), RelativePath("a", "b", "c"),
+            Path.from_string(os.sep.join("abc")),
+            RelativePath("a", "b", "c"),
         )
 
     def test_from_string_repeated_separator(self):
         self.assertEqual(
-            Path.from_string("///a//b/c//"),
+            Path.from_string(
+                (
+                    os.sep * 3 +
+                    "a" +
+                    os.sep * 2 +
+                    "b" +
+                    os.sep +
+                    "c" +
+                    os.sep * 2
+                ),
+            )
             Path("", "", "a", "", "b", "c", "", ""),
         )
 
     def test_from_string_relative_repeated_separator(self):
         self.assertEqual(
-            Path.from_string("a///b//c"),
+            Path.from_string(
+                (
+                    "a" +
+                    os.sep * 3 +
+                    "b" +
+                    os.sep * 2 +
+                    "c",
+                ),
+            )
             RelativePath("a", "", "", "b",  "", "c"),
         )
 
     def test_from_string_parent(self):
         self.assertEqual(
-            Path.from_string("../a/b/../b"),
-            RelativePath("..", "a", "b", "..", "b"),
+            Path.from_string(
+                (
+                    os.pardir +
+                    os.sep +
+                    "a" +
+                    os.sep +
+                    "b"+
+                    os.sep +
+                    os.pardir +
+                    os.sep +
+                    "b",
+                ),
+            RelativePath(os.pardir, "a", "b", os.pardir, "b"),
         )
 
     def test_from_empty_string(self):
@@ -72,7 +105,10 @@ class TestPath(TestCase):
             Path.from_string("")
 
     def test_str(self):
-        self.assertEqual(str(Path.from_string("/a/b/c")), "/a/b/c")
+        self.assertEqual(
+            str(Path.from_string(os.sep + os.sep.join("abc")),
+            os.sep + os.sep.join("abc"),
+        )
 
     def test_cwd(self):
         self.assertEqual(Path.cwd(), Path.from_string(os.getcwd()))
