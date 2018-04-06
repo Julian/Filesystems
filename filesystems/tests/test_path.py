@@ -65,21 +65,13 @@ class TestPath(TestCase):
                     "c" +
                     os.sep * 2
                 ),
-            )
+            ),
             Path("", "", "a", "", "b", "c", "", ""),
         )
 
     def test_from_string_relative_repeated_separator(self):
         self.assertEqual(
-            Path.from_string(
-                (
-                    "a" +
-                    os.sep * 3 +
-                    "b" +
-                    os.sep * 2 +
-                    "c",
-                ),
-            )
+            Path.from_string("a" + os.sep * 3 + "b" + os.sep * 2 + "c"),
             RelativePath("a", "", "", "b",  "", "c"),
         )
 
@@ -95,8 +87,9 @@ class TestPath(TestCase):
                     os.sep +
                     os.pardir +
                     os.sep +
-                    "b",
+                    "b"
                 ),
+            ),
             RelativePath(os.pardir, "a", "b", os.pardir, "b"),
         )
 
@@ -106,7 +99,7 @@ class TestPath(TestCase):
 
     def test_str(self):
         self.assertEqual(
-            str(Path.from_string(os.sep + os.sep.join("abc")),
+            str(Path.from_string(os.sep + os.sep.join("abc"))),
             os.sep + os.sep.join("abc"),
         )
 
