@@ -28,9 +28,9 @@ setup(
     author="Julian Berman",
     author_email="Julian@GrayVines.com",
     packages=find_packages(),
-    setup_requires=["vcversioner>=2.16.0.0"],
+    setup_requires=["setuptools_scm"],
+    use_scm_version=True,
     install_requires=["attrs", "pyrsistent"],
     extras_require=dict(click=["click"]),
-    vcversioner={"version_module_paths": ["filesystems/_version.py"]},
     classifiers=classifiers,
 )
