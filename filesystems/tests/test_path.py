@@ -83,7 +83,7 @@ class TestPath(TestCase):
                     os.sep +
                     "a" +
                     os.sep +
-                    "b"+
+                    "b" +
                     os.sep +
                     os.pardir +
                     os.sep +

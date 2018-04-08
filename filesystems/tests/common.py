@@ -3,7 +3,7 @@ import os
 
 from pyrsistent import s
 
-from filesystems import Path, common, exceptions
+from filesystems import Path, exceptions
 from filesystems._path import RelativePath
 
 
