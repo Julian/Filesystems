@@ -106,6 +106,9 @@ class TestPath(TestCase):
     def test_cwd(self):
         self.assertEqual(Path.cwd(), Path.from_string(os.getcwd()))
 
+    def test_cwd_is_absolute(self):
+        self.assertEqual(Path.cwd().relative_to(Path.root()), Path.cwd())
+
     def test_root(self):
         self.assertEqual(Path.root(), Path())
 
