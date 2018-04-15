@@ -54,7 +54,7 @@ def create(
                 _state=attr.ib(default=attr.Factory(state), repr=False),
 
                 create=create_file,
-                open=lambda fs, path, mode="rb": open_file(
+                open=lambda fs, path, mode="r": open_file(
                     fs=fs, path=path, mode=mode,
                 ),
                 remove_file=remove_file,
