@@ -49,18 +49,20 @@ class _State(object):
             raise exceptions.FileNotFound(path)
 
         if mode == "w" or mode == "wb":
-            file = _BytesIOIsTerrible()
             if mode == "w" and _PY3:
-                file = TextIOWrapper(file)
+                file = TextIOWrapper()
+            else:
+                file = _BytesIOIsTerrible()
             self._tree = self._tree.set(parent, contents.set(path, file))
             return file
 
         file = contents.get(path)
 
         if mode == "a" or mode == "ab":
-            combined = _BytesIOIsTerrible()
             if mode == "a" and _PY3:
-                combined = TextIOWrapper(combined)
+                combined = TextIOWrapper()
+            else:
+                combined = _BytesIOIsTerrible()
 
             if file is not None:
                 combined.write(file._hereismyvalue)
