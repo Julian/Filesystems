@@ -19,6 +19,28 @@ class TestFS(object):
         with fs.open(tempdir.descendant("unittesting")) as g:
             self.assertEqual(g.read(), "some things!")
 
+    def test_open_as_bytes(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
+            f.write(b"some things!")
+
+        with fs.open(tempdir.descendant("unittesting"), "rb") as g:
+            self.assertIsInstance(g.read(), type(b""))
+
+    def test_open_as_native(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
+            f.write(b"some things!")
+
+        with fs.open(tempdir.descendant("unittesting"), "r") as g:
+            self.assertIsInstance(g.read(), type(""))
+
     def test_open_read_non_existing_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
