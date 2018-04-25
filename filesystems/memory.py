@@ -75,8 +75,9 @@ class _State(object):
             value = file._hereismyvalue
             if "b" not in mode and _PY3:
                 value = value.decode()
+                return NativeStringIO(value)
 
-            return NativeStringIO(value)
+            return _BytesIOIsTerrible(value)
 
     def remove_file(self, path):
         parent = path.parent()
