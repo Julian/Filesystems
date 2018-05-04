@@ -73,13 +73,55 @@ class TestFS(object):
             )
         )
 
-    def test_open_append_non_existing_file(self):
+    def test_open_append_non_existing_file_as_bytes(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
         with fs.open(tempdir.descendant("unittesting"), "ab") as f:
             f.write(b"some ")
+
+        with fs.open(tempdir.descendant("unittesting"), "ab") as f:
+            f.write(b"things!")
+
+        with fs.open(tempdir.descendant("unittesting")) as g:
+            self.assertEqual(g.read(), "some things!")
+
+    def test_open_append_non_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "a") as f:
+            f.write("some ")
+
+        with fs.open(tempdir.descendant("unittesting"), "a") as f:
+            f.write("things!")
+
+        with fs.open(tempdir.descendant("unittesting")) as g:
+            self.assertEqual(g.read(), "some things!")
+
+    def test_open_append_binary_and_text_non_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "ab") as f:
+            f.write(b"some ")
+
+        with fs.open(tempdir.descendant("unittesting"), "a") as f:
+            f.write("things!")
+
+        with fs.open(tempdir.descendant("unittesting")) as g:
+            self.assertEqual(g.read(), "some things!")
+
+    def test_open_append_text_and_binary_non_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "a") as f:
+            f.write("some ")
 
         with fs.open(tempdir.descendant("unittesting"), "ab") as f:
             f.write(b"things!")
