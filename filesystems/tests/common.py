@@ -17,7 +17,29 @@ class TestFS(object):
             f.write(b"some things!")
 
         with fs.open(tempdir.descendant("unittesting")) as g:
-            self.assertEqual(g.read(), b"some things!")
+            self.assertEqual(g.read(), "some things!")
+
+    def test_open_as_bytes(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
+            f.write(b"some things!")
+
+        with fs.open(tempdir.descendant("unittesting"), "rb") as g:
+            self.assertIsInstance(g.read(), type(b""))
+
+    def test_open_as_native(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
+            f.write(b"some things!")
+
+        with fs.open(tempdir.descendant("unittesting"), "r") as g:
+            self.assertIsInstance(g.read(), type(""))
 
     def test_open_read_non_existing_file(self):
         fs = self.FS()
@@ -63,7 +85,7 @@ class TestFS(object):
             f.write(b"things!")
 
         with fs.open(tempdir.descendant("unittesting")) as g:
-            self.assertEqual(g.read(), b"some things!")
+            self.assertEqual(g.read(), "some things!")
 
     def test_open_append_non_existing_nested_file(self):
         fs = self.FS()
@@ -90,7 +112,7 @@ class TestFS(object):
             f.write(b"some things!")
 
         with fs.open(tempdir.descendant("unittesting")) as g:
-            self.assertEqual(g.read(), b"some things!")
+            self.assertEqual(g.read(), "some things!")
 
     def test_create_file_existing_file(self):
         fs = self.FS()
@@ -357,7 +379,7 @@ class TestFS(object):
         with fs.open(source, "wb") as f:
             f.write(b"some things way over here!")
 
-        self.assertEqual(fs.contents_of(third), b"some things way over here!")
+        self.assertEqual(fs.contents_of(third), "some things way over here!")
 
     def test_link_child(self):
         fs = self.FS()
@@ -482,7 +504,7 @@ class TestFS(object):
         with fs.open(source, "wb") as f:
             f.write(b"some things over here!")
 
-        self.assertEqual(fs.contents_of(to), b"some things over here!")
+        self.assertEqual(fs.contents_of(to), "some things over here!")
 
     def test_write_to_link(self):
         fs = self.FS()
@@ -495,7 +517,7 @@ class TestFS(object):
         with fs.open(to, "wb") as f:
             f.write(b"some things over here!")
 
-        self.assertEqual(fs.contents_of(source), b"some things over here!")
+        self.assertEqual(fs.contents_of(source), "some things over here!")
 
     def test_write_to_created_child(self):
         fs = self.FS()
@@ -510,7 +532,7 @@ class TestFS(object):
         with fs.create(child) as f:
             f.write(b"some things over here!")
 
-        self.assertEqual(fs.contents_of(child), b"some things over here!")
+        self.assertEqual(fs.contents_of(child), "some things over here!")
 
     def test_read_from_loop(self):
         fs = self.FS()
@@ -941,7 +963,7 @@ class TestFS(object):
 
         self.assertEqual(
             fs.contents_of(tempdir.descendant("unittesting")),
-            b"some more things!",
+            "some more things!",
         )
 
     # With how crazy computers are, I'm not actually 100% sure that
