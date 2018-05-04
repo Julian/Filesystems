@@ -9,10 +9,6 @@ from filesystems import Path, common, exceptions
 
 
 _PY3 = sys.version_info[0] >= 3
-if _PY3:
-    from io import StringIO as NativeStringIO
-else:
-    from io import BytesIO as NativeStringIO
 
 
 @attr.s(hash=True)
@@ -48,36 +44,38 @@ class _State(object):
         if contents is None:
             raise exceptions.FileNotFound(path)
 
+        for_text = "b" not in mode and _PY3
+
         if mode == "w" or mode == "wb":
-            if mode == "w" and _PY3:
-                file = TextIOWrapper()
-            else:
-                file = _BytesIOIsTerrible()
+            file = _BytesIOIsTerrible()
             self._tree = self._tree.set(parent, contents.set(path, file))
+            if for_text:
+                file = TextIOWrapper(file)
             return file
 
         file = contents.get(path)
 
         if mode == "a" or mode == "ab":
-            if mode == "a" and _PY3:
-                combined = TextIOWrapper()
-            else:
-                combined = _BytesIOIsTerrible()
+            combined = _BytesIOIsTerrible()
 
             if file is not None:
                 combined.write(file._hereismyvalue)
 
             self._tree = self._tree.set(parent, contents.set(path, combined))
+
+            if for_text:
+                combined = TextIOWrapper(combined)
+
             return combined
         elif file is None:
             raise exceptions.FileNotFound(path)
         else:
-            value = file._hereismyvalue
-            if "b" not in mode and _PY3:
-                value = value.decode()
-                return NativeStringIO(value)
+            file = _BytesIOIsTerrible(file._hereismyvalue)
 
-            return _BytesIOIsTerrible(value)
+            if for_text:
+                file = TextIOWrapper(file)
+
+            return file
 
     def remove_file(self, path):
         parent = path.parent()
