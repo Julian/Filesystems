@@ -113,10 +113,10 @@ def _open_and_read(fs, path):
 
 @attr.s(frozen=True)
 class FileMode(object):
-    activity = attr.ib(default='r')
+    activity = attr.ib(default="r")
     mode = attr.ib(
         default='',
-        convert=lambda x: x if x != '' else ('t' if _PY3 else 'b'),
+        convert=lambda x: x if x != "" else ("t" if _PY3 else "b"),
     )
     read = attr.ib()
     write = attr.ib()
@@ -126,31 +126,31 @@ class FileMode(object):
 
     @read.default
     def _(self):
-        return self.activity == 'r'
+        return self.activity == "r"
 
     @write.default
     def _(self):
-        return self.activity == 'w'
+        return self.activity == "w"
 
     @append.default
     def _(self):
-        return self.activity == 'a'
+        return self.activity == "a"
 
     @text.default
     def _(self):
-        return self.mode == 't'
+        return self.mode == "t"
 
     @binary.default
     def _(self):
-        return self.mode == 'b'
+        return self.mode == "b"
 
     @activity.validator
     def _(self, attribute, value):
-        options = 'rwa'
+        options = "rwa"
 
         if value not in options:
             raise exceptions.InvalidMode(
-                'Mode must start with one of {} but found {}'.format(
+                "Mode must start with one of {} but found {}".format(
                     repr(options),
                     repr(value),
                 )
@@ -158,11 +158,11 @@ class FileMode(object):
 
     @mode.validator
     def _(self, attribute, value):
-        options = 'bt'
+        options = "bt"
 
         if value not in options:
             raise exceptions.InvalidMode(
-                'Mode must start with one of {} but found {}'.format(
+                "Mode must start with one of {} but found {}".format(
                     repr(options),
                     repr(value),
                 )
@@ -178,9 +178,9 @@ def normalize_mode(mode):
     rest = mode[1:]
 
     if len(first) > 0:
-        parameters['activity'] = first
+        parameters["activity"] = first
 
         if len(rest) > 0:
-            parameters['mode'] = rest
+            parameters["mode"] = rest
 
     return FileMode(**parameters)
