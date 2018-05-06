@@ -24,7 +24,7 @@ def _create_file(fs, path):
 
 
 def _open_file(fs, path, mode):
-    mode = common.normalize_mode(mode)
+    mode = common.parse_mode(mode)
 
     try:
         return io.open(str(path), mode.io_open_string())
