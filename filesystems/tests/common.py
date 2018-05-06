@@ -1143,11 +1143,9 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        def fail():
+        with self.assertRaises(exceptions.InvalidMode):
             with fs.open(tempdir.descendant("unittesting"), mode):
                 pass
-
-        self.assertRaises(exceptions.InvalidMode, fail)
 
     def test_invalid_mode_activity(self):
         self._invalid_mode('z')
