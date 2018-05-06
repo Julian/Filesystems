@@ -8,9 +8,6 @@ import attr
 from filesystems import Path, common, exceptions
 
 
-_PY3 = sys.version_info[0] >= 3
-
-
 @attr.s(hash=True)
 class _State(object):
     """
@@ -37,6 +34,8 @@ class _State(object):
         return file
 
     def open_file(self, path, mode):
+        mode = common.normalize_mode(mode)
+
         path = self.realpath(path=path)
 
         parent = path.parent()
@@ -44,18 +43,16 @@ class _State(object):
         if contents is None:
             raise exceptions.FileNotFound(path)
 
-        for_text = "b" not in mode and _PY3
-
-        if mode == "w" or mode == "wb":
+        if mode.write:
             file = _BytesIOIsTerrible()
             self._tree = self._tree.set(parent, contents.set(path, file))
-            if for_text:
+            if mode.text:
                 file = TextIOWrapper(file)
             return file
 
         file = contents.get(path)
 
-        if mode == "a" or mode == "ab":
+        if mode.append:
             combined = _BytesIOIsTerrible()
 
             if file is not None:
@@ -63,7 +60,7 @@ class _State(object):
 
             self._tree = self._tree.set(parent, contents.set(path, combined))
 
-            if for_text:
+            if mode.text:
                 combined = TextIOWrapper(combined)
 
             return combined
@@ -72,7 +69,7 @@ class _State(object):
         else:
             file = _BytesIOIsTerrible(file._hereismyvalue)
 
-            if for_text:
+            if mode.text:
                 file = TextIOWrapper(file)
 
             return file

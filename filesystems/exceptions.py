@@ -11,6 +11,13 @@ class InvalidPath(Exception):
     """
 
 
+class InvalidMode(Exception):
+    """
+    The given mode is not valid.
+
+    """
+
+
 @attr.s(hash=True)
 class _FileSystemError(Exception):
 

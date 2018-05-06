@@ -1,7 +1,13 @@
 from fnmatch import fnmatch
+import sys
 
 from pyrsistent import pset
 import attr
+
+from filesystems import exceptions
+
+
+_PY3 = sys.version_info[0] >= 3
 
 
 def _recursive_remove(fs, path):
@@ -103,3 +109,78 @@ def _touch(fs, path):
 def _open_and_read(fs, path):
     with fs.open(path=path) as file:
         return file.read()
+
+
+@attr.s(frozen=True)
+class FileMode(object):
+    activity = attr.ib(default='r')
+    mode = attr.ib(
+        default='',
+        convert=lambda x: x if x != '' else ('t' if _PY3 else 'b'),
+    )
+    read = attr.ib()
+    write = attr.ib()
+    append = attr.ib()
+    text = attr.ib()
+    binary = attr.ib()
+
+    @read.default
+    def _(self):
+        return self.activity == 'r'
+
+    @write.default
+    def _(self):
+        return self.activity == 'w'
+
+    @append.default
+    def _(self):
+        return self.activity == 'a'
+
+    @text.default
+    def _(self):
+        return self.mode == 't'
+
+    @binary.default
+    def _(self):
+        return self.mode == 'b'
+
+    @activity.validator
+    def _(self, attribute, value):
+        options = 'rwa'
+
+        if value not in options:
+            raise exceptions.InvalidMode(
+                'Mode must start with one of {} but found {}'.format(
+                    repr(options),
+                    repr(value),
+                )
+            )
+
+    @mode.validator
+    def _(self, attribute, value):
+        options = 'bt'
+
+        if value not in options:
+            raise exceptions.InvalidMode(
+                'Mode must start with one of {} but found {}'.format(
+                    repr(options),
+                    repr(value),
+                )
+            )
+
+    def io_open_string(self):
+        return self.activity + self.mode
+
+
+def normalize_mode(mode):
+    parameters = {}
+    first = mode[:1]
+    rest = mode[1:]
+
+    if len(first) > 0:
+        parameters['activity'] = first
+
+        if len(rest) > 0:
+            parameters['mode'] = rest
+
+    return FileMode(**parameters)
