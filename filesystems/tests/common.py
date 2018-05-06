@@ -1144,10 +1144,10 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
 
         def fail():
-            with fs.open(tempdir.descendant("unittesting", mode)):
+            with fs.open(tempdir.descendant("unittesting"), mode):
                 pass
 
-        self.assertRaises(exceptions.InvalidMode, f=fail)
+        self.assertRaises(exceptions.InvalidMode, fail)
 
     def test_invalid_mode_activity(self):
         self._invalid_mode('z')
@@ -1157,3 +1157,9 @@ class TestFS(object):
 
     def test_invalid_mode_extra(self):
         self._invalid_mode('rbz')
+
+    def test_invalid_mode_binary_and_text(self):
+        self._invalid_mode('rbt')
+
+    def test_invalid_mode_read_and_write(self):
+        self._invalid_mode('rwb')

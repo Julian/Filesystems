@@ -146,7 +146,7 @@ class FileMode(object):
 
     @activity.validator
     def _(self, attribute, value):
-        options = "rwa"
+        options = ("r", "w", "a")
 
         if value not in options:
             raise exceptions.InvalidMode(
@@ -158,7 +158,7 @@ class FileMode(object):
 
     @mode.validator
     def _(self, attribute, value):
-        options = "bt"
+        options = ("b", "t")
 
         if value not in options:
             raise exceptions.InvalidMode(
