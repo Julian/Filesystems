@@ -29,7 +29,7 @@ class TestFS(object):
         contents = "some things!"
         if common._PY3:
             b = contents.encode()
-        self._open_file(b=contents, r=contents, mode="r")
+        self._open_file(b=b, r=contents, mode="r")
 
     def open_file_as_text(self):
         contents = u'some things!'

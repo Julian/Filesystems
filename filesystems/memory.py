@@ -1,5 +1,4 @@
 from io import BytesIO, TextIOWrapper
-import sys
 from uuid import uuid4
 
 from pyrsistent import pmap, pset

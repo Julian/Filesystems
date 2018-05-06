@@ -125,27 +125,27 @@ class FileMode(object):
     binary = attr.ib()
 
     @read.default
-    def _(self):
+    def read_default(self):
         return self.activity == "r"
 
     @write.default
-    def _(self):
+    def write_default(self):
         return self.activity == "w"
 
     @append.default
-    def _(self):
+    def append_default(self):
         return self.activity == "a"
 
     @text.default
-    def _(self):
+    def text_default(self):
         return self.mode == "t"
 
     @binary.default
-    def _(self):
+    def binary_default(self):
         return self.mode == "b"
 
     @activity.validator
-    def _(self, attribute, value):
+    def activity_validator(self, attribute, value):
         options = ("r", "w", "a")
 
         if value not in options:
