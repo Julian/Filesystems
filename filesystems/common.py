@@ -112,7 +112,7 @@ def _open_and_read(fs, path):
 
 
 @attr.s(frozen=True)
-class FileMode(object):
+class _FileMode(object):
     activity = attr.ib(default="r")
     mode = attr.ib(
         default='',
@@ -183,4 +183,4 @@ def parse_mode(mode):
         if len(rest) > 0:
             parameters["mode"] = rest
 
-    return FileMode(**parameters)
+    return _FileMode(**parameters)
