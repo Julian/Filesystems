@@ -33,7 +33,7 @@ class _State(object):
         return file
 
     def open_file(self, path, mode):
-        mode = common.parse_mode(mode)
+        mode = common._parse_mode(mode)
 
         path = self.realpath(path=path)
 

@@ -172,7 +172,7 @@ class _FileMode(object):
         return self.activity + self.mode
 
 
-def parse_mode(mode):
+def _parse_mode(mode):
     parameters = {}
     first = mode[:1]
     rest = mode[1:]
