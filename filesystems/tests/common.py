@@ -3,44 +3,11 @@ import os
 
 from pyrsistent import s
 
-from filesystems import Path, exceptions
+from filesystems import Path, exceptions, common
 from filesystems._path import RelativePath
 
 
 class TestFS(object):
-    def test_open_file(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
-            f.write(b"some things!")
-
-        with fs.open(tempdir.descendant("unittesting")) as g:
-            self.assertEqual(g.read(), "some things!")
-
-    def test_open_as_bytes(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
-            f.write(b"some things!")
-
-        with fs.open(tempdir.descendant("unittesting"), "rb") as g:
-            self.assertIsInstance(g.read(), type(b""))
-
-    def test_open_as_native(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
-            f.write(b"some things!")
-
-        with fs.open(tempdir.descendant("unittesting"), "r") as g:
-            self.assertIsInstance(g.read(), type(""))
-
     def test_open_read_non_existing_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -73,35 +40,7 @@ class TestFS(object):
             )
         )
 
-    def test_open_append_non_existing_file_as_bytes(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        with fs.open(tempdir.descendant("unittesting"), "ab") as f:
-            f.write(b"some ")
-
-        with fs.open(tempdir.descendant("unittesting"), "ab") as f:
-            f.write(b"things!")
-
-        with fs.open(tempdir.descendant("unittesting")) as g:
-            self.assertEqual(g.read(), "some things!")
-
-    def test_open_append_non_existing_file(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        with fs.open(tempdir.descendant("unittesting"), "a") as f:
-            f.write("some ")
-
-        with fs.open(tempdir.descendant("unittesting"), "a") as f:
-            f.write("things!")
-
-        with fs.open(tempdir.descendant("unittesting")) as g:
-            self.assertEqual(g.read(), "some things!")
-
-    def test_open_append_binary_and_text_non_existing_file(self):
+    def test_open_append_binary_and_native_non_existing_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -115,7 +54,7 @@ class TestFS(object):
         with fs.open(tempdir.descendant("unittesting")) as g:
             self.assertEqual(g.read(), "some things!")
 
-    def test_open_append_text_and_binary_non_existing_file(self):
+    def test_open_append_native_and_binary_non_existing_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -1092,3 +1031,127 @@ class TestFS(object):
         fs.link(source=source, to=to)
 
         self.assertEqual(fs.readlink(to), source)
+
+
+class TestInvalidMode(object):
+    scenarios = [
+        ("activity", {"mode": "z"}),
+        ("mode", {"mode": "rz"}),
+        ("extra", {"mode": "rbz"}),
+        ("binary_and_text", {"mode": "rbt"}),
+        ("read_and_write", {"mode": "rwb"}),
+    ]
+
+    def test_invalid_mode(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with self.assertRaises(exceptions.InvalidMode):
+            with fs.open(tempdir.descendant("unittesting"), self.mode):
+                pass
+
+
+class TestOpenFile(object):
+    scenarios = [
+        (
+            "bytes",
+            {
+                "expected": b"some things!",
+                "bytes": lambda c: c,
+                "mode": "rb",
+            },
+        ),
+        (
+            "native",
+            {
+                "expected": "some things!",
+                "bytes": lambda c: c.encode() if common._PY3 else c,
+                "mode": "r",
+            },
+        ),
+        (
+            "text",
+            {
+                "expected": u"some things!",
+                "bytes": lambda c: c.encode(),
+                "mode": "rt",
+            },
+        ),
+    ]
+
+    def test_open_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
+            f.write(self.bytes(self.expected))
+
+        with fs.open(tempdir.descendant("unittesting"), self.mode) as g:
+            contents = g.read()
+            self.assertEqual(contents, self.expected)
+            self.assertIsInstance(contents, type(self.expected))
+
+
+class TestOpenAppendNonExistingFile(object):
+    scenarios = [
+        ("bytes", {"first": b"some ", "second": b"things!", "mode": "ab"}),
+        ("native", {"first": "some ", "second": "things!", "mode": "a"}),
+        ("text", {"first": u"some ", "second": u"things!", "mode": "at"}),
+    ]
+
+    def test_open_append_non_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), self.mode) as f:
+            f.write(self.first)
+
+        with fs.open(tempdir.descendant("unittesting"), self.mode) as f:
+            f.write(self.second)
+
+        with fs.open(tempdir.descendant("unittesting")) as g:
+            self.assertEqual(g.read(), u"some things!")
+
+
+class TestWriteLines:
+    scenarios = [
+        (
+            "bytes",
+            {
+                "to_write": lambda text: text.encode(),
+                "mode": "ab",
+            },
+        ),
+        (
+            "native",
+            {
+                "to_write": lambda text: text if common._PY3 else text.encode(),
+                "mode": "a",
+            },
+        ),
+        (
+            "text",
+            {
+                "to_write": lambda text: text,
+                "mode": "at",
+            },
+        ),
+    ]
+
+    def test_writelines(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        text = u"some\nthings!\n"
+        newline = self.to_write(u"\n")
+        to_write = self.to_write(text)
+
+        with fs.open(tempdir.descendant("unittesting"), self.mode) as f:
+            f.writelines(line + newline for line in to_write.splitlines())
+
+        with fs.open(tempdir.descendant("unittesting")) as g:
+            self.assertEqual(g.read(), text)

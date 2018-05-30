@@ -1,3 +1,4 @@
+import io
 import os
 import tempfile
 
@@ -19,12 +20,14 @@ def _create_file(fs, path):
             raise exceptions.SymbolicLoop(path.parent())
         raise
 
-    return os.fdopen(fd, "w+b")
+    return io.open(fd, "w+b")
 
 
 def _open_file(fs, path, mode):
+    mode = common._parse_mode(mode)
+
     try:
-        return open(str(path), mode)
+        return io.open(str(path), mode.io_open_string())
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
