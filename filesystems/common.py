@@ -116,7 +116,7 @@ class _FileMode(object):
     activity = attr.ib(default="r")
     mode = attr.ib(
         default='',
-        convert=lambda x: x if x != "" else ("t" if _PY3 else "b"),
+        converter=lambda x: x if x != "" else ("t" if _PY3 else "b"),
     )
     read = attr.ib()
     write = attr.ib()
