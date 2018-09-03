@@ -116,7 +116,7 @@ def _realpath(fs, path):
     real = Path.root()
     for segment in path.segments:
         seen = current, = {str(real.descendant(segment))}
-        while os.path.islink(current):
+        while fs.is_link(current):
             current = os.path.join(
                 os.path.dirname(current), os.readlink(current),
             )
