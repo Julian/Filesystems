@@ -18,11 +18,11 @@ class _State(object):
     _tree = pmap([(Path.root(), pmap())])
     _links = pmap()
 
-    def create_file(self, path):
-        if self.exists(path=path) or self.is_link(path=path):
+    def create_file(self, fs, path):
+        if fs.exists(path=path) or fs.is_link(path=path):
             raise exceptions.FileExists(path)
 
-        path = self.realpath(path=path)
+        path = fs.realpath(path=path)
         parent = path.parent()
         contents = self._tree.get(parent)
         if contents is None:
@@ -31,10 +31,10 @@ class _State(object):
         self._tree = self._tree.set(parent, contents.set(path, file))
         return file
 
-    def open_file(self, path, mode):
+    def open_file(self, fs, path, mode):
         mode = common._parse_mode(mode)
 
-        path = self.realpath(path=path)
+        path = fs.realpath(path=path)
 
         parent = path.parent()
         contents = self._tree.get(parent)
@@ -72,7 +72,7 @@ class _State(object):
 
             return file
 
-    def remove_file(self, path):
+    def remove_file(self, fs, path):
         parent = path.parent()
         contents = self._tree.get(parent)
         if contents is None:
@@ -83,18 +83,18 @@ class _State(object):
 
         self._tree = self._tree.set(parent, contents.remove(path))
 
-    def create_directory(self, path):
-        if self.exists(path=path):
+    def create_directory(self, fs, path):
+        if fs.exists(path=path):
             raise exceptions.FileExists(path)
 
         parent = path.parent()
-        if not self.exists(path=parent):
+        if not fs.exists(path=parent):
             raise exceptions.FileNotFound(parent)
 
         self._tree = self._tree.set(path, pmap())
 
-    def list_directory(self, path):
-        if self.is_file(path=path):
+    def list_directory(self, fs, path):
+        if fs.is_file(path=path):
             raise exceptions.NotADirectory(path)
         elif path not in self._tree:
             raise exceptions.FileNotFound(path)
@@ -106,70 +106,64 @@ class _State(object):
             and subdirectory != path
         )
 
-    def remove_empty_directory(self, path):
-        if self.list_directory(path=path):
+    def remove_empty_directory(self, fs, path):
+        if fs.list_directory(path=path):
             raise exceptions.DirectoryNotEmpty(path)
-        self.remove(path=path)
+        self._tree = self._tree.remove(path)
 
-    def temporary_directory(self):
+    def temporary_directory(self, fs):
         # TODO: Maybe this isn't good enough.
         directory = Path(uuid4().hex)
-        self.create_directory(path=directory)
+        fs.create_directory(path=directory)
         return directory
 
-    def remove(self, path):
-        if self.is_link(path=path):
+    def remove(self, fs, path):
+        if fs.is_link(path=path):
             self._links = self._links.remove(path)
         elif path not in self._tree:
             raise exceptions.FileNotFound(path)
-        else:
-            self._tree = self._tree.remove(path)
 
-    def link(self, source, to):
-        if self.exists(path=to) or self.is_link(path=to):
+    def link(self, fs, source, to):
+        if fs.exists(path=to) or fs.is_link(path=to):
             raise exceptions.FileExists(to)
-        self._tree = self._tree_with(path=to)
+        self._tree = self._tree_with(fs=fs, path=to)
         self._links = self._links.set(to, source)
 
-    def readlink(self, path):
+    def readlink(self, fs, path):
         value = self._links.get(path)
         if value is None:
-            if self.exists(path=path):
+            if self._exists(path=path):
                 raise exceptions.NotASymlink(path)
             else:
                 raise exceptions.FileNotFound(path)
         return value
 
-    def realpath(self, path):
-        real = Path.root()
-        for segment in path.segments:
-            seen = current, = {real.descendant(segment)}
-            while self.is_link(path=current):
-                current = self._links[current].relative_to(current.parent())
-                if current in seen:
-                    raise exceptions.SymbolicLoop(current)
-                seen.add(current)
-            real = current
-        return real
+    def exists(self, fs, path):
+        return fs.is_file(path=path) or fs.is_dir(path=path)
 
-    def exists(self, path):
-        return self.is_file(path=path) or self.is_dir(path=path)
+    def is_dir(self, fs, path):
+        return self._is_dir(path=fs.realpath(path=path))
 
-    def is_dir(self, path):
-        return self.realpath(path=path) in self._tree
+    def is_file(self, fs, path):
+        return self._is_file(path=fs.realpath(path=path))
 
-    def is_file(self, path):
-        real = self.realpath(path=path)
-        return real in self._tree.get(real.parent(), pmap())
+    def _exists(self, path):
+        return self._is_file(path=path) or self._is_dir(path=path)
 
-    def is_link(self, path):
+    def _is_dir(self, path):
+        return path in self._tree
+
+    def _is_file(self, path):
+        return path in self._tree.get(path.parent(), pmap())
+
+    def is_link(self, fs, path):
         return path in self._links
 
-    def _tree_with(self, path):
+    def _tree_with(self, fs, path):
         parent = path.parent()
-        if not self.exists(path=parent):
+        if not fs.exists(path=parent):
             raise exceptions.FileNotFound(parent)
-        elif not self.is_dir(path=parent):
+        elif not fs.is_dir(path=parent):
             raise exceptions.NotADirectory(parent)
         return self._tree.set(parent, self._tree[parent].set(path, None))
 
@@ -200,9 +194,9 @@ def FS():
 
 def _fs(fn):
     """
-    Eat the filesystem argument.
+    Bind a function to pass along the filesystem itself.
     """
-    return lambda fs, *args, **kwargs: fn(*args, **kwargs)
+    return lambda fs, *args, **kwargs: fn(fs, *args, **kwargs)
 
 
 class _BytesIOIsTerrible(BytesIO):
