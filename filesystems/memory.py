@@ -179,32 +179,30 @@ def FS():
     state = _State()
     return common.create(
         name="MemoryFS",
-        create_file=lambda fs, *args, **kw: state.create_file(*args, **kw),
-        open_file=lambda fs, *args, **kw: state.open_file(*args, **kw),
-        remove_file=lambda fs, *args, **kw: state.remove_file(*args, **kw),
+        create_file=_fs(state.create_file),
+        open_file=_fs(state.open_file),
+        remove_file=_fs(state.remove_file),
 
-        create_directory=(
-            lambda fs, *args, **kw: state.create_directory(*args, **kw)
-        ),
-        list_directory=(
-            lambda fs, *args, **kw: state.list_directory(*args, **kw)
-        ),
-        remove_empty_directory=(
-            lambda fs, *args, **kw: state.remove_empty_directory(*args, **kw)
-        ),
-        temporary_directory=(
-            lambda fs, *args, **kw: state.temporary_directory(*args, **kw)
-        ),
+        create_directory=_fs(state.create_directory),
+        list_directory=_fs(state.list_directory),
+        remove_empty_directory=_fs(state.remove_empty_directory),
+        temporary_directory=_fs(state.temporary_directory),
 
-        link=lambda fs, *args, **kw: state.link(*args, **kw),
-        readlink=lambda fs, *args, **kw: state.readlink(*args, **kw),
-        realpath=lambda fs, *args, **kw: state.realpath(*args, **kw),
+        link=_fs(state.link),
+        readlink=_fs(state.readlink),
 
-        exists=lambda fs, *args, **kw: state.exists(*args, **kw),
-        is_dir=lambda fs, *args, **kw: state.is_dir(*args, **kw),
-        is_file=lambda fs, *args, **kw: state.is_file(*args, **kw),
-        is_link=lambda fs, *args, **kw: state.is_link(*args, **kw),
+        exists=_fs(state.exists),
+        is_dir=_fs(state.is_dir),
+        is_file=_fs(state.is_file),
+        is_link=_fs(state.is_link),
     )()
+
+
+def _fs(fn):
+    """
+    Eat the filesystem argument.
+    """
+    return lambda fs, *args, **kwargs: fn(*args, **kwargs)
 
 
 class _BytesIOIsTerrible(BytesIO):
