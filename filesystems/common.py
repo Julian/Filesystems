@@ -70,8 +70,6 @@ def create(
 
     realpath=_realpath,
     remove=_recursive_remove,
-
-    state=lambda: None,
 ):
     """
     Create a new kind of filesystem.
@@ -81,8 +79,6 @@ def create(
     return attr.s(hash=True)(
         type(
             name, (object,), dict(
-                _state=attr.ib(default=attr.Factory(state), repr=False),
-
                 create=create_file,
                 open=lambda fs, path, mode="r": open_file(
                     fs=fs, path=path, mode=mode,

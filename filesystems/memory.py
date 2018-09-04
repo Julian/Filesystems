@@ -13,7 +13,6 @@ class _State(object):
     The state of a memory filesystem.
 
     Includes its file contents and tree state.
-
     """
 
     _tree = pmap([(Path.root(), pmap())])
@@ -175,36 +174,37 @@ class _State(object):
         return self._tree.set(parent, self._tree[parent].set(path, None))
 
 
-FS = common.create(
-    name="MemoryFS",
-    state=_State,
+@staticmethod
+def FS():
+    state = _State()
+    return common.create(
+        name="MemoryFS",
+        create_file=lambda fs, *args, **kw: state.create_file(*args, **kw),
+        open_file=lambda fs, *args, **kw: state.open_file(*args, **kw),
+        remove_file=lambda fs, *args, **kw: state.remove_file(*args, **kw),
 
-    create_file=lambda fs, *args, **kw: fs._state.create_file(*args, **kw),
-    open_file=lambda fs, *args, **kw: fs._state.open_file(*args, **kw),
-    remove_file=lambda fs, *args, **kw: fs._state.remove_file(*args, **kw),
+        create_directory=(
+            lambda fs, *args, **kw: state.create_directory(*args, **kw)
+        ),
+        list_directory=(
+            lambda fs, *args, **kw: state.list_directory(*args, **kw)
+        ),
+        remove_empty_directory=(
+            lambda fs, *args, **kw: state.remove_empty_directory(*args, **kw)
+        ),
+        temporary_directory=(
+            lambda fs, *args, **kw: state.temporary_directory(*args, **kw)
+        ),
 
-    create_directory=(
-        lambda fs, *args, **kw: fs._state.create_directory(*args, **kw)
-    ),
-    list_directory=(
-        lambda fs, *args, **kw: fs._state.list_directory(*args, **kw)
-    ),
-    remove_empty_directory=(
-        lambda fs, *args, **kw: fs._state.remove_empty_directory(*args, **kw)
-    ),
-    temporary_directory=(
-        lambda fs, *args, **kw: fs._state.temporary_directory(*args, **kw)
-    ),
+        link=lambda fs, *args, **kw: state.link(*args, **kw),
+        readlink=lambda fs, *args, **kw: state.readlink(*args, **kw),
+        realpath=lambda fs, *args, **kw: state.realpath(*args, **kw),
 
-    link=lambda fs, *args, **kw: fs._state.link(*args, **kw),
-    readlink=lambda fs, *args, **kw: fs._state.readlink(*args, **kw),
-    realpath=lambda fs, *args, **kw: fs._state.realpath(*args, **kw),
-
-    exists=lambda fs, *args, **kw: fs._state.exists(*args, **kw),
-    is_dir=lambda fs, *args, **kw: fs._state.is_dir(*args, **kw),
-    is_file=lambda fs, *args, **kw: fs._state.is_file(*args, **kw),
-    is_link=lambda fs, *args, **kw: fs._state.is_link(*args, **kw),
-)
+        exists=lambda fs, *args, **kw: state.exists(*args, **kw),
+        is_dir=lambda fs, *args, **kw: state.is_dir(*args, **kw),
+        is_file=lambda fs, *args, **kw: state.is_file(*args, **kw),
+        is_link=lambda fs, *args, **kw: state.is_link(*args, **kw),
+    )()
 
 
 class _BytesIOIsTerrible(BytesIO):
