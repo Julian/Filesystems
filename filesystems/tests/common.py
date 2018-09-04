@@ -616,6 +616,30 @@ class TestFS(object):
         source = tempdir.descendant("source")
         self.assertEqual(fs.realpath(source), source)
 
+    def test_realpath_double_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        # /1 -> /0/1
+        # /1/3 -> /1/2/3
+        # realpath(/1/3) == /0/1/2/3
+
+        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        two = one.descendant("2")
+        fs.create_directory(path=zero)
+        fs.create_directory(path=zero.descendant("1"))
+        fs.link(source=zero.descendant("1"), to=one)
+        fs.create_directory(path=two)
+        fs.create_directory(path=two.descendant("3"))
+        fs.link(source=two.descendant("3"), to=one.descendant("3"))
+
+        self.assertEqual(
+            fs.realpath(one.descendant("3")),
+            zero.descendant("1", "2", "3"),
+        )
+
     def test_remove_does_not_follow_directory_links(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
