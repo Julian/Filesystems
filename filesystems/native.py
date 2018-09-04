@@ -104,29 +104,6 @@ def _readlink(fs, path):
         return Path.from_string(value)
 
 
-def _realpath(fs, path):
-    """
-    .. warning::
-
-        The ``os.path`` module's realpath does not error or warn about
-        loops, but we do, following the behavior of GNU ``realpath(1)``!
-
-    """
-
-    real = Path.root()
-    for segment in path.segments:
-        seen = current, = {str(real.descendant(segment))}
-        while fs.is_link(current):
-            current = os.path.join(
-                os.path.dirname(current), os.readlink(current),
-            )
-            if current in seen:
-                raise exceptions.SymbolicLoop(current)
-            seen.add(current)
-        real = Path.from_string(current)
-    return real
-
-
 FS = common.create(
     name="NativeFS",
 
@@ -141,7 +118,6 @@ FS = common.create(
 
     link=_link,
     readlink=_readlink,
-    realpath=_realpath,
 
     exists=lambda fs, path: os.path.exists(str(path)),
     is_dir=lambda fs, path: os.path.isdir(str(path)),

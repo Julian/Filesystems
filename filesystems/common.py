@@ -4,18 +4,42 @@ import sys
 from pyrsistent import pset
 import attr
 
-from filesystems import exceptions
+from filesystems import Path, exceptions
 
 
 _PY3 = sys.version_info[0] >= 3
 
 
+def _realpath(fs, path):
+    """
+    .. warning::
+
+        The ``os.path`` module's realpath does not error or warn about
+        loops, but we do, following the behavior of GNU ``realpath(1)``!
+
+    """
+
+    real = Path.root()
+    for segment in path.segments:
+        current = real.descendant(segment)
+        seen = {current}
+        while True:
+            try:
+                current = fs.readlink(current).relative_to(current.parent())
+            except exceptions._FileSystemError:
+                break
+            else:
+                if current in seen:
+                    raise exceptions.SymbolicLoop(current)
+                seen.add(current)
+        real = current
+    return real
+
+
 def _recursive_remove(fs, path):
     """
     A recursive, non-atomic directory removal.
-
     """
-
     if not fs.is_link(path=path) and fs.is_dir(path=path):
         for child in fs.children(path=path):
             _recursive_remove(fs=fs, path=child)
@@ -38,13 +62,13 @@ def create(
 
     link,
     readlink,
-    realpath,
 
     exists,
     is_dir,
     is_file,
     is_link,
 
+    realpath=_realpath,
     remove=_recursive_remove,
 
     state=lambda: None,
