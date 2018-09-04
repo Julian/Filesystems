@@ -3,7 +3,8 @@ import os
 
 from pyrsistent import s
 
-from filesystems import Path, exceptions, common
+from filesystems import Path, exceptions
+from filesystems.common import _PY3
 from filesystems._path import RelativePath
 
 
@@ -1090,7 +1091,7 @@ class TestOpenFile(object):
             "native",
             {
                 "expected": "some things!",
-                "bytes": lambda c: c.encode() if common._PY3 else c,
+                "bytes": lambda c: c.encode() if _PY3 else c,
                 "mode": "r",
             },
         ),
@@ -1152,7 +1153,7 @@ class TestWriteLines:
         (
             "native",
             {
-                "to_write": lambda text: text if common._PY3 else text.encode(),
+                "to_write": lambda text: text if _PY3 else text.encode(),
                 "mode": "a",
             },
         ),
