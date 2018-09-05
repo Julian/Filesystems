@@ -248,6 +248,29 @@ class TestFS(object):
             ),
         )
 
+    def test_link_directory_link_child(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        fs.create_directory(path=zero)
+        fs.link(source=zero, to=one)
+
+        fs.create_directory(path=zero.descendant("2"))
+        three = one.descendant("3")
+        fs.link(source=one.descendant("2"), to=three)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=three),
+                is_dir=fs.is_dir(path=three),
+                is_file=fs.is_file(path=three),
+                is_link=fs.is_link(path=three),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=True),
+        )
+
     def test_link_nonexisting_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
