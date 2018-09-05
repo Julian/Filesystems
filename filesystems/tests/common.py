@@ -731,6 +731,29 @@ class TestFS(object):
             os.strerror(errno.ENOENT) + ": " + str(directory.parent()),
         )
 
+    def test_create_directory_link_child(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        fs.create_directory(path=zero)
+        fs.create_directory(path=zero.descendant("1"))
+        fs.link(source=zero.descendant("1"), to=one)
+
+        two = one.descendant("2")
+        fs.create_directory(path=two)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=two),
+                is_dir=fs.is_dir(path=two),
+                is_file=fs.is_file(path=two),
+                is_link=fs.is_link(path=two),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=False),
+        )
+
     def test_remove_empty_directory(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()

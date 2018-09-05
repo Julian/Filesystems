@@ -91,7 +91,7 @@ class _State(object):
         if not fs.exists(path=parent):
             raise exceptions.FileNotFound(parent)
 
-        self._tree = self._tree.set(path, pmap())
+        self._tree = self._tree.set(fs.realpath(path=path), pmap())
 
     def list_directory(self, fs, path):
         if fs.is_file(path=path):
