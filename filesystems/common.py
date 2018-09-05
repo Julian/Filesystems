@@ -25,10 +25,11 @@ def _realpath(fs, path):
         seen = {current}
         while True:
             try:
-                current = fs.readlink(current).relative_to(current.parent())
+                current = fs.readlink(current)
             except exceptions._FileSystemError:
                 break
             else:
+                current = current.relative_to(real)
                 if current in seen:
                     raise exceptions.SymbolicLoop(current)
                 seen.add(current)
