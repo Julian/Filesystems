@@ -126,7 +126,15 @@ class _State(object):
     def link(self, fs, source, to):
         if fs.exists(path=to) or fs.is_link(path=to):
             raise exceptions.FileExists(to)
-        self._tree = self._tree_with(fs=fs, path=to)
+
+        real = fs.realpath(to)
+        parent = real.parent()
+        if not fs.exists(path=parent):
+            raise exceptions.FileNotFound(parent)
+        elif not fs.is_dir(path=parent):
+            raise exceptions.NotADirectory(parent)
+
+        self._tree = self._tree.set(parent, self._tree[parent].set(real, None))
         self._links = self._links.set(to, source)
 
     def readlink(self, fs, path):
@@ -158,14 +166,6 @@ class _State(object):
 
     def is_link(self, fs, path):
         return path in self._links
-
-    def _tree_with(self, fs, path):
-        parent = path.parent()
-        if not fs.exists(path=parent):
-            raise exceptions.FileNotFound(parent)
-        elif not fs.is_dir(path=parent):
-            raise exceptions.NotADirectory(parent)
-        return self._tree.set(parent, self._tree[parent].set(path, None))
 
 
 @staticmethod

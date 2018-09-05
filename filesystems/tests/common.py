@@ -754,6 +754,34 @@ class TestFS(object):
             dict(exists=True, is_dir=True, is_file=False, is_link=False),
         )
 
+    def test_link_link_child(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        fs.create_directory(path=zero)
+        fs.create_directory(path=zero.descendant("1"))
+        fs.link(source=zero.descendant("1"), to=one)
+
+        two = one.descendant("2")
+        fs.create_directory(path=two)
+
+        three, four = two.descendant("3"), two.descendant("4")
+        fs.touch(three)
+
+        fs.link(source=two.descendant("3"), to=two.descendant("4"))
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=four),
+                is_dir=fs.is_dir(path=four),
+                is_file=fs.is_file(path=four),
+                is_link=fs.is_link(path=four),
+            ),
+            dict(exists=True, is_dir=False, is_file=True, is_link=True),
+        )
+
     def test_remove_empty_directory(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
