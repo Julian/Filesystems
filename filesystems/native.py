@@ -75,6 +75,8 @@ def _remove_empty_directory(fs, path):
             raise exceptions.DirectoryNotEmpty(path)
         elif error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path)
         raise
 
 

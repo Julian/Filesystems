@@ -110,6 +110,8 @@ class _State(object):
     def remove_empty_directory(self, fs, path):
         if fs.list_directory(path=path):
             raise exceptions.DirectoryNotEmpty(path)
+        elif path not in self._tree:
+            raise exceptions.NotADirectory(path)
         self._tree = self._tree.remove(path)
 
     def temporary_directory(self, fs):
