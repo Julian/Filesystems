@@ -96,14 +96,15 @@ class _State(object):
     def list_directory(self, fs, path):
         if fs.is_file(path=path):
             raise exceptions.NotADirectory(path)
-        elif path not in self._tree:
+        elif not fs.is_dir(path=path):
             raise exceptions.FileNotFound(path)
 
         # FIXME: Inefficient
-        return pset(child.basename() for child in self._tree[path]) | pset(
+        real = fs.realpath(path=path)
+        return pset(child.basename() for child in self._tree[real]) | pset(
             subdirectory.basename() for subdirectory in self._tree
-            if subdirectory.parent() == path
-            and subdirectory != path
+            if subdirectory.parent() == real
+            and subdirectory != real
         )
 
     def remove_empty_directory(self, fs, path):

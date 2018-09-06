@@ -959,6 +959,24 @@ class TestFS(object):
             os.strerror(errno.ENOENT) + ": " + str(directory),
         )
 
+    def test_list_directory_link_child(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        # /1 -> /0/1
+        # /1/3 -> /1/2/3
+        # realpath(/1/3) == /0/1/2/3
+
+        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        two = one.descendant("2")
+        fs.create_directory(path=zero)
+        fs.create_directory(path=zero.descendant("1"))
+        fs.link(source=zero.descendant("1"), to=one)
+        fs.create_directory(path=two)
+        fs.create_directory(path=two.descendant("3"))
+        self.assertEqual(fs.list_directory(two), s("3"))
+
     def test_list_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
