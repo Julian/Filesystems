@@ -996,7 +996,7 @@ class TestFS(object):
         fs.link(source=zero.descendant("1"), to=one)
         fs.create_directory(path=two)
         fs.create_directory(path=two.descendant("3"))
-        self.assertEqual(fs.list_directory(two), s("3"))
+        self.assertEqual(set(fs.list_directory(two)), {"3"})
 
     def test_list_file(self):
         fs = self.FS()
