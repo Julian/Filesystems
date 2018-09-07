@@ -793,7 +793,7 @@ class TestFS(object):
         three, four = two.descendant("3"), two.descendant("4")
         fs.touch(three)
 
-        fs.link(source=two.descendant("3"), to=two.descendant("4"))
+        fs.link(source=three, to=four)
 
         self.assertEqual(
             dict(
@@ -1169,6 +1169,30 @@ class TestFS(object):
         fs.link(source=source, to=to)
 
         self.assertEqual(fs.readlink(to), source)
+
+    def test_readlink_child_link_from_source(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        # /1 -> /0/1
+        # /1/3 -> /1/2/3
+        # readlink(/0/1/3) == /1/2/3
+
+        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        two = one.descendant("2")
+        fs.create_directory(path=zero)
+        fs.create_directory(path=zero.descendant("1"))
+        fs.link(source=zero.descendant("1"), to=one)
+        fs.create_directory(path=two)
+        fs.create_directory(path=two.descendant("3"))
+        fs.link(source=two.descendant("3"), to=one.descendant("3"))
+
+        self.assertEqual(
+            fs.readlink(zero.descendant("1", "3")),
+            two.descendant("3"),
+        )
 
 
 class TestInvalidMode(object):
