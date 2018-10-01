@@ -130,6 +130,12 @@ class TestPath(TestCase):
     def test_root_dirname(self):
         self.assertEqual(Path().dirname(), os.sep)
 
+    def test_repr(self):
+        self.assertEqual(
+            repr(Path("a", "b", "c")),
+            "<Path /a/b/c>"
+        )
+
 
 class TestRelativePath(TestCase):
     def test_relative_to(self):
@@ -141,4 +147,10 @@ class TestRelativePath(TestCase):
     def test_str(self):
         self.assertEqual(
             str(RelativePath("a", "b", "c")), os.path.join("a", "b", "c"),
+        )
+
+    def test_repr(self):
+        self.assertEqual(
+            repr(RelativePath("a", "b", "c")),
+            "<Path a/b/c>"
         )
