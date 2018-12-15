@@ -1290,7 +1290,7 @@ class TestOpenAppendNonExistingFile(object):
             self.assertEqual(g.read(), u"some things!")
 
 
-class TestWriteLines:
+class TestWriteLines(object):
     scenarios = [
         (
             "bytes",
