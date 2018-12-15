@@ -7,6 +7,21 @@ import attr
 from filesystems import Path, common, exceptions
 
 
+class _BytesIOIsTerrible(BytesIO):
+    def __repr__(self):
+        return "<BytesIOIsTerrible contents={!r}>".format(self.bytes)
+
+    def close(self):
+        self._hereismyvalue = self.getvalue()
+        super(_BytesIOIsTerrible, self).close()
+
+    @property
+    def bytes(self):
+        if self.closed:
+            return self._hereismyvalue
+        return self.getvalue()
+
+
 @attr.s(hash=True)
 class _State(object):
     """
@@ -54,7 +69,7 @@ class _State(object):
             combined = _BytesIOIsTerrible()
 
             if file is not None:
-                combined.write(file._hereismyvalue)
+                combined.write(file.bytes)
 
             self._tree = self._tree.set(parent, contents.set(path, combined))
 
@@ -65,7 +80,7 @@ class _State(object):
         elif file is None:
             raise exceptions.FileNotFound(path)
         else:
-            file = _BytesIOIsTerrible(file._hereismyvalue)
+            file = _BytesIOIsTerrible(file.bytes)
 
             if mode.text:
                 file = TextIOWrapper(file)
@@ -200,9 +215,3 @@ def _fs(fn):
     Bind a function to pass along the filesystem itself.
     """
     return lambda fs, *args, **kwargs: fn(fs, *args, **kwargs)
-
-
-class _BytesIOIsTerrible(BytesIO):
-    def close(self):
-        self._hereismyvalue = self.getvalue()
-        super(_BytesIOIsTerrible, self).close()
