@@ -8,6 +8,7 @@ from filesystems.tests.common import (
     InvalidModeMixin,
     OpenFileMixin,
     OpenAppendNonExistingFileMixin,
+    OpenWriteNonExistingFileMixin,
     WriteLinesMixin,
 )
 
@@ -36,6 +37,13 @@ class TestMemoryInvalidMode(InvalidModeMixin, TestCase):
 
 
 class TestMemoryOpenFile(OpenFileMixin, TestCase):
+    FS = memory.FS
+
+
+class TestMemoryOpenWriteNonExistingFile(
+    OpenWriteNonExistingFileMixin,
+    TestCase,
+):
     FS = memory.FS
 
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import errno
 import os
 
@@ -1273,12 +1274,33 @@ class OpenFileMixin(object):
 
 
 @with_scenarios()
+class OpenWriteNonExistingFileMixin(object):
+
+    scenarios = [
+        ("bytes", dict(contents=b"שלום", mode="wb")),
+        ("native", dict(contents="שלום", mode="w")),
+        ("text", dict(contents=u"שלום", mode="wt")),
+    ]
+
+    def test_open_write_non_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir.descendant("unittesting"), self.mode) as f:
+            f.write(self.contents)
+
+        with fs.open(tempdir.descendant("unittesting")) as g:
+            self.assertEqual(g.read(), "שלום")
+
+
+@with_scenarios()
 class OpenAppendNonExistingFileMixin(object):
 
     scenarios = [
-        ("bytes", {"first": b"some ", "second": b"things!", "mode": "ab"}),
-        ("native", {"first": "some ", "second": "things!", "mode": "a"}),
-        ("text", {"first": u"some ", "second": u"things!", "mode": "at"}),
+        ("bytes", dict(first=b"some ", second=b"things!", mode="ab")),
+        ("native", dict(first="some ", second="things!", mode="a")),
+        ("text", dict(first=u"some ", second=u"things!", mode="at")),
     ]
 
     def test_open_append_non_existing_file(self):
@@ -1293,7 +1315,7 @@ class OpenAppendNonExistingFileMixin(object):
             f.write(self.second)
 
         with fs.open(tempdir.descendant("unittesting")) as g:
-            self.assertEqual(g.read(), u"some things!")
+            self.assertEqual(g.read(), "some things!")
 
 
 @with_scenarios()

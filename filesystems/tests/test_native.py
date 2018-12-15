@@ -6,6 +6,7 @@ from filesystems.tests.common import (
     InvalidModeMixin,
     OpenFileMixin,
     OpenAppendNonExistingFileMixin,
+    OpenWriteNonExistingFileMixin,
     WriteLinesMixin,
 )
 
@@ -22,6 +23,11 @@ class TestNativeOpenFile(OpenFileMixin, TestCase):
     FS = native.FS
 
 
+class TestNativeOpenWriteNonExistingFile(
+    OpenWriteNonExistingFileMixin,
+    TestCase,
+):
+    FS = native.FS
 
 
 class TestNativeOpenAppendNonExistingFile(
