@@ -22,170 +22,6 @@ class _BytesIOIsTerrible(BytesIO):
         return self.getvalue()
 
 
-@attr.s(hash=True)
-class _State(object):
-    """
-    The state of a memory filesystem.
-
-    Includes its file contents and tree state.
-    """
-
-    _tree = pmap([(Path.root(), pmap())])
-    _links = pmap()
-
-    def create_file(self, fs, path):
-        if fs.exists(path=path) or fs.is_link(path=path):
-            raise exceptions.FileExists(path)
-
-        path = fs.realpath(path=path)
-        parent = path.parent()
-        contents = self._tree.get(parent)
-        if contents is None:
-            raise exceptions.FileNotFound(path)
-        file = _BytesIOIsTerrible()
-        self._tree = self._tree.set(parent, contents.set(path, file))
-        return file
-
-    def open_file(self, fs, path, mode):
-        mode = common._parse_mode(mode)
-
-        path = fs.realpath(path=path)
-
-        parent = path.parent()
-        contents = self._tree.get(parent)
-        if contents is None:
-            raise exceptions.FileNotFound(path)
-
-        if mode.write:
-            file = _BytesIOIsTerrible()
-            self._tree = self._tree.set(parent, contents.set(path, file))
-            if mode.text:
-                file = TextIOWrapper(file)
-            return file
-
-        file = contents.get(path)
-
-        if mode.append:
-            combined = _BytesIOIsTerrible()
-
-            if file is not None:
-                combined.write(file.bytes)
-
-            self._tree = self._tree.set(parent, contents.set(path, combined))
-
-            if mode.text:
-                combined = TextIOWrapper(combined)
-
-            return combined
-        elif file is None:
-            raise exceptions.FileNotFound(path)
-        else:
-            file = _BytesIOIsTerrible(file.bytes)
-
-            if mode.text:
-                file = TextIOWrapper(file)
-
-            return file
-
-    def remove_file(self, fs, path):
-        parent = path.parent()
-        contents = self._tree.get(parent)
-        if contents is None:
-            raise exceptions.FileNotFound(path)
-
-        if path not in contents:
-            raise exceptions.FileNotFound(path)
-
-        self._tree = self._tree.set(parent, contents.remove(path))
-
-    def create_directory(self, fs, path):
-        if fs.exists(path=path):
-            raise exceptions.FileExists(path)
-
-        parent = path.parent()
-        if not fs.exists(path=parent):
-            raise exceptions.FileNotFound(parent)
-
-        self._tree = self._tree.set(fs.realpath(path=path), pmap())
-
-    def list_directory(self, fs, path):
-        if fs.is_file(path=path):
-            raise exceptions.NotADirectory(path)
-        elif not fs.is_dir(path=path):
-            raise exceptions.FileNotFound(path)
-
-        # FIXME: Inefficient
-        real = fs.realpath(path=path)
-        return pset(child.basename() for child in self._tree[real]) | pset(
-            subdirectory.basename() for subdirectory in self._tree
-            if subdirectory.parent() == real
-            and subdirectory != real
-        )
-
-    def remove_empty_directory(self, fs, path):
-        if fs.list_directory(path=path):
-            raise exceptions.DirectoryNotEmpty(path)
-        elif path not in self._tree:
-            raise exceptions.NotADirectory(path)
-        self._tree = self._tree.remove(path)
-
-    def temporary_directory(self, fs):
-        # TODO: Maybe this isn't good enough.
-        directory = Path(uuid4().hex)
-        fs.create_directory(path=directory)
-        return directory
-
-    def remove(self, fs, path):
-        if fs.is_link(path=path):
-            self._links = self._links.remove(path)
-        elif path not in self._tree:
-            raise exceptions.FileNotFound(path)
-
-    def link(self, fs, source, to):
-        if fs.exists(path=to) or fs.is_link(path=to):
-            raise exceptions.FileExists(to)
-
-        real = fs.realpath(to)
-        parent = real.parent()
-        if not fs.exists(path=parent):
-            raise exceptions.FileNotFound(parent)
-        elif not fs.is_dir(path=parent):
-            raise exceptions.NotADirectory(parent)
-
-        self._tree = self._tree.set(parent, self._tree[parent].set(real, None))
-        self._links = self._links.set(to, source)
-
-    def readlink(self, fs, path):
-        value = self._links.get(path)
-        if value is None:
-            if self._exists(path=path):
-                raise exceptions.NotASymlink(path)
-            else:
-                raise exceptions.FileNotFound(path)
-        return value
-
-    def exists(self, fs, path):
-        return fs.is_file(path=path) or fs.is_dir(path=path)
-
-    def is_dir(self, fs, path):
-        return self._is_dir(path=fs.realpath(path=path))
-
-    def is_file(self, fs, path):
-        return self._is_file(path=fs.realpath(path=path))
-
-    def _exists(self, path):
-        return self._is_file(path=path) or self._is_dir(path=path)
-
-    def _is_dir(self, path):
-        return path in self._tree
-
-    def _is_file(self, path):
-        return path in self._tree.get(path.parent(), pmap())
-
-    def is_link(self, fs, path):
-        return path in self._links
-
-
 @staticmethod
 def FS():
     state = _State()
@@ -212,6 +48,410 @@ def FS():
 
 def _fs(fn):
     """
-    Bind a function to pass along the filesystem itself.
+    Eat the fs argument.
     """
-    return lambda fs, *args, **kwargs: fn(fs, *args, **kwargs)
+    return lambda fs, *args, **kwargs: fn(*args, **kwargs)
+
+
+@attr.s(hash=True)
+class _File(object):
+    """
+    A file.
+    """
+
+    _name = attr.ib()
+    _parent = attr.ib(repr=False)
+    _contents = attr.ib(factory=_BytesIOIsTerrible)
+
+    def __getitem__(self, name):
+        return _FileChild(parent=self._parent)
+
+    def create_directory(self, path):
+        raise exceptions.FileExists(path)
+
+    def list_directory(self, path):
+        raise exceptions.NotADirectory(path)
+
+    def remove_empty_directory(self, path):
+        raise exceptions.NotADirectory(path)
+
+    def create_file(self, path):
+        raise exceptions.FileExists(path)
+
+    def open_file(self, path, mode):
+        if mode.read:
+            file = _BytesIOIsTerrible(self._contents.bytes)
+        elif mode.write:
+            self._contents = _BytesIOIsTerrible()
+            file = self._contents
+        else:
+            original, self._contents = self._contents, _BytesIOIsTerrible()
+            self._contents.write(original.bytes)
+            file = self._contents
+
+        if mode.text:
+            return TextIOWrapper(file)
+        return file
+
+    def remove_file(self, path):
+        del self._parent[self._name]
+
+    def link(self, source, to, state):
+        raise exceptions.FileExists(to)
+
+    def readlink(self, path):
+        raise exceptions.NotASymlink(path)
+
+    def exists(self):
+        return True
+
+    def is_dir(self):
+        return False
+
+    def is_file(self):
+        return True
+
+    def is_link(self):
+        return False
+
+
+@attr.s(hash=True)
+class _FileChild(object):
+    """
+    The attempted "child" of a file, which well, shouldn't have children.
+    """
+
+    _parent = attr.ib()
+
+    def __getitem__(self, name):
+        return self
+
+    def create_directory(self, path):
+        raise exceptions.NotADirectory(path.parent())
+
+    def list_directory(self, path):
+        raise exceptions.NotADirectory(path)
+
+    def remove_empty_directory(self, path):
+        raise exceptions.NotADirectory(path)
+
+    def create_file(self, path):
+        raise exceptions.NotADirectory(path)
+
+    def open_file(self, path, mode):
+        raise exceptions.NotADirectory(path)
+
+    def remove_file(self, path):
+        raise exceptions.NotADirectory(path)
+
+    def link(self, source, to, state):
+        raise exceptions.NotADirectory(to.parent())
+
+    def readlink(self, path):
+        raise exceptions.NotADirectory(path)
+
+    def exists(self):
+        return False
+
+    def is_dir(self):
+        return False
+
+    def is_file(self):
+        return False
+
+    def is_link(self):
+        return False
+
+
+@attr.s(hash=True)
+class _Directory(object):
+    """
+    A directory.
+    """
+
+    _name = attr.ib()
+    _parent = attr.ib(repr=False)
+    _children = attr.ib(default=pmap())
+
+    @classmethod
+    def root(cls):
+        root = cls(name="", parent=None)
+        root._parent = root
+        return root
+
+    def __getitem__(self, name):
+        return self._children.get(
+            name,
+            _DirectoryChild(name=name, parent=self),
+        )
+
+    def __setitem__(self, name, node):
+        self._children = self._children.set(name, node)
+
+    def __delitem__(self, name):
+        self._children = self._children.remove(name)
+
+    def create_directory(self, path):
+        raise exceptions.FileExists(path)
+
+    def list_directory(self, path):
+        return pset(self._children)
+
+    def remove_empty_directory(self, path):
+        if self._children:
+            raise exceptions.DirectoryNotEmpty(path)
+        del self._parent[self._name]
+
+    def create_file(self, path):
+        raise exceptions.FileExists(path)
+
+    def open_file(self, path, mode):
+        raise exceptions.IsADirectory(path)
+
+    def remove_file(self, path):
+        raise exceptions.PermissionError(path)
+
+    def link(self, source, to, state):
+        raise exceptions.FileExists(to)
+
+    def readlink(self, path):
+        raise exceptions.NotASymlink(path)
+
+    def exists(self):
+        return True
+
+    def is_dir(self):
+        return True
+
+    def is_file(self):
+        return False
+
+    def is_link(self):
+        return False
+
+
+@attr.s(hash=True)
+class _DirectoryChild(object):
+    """
+    A node that doesn't exist, but is within an existing directory.
+
+    It therefore *could* exist if asked to create itself.
+    """
+
+    _name = attr.ib()
+    _parent = attr.ib(repr=False)
+
+    def __getitem__(self, name):
+        return _NO_SUCH_ENTRY
+
+    def create_directory(self, path):
+        self._parent[self._name] = _Directory(
+            name=self._name,
+            parent=self._parent,
+        )
+
+    def list_directory(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def remove_empty_directory(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def create_file(self, path):
+        file = self._parent[self._name] = _File(
+            name=self._name,
+            parent=self._parent,
+        )
+        return file.open_file(path=path, mode=common._FileMode(activity="w"))
+
+    def open_file(self, path, mode):
+        if mode.read:
+            raise exceptions.FileNotFound(path)
+        else:
+            file = self._parent[self._name] = _File(
+                name=self._name,
+                parent=self._parent,
+            )
+            return file.open_file(path=path, mode=mode)
+
+    def remove_file(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def link(self, source, to, state):
+        self._parent[self._name] = _Link(
+            name=self._name,
+            parent=self._parent,
+            source=source,
+            entry_at_source=lambda: state[source],
+        )
+
+    def readlink(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def exists(self):
+        return False
+
+    def is_dir(self):
+        return False
+
+    def is_file(self):
+        return False
+
+    def is_link(self):
+        return False
+
+
+@attr.s(hash=True)
+class _Link(object):
+
+    _name = attr.ib()
+    _parent = attr.ib(repr=False)
+    _source = attr.ib()
+    _entry_at_source = attr.ib(repr=False)
+
+    def __getitem__(self, name):
+        return self._entry_at_source()[name]
+
+    def create_directory(self, path):
+        raise exceptions.FileExists(path)
+
+    def list_directory(self, path):
+        return self._entry_at_source().list_directory(path=path)
+
+    def remove_empty_directory(self, path):
+        raise exceptions.NotADirectory(path)
+
+    def create_file(self, path):
+        raise exceptions.FileExists(path)
+
+    def open_file(self, path, mode):
+        return self._entry_at_source().open_file(path=path, mode=mode)
+
+    def remove_file(self, path):
+        del self._parent[self._name]
+
+    def link(self, source, to, state):
+        raise exceptions.FileExists(to)
+
+    def readlink(self, path):
+        return self._source
+
+    def exists(self):
+        return self._entry_at_source().exists()
+
+    def is_dir(self):
+        return self._entry_at_source().is_dir()
+
+    def is_file(self):
+        return self._entry_at_source().is_file()
+
+    def is_link(self):
+        return True
+
+
+@attr.s(hash=True)
+class _NoSuchEntry(object):
+    """
+    A non-existent node that also cannot be created.
+
+    It has no existing parent. What a shame.
+    """
+
+    def __getitem__(self, name):
+        return self
+
+    def create_directory(self, path):
+        raise exceptions.FileNotFound(path.parent())
+
+    def list_directory(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def remove_empty_directory(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def create_file(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def open_file(self, path, mode):
+        raise exceptions.FileNotFound(path)
+
+    def remove_file(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def link(self, source, to, state):
+        raise exceptions.FileNotFound(to.parent())
+
+    def readlink(self, path):
+        raise exceptions.FileNotFound(path)
+
+    def exists(self):
+        return False
+
+    def is_dir(self):
+        return False
+
+    def is_file(self):
+        return False
+
+    def is_link(self):
+        return False
+
+
+_NO_SUCH_ENTRY = _NoSuchEntry()
+
+
+@attr.s(hash=True)
+class _State(object):
+
+    _root = attr.ib(factory=_Directory.root)
+
+    def __getitem__(self, path):
+        """
+        Retrieve the Node at the given path.
+        """
+        node = self._root
+        for segment in path.segments:
+            node = node[segment]
+        return node
+
+    def create_directory(self, path):
+        self[path].create_directory(path=path)
+
+    def list_directory(self, path):
+        return self[path].list_directory(path=path)
+
+    def remove_empty_directory(self, path):
+        return self[path].remove_empty_directory(path=path)
+
+    def temporary_directory(self):
+        # TODO: Maybe this isn't good enough.
+        directory = Path(uuid4().hex)
+        self.create_directory(path=directory)
+        return directory
+
+    def create_file(self, path):
+        return self[path].create_file(path=path)
+
+    def open_file(self, path, mode):
+        mode = common._parse_mode(mode=mode)
+        return self[path].open_file(path=path, mode=mode)
+
+    def remove_file(self, path):
+        self[path].remove_file(path=path)
+
+    def link(self, source, to):
+        self[to].link(source=source, to=to, state=self)
+
+    def readlink(self, path):
+        return self[path].readlink(path=path)
+
+    def exists(self, path):
+        return self[path].exists()
+
+    def is_dir(self, path):
+        return self[path].is_dir()
+
+    def is_file(self, path):
+        return self[path].is_file()
+
+    def is_link(self, path):
+        return self[path].is_link()
