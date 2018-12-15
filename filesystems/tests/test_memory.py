@@ -1,15 +1,14 @@
 from unittest import TestCase
 
 from pyrsistent import s
-from testscenarios import TestWithScenarios
 
 from filesystems import Path, memory
 from filesystems.tests.common import (
     TestFS,
-    TestInvalidMode,
-    TestOpenFile,
-    TestOpenAppendNonExistingFile,
-    TestWriteLines,
+    InvalidModeMixin,
+    OpenFileMixin,
+    OpenAppendNonExistingFileMixin,
+    WriteLinesMixin,
 )
 
 
@@ -32,21 +31,20 @@ class TestMemory(TestFS, TestCase):
         self.assertFalse(self.FS().exists(Path("file")))
 
 
-class TestMemoryInvalidMode(TestWithScenarios, TestInvalidMode, TestCase):
+class TestMemoryInvalidMode(InvalidModeMixin, TestCase):
     FS = memory.FS
 
 
-class TestMemoryOpenFile(TestWithScenarios, TestOpenFile, TestCase):
+class TestMemoryOpenFile(OpenFileMixin, TestCase):
     FS = memory.FS
 
 
 class TestMemoryOpenAppendNonExistingFile(
-    TestWithScenarios,
-    TestOpenAppendNonExistingFile,
+    OpenAppendNonExistingFileMixin,
     TestCase,
 ):
     FS = memory.FS
 
 
-class TestMemoryWriteLines(TestWithScenarios, TestWriteLines, TestCase):
+class TestMemoryWriteLines(WriteLinesMixin, TestCase):
     FS = memory.FS

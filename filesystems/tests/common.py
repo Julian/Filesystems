@@ -2,6 +2,7 @@ import errno
 import os
 
 from pyrsistent import s
+from testscenarios import with_scenarios
 
 from filesystems import Path, exceptions
 from filesystems.common import _PY3
@@ -1207,7 +1208,9 @@ class TestFS(object):
         )
 
 
-class TestInvalidMode(object):
+@with_scenarios()
+class InvalidModeMixin(object):
+
     scenarios = [
         ("activity", {"mode": "z"}),
         ("mode", {"mode": "rz"}),
@@ -1226,7 +1229,8 @@ class TestInvalidMode(object):
                 pass
 
 
-class TestOpenFile(object):
+@with_scenarios()
+class OpenFileMixin(object):
     scenarios = [
         (
             "bytes",
@@ -1268,7 +1272,9 @@ class TestOpenFile(object):
             self.assertIsInstance(contents, type(self.expected))
 
 
-class TestOpenAppendNonExistingFile(object):
+@with_scenarios()
+class OpenAppendNonExistingFileMixin(object):
+
     scenarios = [
         ("bytes", {"first": b"some ", "second": b"things!", "mode": "ab"}),
         ("native", {"first": "some ", "second": "things!", "mode": "a"}),
@@ -1290,7 +1296,9 @@ class TestOpenAppendNonExistingFile(object):
             self.assertEqual(g.read(), u"some things!")
 
 
-class TestWriteLines(object):
+@with_scenarios()
+class WriteLinesMixin(object):
+
     scenarios = [
         (
             "bytes",
