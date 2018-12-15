@@ -28,14 +28,12 @@ environment:
       PYTHON: "C:\\Python36-x64"
 
 init:
-  - echo "TOXENV- %TOXENV%"
+  - echo "TOXENV - %TOXENV%"
 
 install:
-  - virtualenv -p "%PYTHON%\\python.exe" "%VENV%"
-  - "%VENV%\\Scripts\\activate"
-  - pip install -e .
-  - pip install tox
   - ps: Update-AppveyorBuild -Version "v$(python setup.py --version) b$Env:APPVEYOR_BUILD_NUMBER"
+  - virtualenv -p "%PYTHON%\\python.exe" "%VENV%"
+  - "%VENV%\\Scripts\\pip install tox"
 
 test_script:
-  - tox
+  - "%VENV%\\Scripts\\tox"
