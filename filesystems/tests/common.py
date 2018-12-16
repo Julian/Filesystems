@@ -883,7 +883,7 @@ class TestFS(object):
 
         self.assertEqual(
             str(e.exception),
-            os.strerror(errno.ENOENT) + ": " + str(child),
+            os.strerror(errno.ENOTDIR) + ": " + str(child),
         )
 
     def test_remove_empty_directory_but_its_a_link(self):
