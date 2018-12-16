@@ -969,7 +969,7 @@ class TestFS(object):
         fs.create_directory(path=child)
         self.assertTrue(fs.exists(path=child))
 
-        with self.assertRaises(exceptions.InsufficientPermissions) as e:
+        with self.assertRaises(exceptions.PermissionError) as e:
             fs.remove_file(path=child)
         self.assertEqual(
             str(e.exception),
@@ -986,7 +986,7 @@ class TestFS(object):
         fs.touch(child.descendant("grandchild"))
         self.assertTrue(fs.exists(path=child))
 
-        with self.assertRaises(exceptions.InsufficientPermissions) as e:
+        with self.assertRaises(exceptions.PermissionError) as e:
             fs.remove_file(path=child)
         self.assertEqual(
             str(e.exception),
