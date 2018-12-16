@@ -296,7 +296,7 @@ class TestFS(object):
             ),
         )
 
-    def test_link_existing(self):
+    def test_link_existing_link(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
