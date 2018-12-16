@@ -44,7 +44,7 @@ def _remove_file(fs, path):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
-        elif error.errno == exceptions.InsufficientPermissions.errno:
+        elif error.errno == exceptions.PermissionError.errno:
             raise exceptions.InsufficientPermissions(path)
         raise
 

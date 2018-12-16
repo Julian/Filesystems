@@ -39,11 +39,6 @@ class FileExists(_FileSystemError):
     message = os.strerror(errno)
 
 
-class InsufficientPermissions(_FileSystemError):
-    errno = errno.EPERM
-    message = os.strerror(errno)
-
-
 class IsADirectory(_FileSystemError):
     errno = errno.EISDIR
     message = os.strerror(errno)
@@ -61,6 +56,11 @@ class NotADirectory(_FileSystemError):
 
 class NotASymlink(_FileSystemError):
     errno = errno.EINVAL
+    message = os.strerror(errno)
+
+
+class PermissionError(_FileSystemError):
+    errno = errno.EPERM
     message = os.strerror(errno)
 
 
