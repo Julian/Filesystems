@@ -738,6 +738,22 @@ class TestFS(object):
             os.strerror(errno.EEXIST) + ": " + str(not_a_dir),
         )
 
+    def test_create_existing_directory_from_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        link = tempdir.descendant("link")
+        fs.link(source=tempdir, to=link)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.create_directory(path=link)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(link),
+        )
+
     def test_create_directory_parent_does_not_exist(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
