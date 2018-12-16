@@ -3,7 +3,7 @@ import errno
 import os
 
 from pyrsistent import s
-from testscenarios import with_scenarios
+from testscenarios import multiply_scenarios, with_scenarios
 
 from filesystems import Path, exceptions
 from filesystems.common import _PY3
@@ -161,22 +161,6 @@ class TestFS(object):
 
         self.assertEqual(
             str(e.exception), os.strerror(errno.EEXIST) + ": " + str(to),
-        )
-
-    def test_create_non_existing_nested_file(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        with self.assertRaises(exceptions.FileNotFound) as e:
-            fs.create(tempdir.descendant("unittesting", "file"))
-
-        self.assertEqual(
-            str(e.exception), (
-                os.strerror(errno.ENOENT) +
-                ": " +
-                str(tempdir.descendant("unittesting", "file"))
-            )
         )
 
     def test_remove(self):
@@ -1445,3 +1429,113 @@ class WriteLinesMixin(object):
 
         with fs.open(tempdir.descendant("unittesting")) as g:
             self.assertEqual(g.read(), text)
+
+
+@with_scenarios()
+class NonExistentChildMixin(object):
+
+    scenarios = multiply_scenarios(
+        [
+            (
+                "directory", dict(
+                    Exception=exceptions.FileNotFound,
+                    create=lambda fs, path: fs.create_directory(path=path),
+                ),
+            ), (
+                "file", dict(
+                    Exception=exceptions.NotADirectory,
+                    create=lambda fs, path: fs.touch(path=path),
+                ),
+            ), (
+                "link_to_file", dict(
+                    Exception=exceptions.FileNotFound,
+                    create=lambda fs, path: fs.touch(  # Sorry :/
+                        path=path.sibling("source"),
+                    ) and fs.link(source=path.sibling("source"), to=path),
+                ),
+                "link_to_directory", dict(
+                    Exception=exceptions.FileNotFound,
+                    create=lambda fs, path: fs.create_directory(  # Sorry :/
+                        path=path.sibling("source"),
+                    ) and fs.link(source=path.sibling("source"), to=path),
+                ),
+                "loop", dict(
+                    Exception=exceptions.SymbolicLoop,
+                    create=lambda fs, path: fs.link(source=path, to=path),
+                ),
+            ),
+        ],
+        [
+            (
+                "create_directory", dict(
+                    act_on=lambda fs, path: fs.create_directory(path=path),
+                    error_on_child=False,
+                ),
+            ), (
+                "list_directory",
+                dict(act_on=lambda fs, path: fs.list_directory(path=path)),
+            ), (
+                "create_file",
+                dict(act_on=lambda fs, path: fs.create(path=path)),
+            ), (
+                "remove_file",
+                dict(act_on=lambda fs, path: fs.remove_file(path=path)),
+            ), (
+                "remove_empty_directory", dict(
+                    act_on=lambda fs, path: fs.remove_empty_directory(
+                        path=path,
+                    ),
+                ),
+            ), (
+                "write_bytes",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="wb")),
+            ), (
+                "write_native",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="w")),
+            ), (
+                "write_text",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="wt")),
+            ), (
+                "append_bytes",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="ab")),
+            ), (
+                "append_native",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="a")),
+            ), (
+                "append_text",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="at")),
+            ), (
+                "link", dict(
+                    act_on=lambda fs, path: fs.link(source=path, to=path),
+                    error_on_child=False,
+                ),
+            ), (
+                "readlink", dict(
+                    act_on=lambda fs, path: fs.readlink(path=path),
+                ),
+            ),
+        ],
+    )
+
+    def test_child_of_non_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        existing = tempdir.descendant("unittesting")
+        self.create(fs=fs, path=existing)
+
+        non_existing_child = existing.descendant("non_existing", "thing")
+        with self.assertRaises(self.Exception) as e:
+            self.act_on(fs=fs, path=non_existing_child)
+
+        path = (  # Sorry :/
+            non_existing_child
+            if getattr(self, "error_on_child", True)
+            else non_existing_child.parent()
+        )
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(self.Exception.errno) + ": " + str(path),
+        )

@@ -6,6 +6,7 @@ from filesystems import Path, memory
 from filesystems.tests.common import (
     TestFS,
     InvalidModeMixin,
+    NonExistentChildMixin,
     OpenFileMixin,
     OpenAppendNonExistingFileMixin,
     OpenWriteNonExistingFileMixin,
@@ -55,4 +56,8 @@ class TestMemoryOpenAppendNonExistingFile(
 
 
 class TestMemoryWriteLines(WriteLinesMixin, TestCase):
+    FS = memory.FS
+
+
+class TestNonExistentChild(NonExistentChildMixin, TestCase):
     FS = memory.FS

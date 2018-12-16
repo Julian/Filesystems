@@ -16,6 +16,8 @@ def _create_file(fs, path):
             raise exceptions.FileNotFound(path)
         elif error.errno == exceptions.FileExists.errno:
             raise exceptions.FileExists(path)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path)
         elif error.errno == exceptions.SymbolicLoop.errno:
             raise exceptions.SymbolicLoop(path.parent())
         raise
@@ -33,6 +35,8 @@ def _open_file(fs, path, mode):
             raise exceptions.FileNotFound(path)
         elif error.errno == exceptions.IsADirectory.errno:
             raise exceptions.IsADirectory(path)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path)
         elif error.errno == exceptions.SymbolicLoop.errno:
             raise exceptions.SymbolicLoop(path)
         raise
@@ -44,6 +48,8 @@ def _remove_file(fs, path):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path)
         elif error.errno == exceptions.PermissionError.errno:
             raise exceptions.PermissionError(path)
         raise
@@ -55,6 +61,8 @@ def _create_directory(fs, path):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path.parent())
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path.parent())
         elif error.errno == exceptions.FileExists.errno:
             raise exceptions.FileExists(path)
         raise
@@ -103,6 +111,8 @@ def _readlink(fs, path):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path)
         elif error.errno == exceptions.NotASymlink.errno:
             raise exceptions.NotASymlink(path)
         raise

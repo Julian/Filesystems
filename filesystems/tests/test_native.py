@@ -3,6 +3,7 @@ from unittest import TestCase
 from filesystems import native
 from filesystems.tests.common import (
     TestFS,
+    NonExistentChildMixin,
     InvalidModeMixin,
     OpenFileMixin,
     OpenAppendNonExistingFileMixin,
@@ -38,4 +39,8 @@ class TestNativeOpenAppendNonExistingFile(
 
 
 class TestNativeWriteLines(WriteLinesMixin, TestCase):
+    FS = native.FS
+
+
+class TestNonExistentChild(NonExistentChildMixin, TestCase):
     FS = native.FS
