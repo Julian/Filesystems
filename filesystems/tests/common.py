@@ -43,6 +43,19 @@ class TestFS(object):
             )
         )
 
+    def test_open_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with self.assertRaises(exceptions.IsADirectory) as e:
+            fs.open(tempdir)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EISDIR) + ": " + str(tempdir),
+        )
+
     def test_open_append_binary_and_native_non_existing_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()

@@ -31,6 +31,8 @@ def _open_file(fs, path, mode):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.IsADirectory.errno:
+            raise exceptions.IsADirectory(path)
         elif error.errno == exceptions.SymbolicLoop.errno:
             raise exceptions.SymbolicLoop(path)
         raise

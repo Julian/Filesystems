@@ -39,6 +39,11 @@ class FileExists(_FileSystemError):
     message = os.strerror(errno)
 
 
+class IsADirectory(_FileSystemError):
+    errno = errno.EISDIR
+    message = os.strerror(errno)
+
+
 class DirectoryNotEmpty(_FileSystemError):
     errno = errno.ENOTEMPTY
     message = os.strerror(errno)
