@@ -960,7 +960,7 @@ class TestFS(object):
             os.strerror(errno.ENOENT) + ": " + str(child),
         )
 
-    def test_remove_file_on_a_directory(self):
+    def test_remove_file_on_empty_directory(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -969,8 +969,29 @@ class TestFS(object):
         fs.create_directory(path=child)
         self.assertTrue(fs.exists(path=child))
 
-        fs.remove_file(path=child)
-        self.assertFalse(fs.exists(path=child))
+        with self.assertRaises(exceptions.InsufficientPermissions) as e:
+            fs.remove_file(path=child)
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EPERM) + ": " + str(child),
+        )
+
+    def test_remove_file_on_nonempty_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        child = tempdir.descendant("child")
+        fs.create_directory(path=child)
+        fs.touch(child.descendant("grandchild"))
+        self.assertTrue(fs.exists(path=child))
+
+        with self.assertRaises(exceptions.InsufficientPermissions) as e:
+            fs.remove_file(path=child)
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EPERM) + ": " + str(child),
+        )
 
     def test_remove_nonexisting_file_nonexisting_directory(self):
         fs = self.FS()

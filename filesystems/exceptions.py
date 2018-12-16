@@ -39,6 +39,11 @@ class FileExists(_FileSystemError):
     message = os.strerror(errno)
 
 
+class InsufficientPermissions(_FileSystemError):
+    errno = errno.EPERM
+    message = os.strerror(errno)
+
+
 class IsADirectory(_FileSystemError):
     errno = errno.EISDIR
     message = os.strerror(errno)
