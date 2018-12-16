@@ -869,7 +869,24 @@ class TestFS(object):
             os.strerror(errno.ENOENT) + ": " + str(directory),
         )
 
-    def test_remove_link_empty_directory(self):
+    def test_remove_empty_directory_but_its_a_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        child = tempdir.descendant("file")
+        fs.touch(path=child)
+        self.assertTrue(fs.is_file(path=child))
+
+        with self.assertRaises(exceptions.NotADirectory) as e:
+            fs.remove_empty_directory(path=child)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOENT) + ": " + str(child),
+        )
+
+    def test_remove_empty_directory_but_its_a_link(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
