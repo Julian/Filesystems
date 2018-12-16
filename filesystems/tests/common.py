@@ -1539,3 +1539,22 @@ class NonExistentChildMixin(object):
             str(e.exception),
             os.strerror(self.Exception.errno) + ": " + str(path),
         )
+
+    def test_stat(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        existing = tempdir.descendant("unittesting")
+        self.create(fs=fs, path=existing)
+
+        non_existing_child = existing.descendant("non_existing", "thing")
+        self.assertEqual(
+            (
+                fs.exists(non_existing_child),
+                fs.is_dir(non_existing_child),
+                fs.is_file(non_existing_child),
+                fs.is_link(non_existing_child),
+            ),
+            (False, False, False, False),
+        )
