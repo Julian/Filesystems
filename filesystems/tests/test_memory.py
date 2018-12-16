@@ -15,7 +15,7 @@ from filesystems.tests.common import (
 
 
 class TestMemory(TestFS, TestCase):
-    FS = memory.FS
+    FS = staticmethod(memory.FS)
 
     def test_children_of_root(self):
         fs = self.FS()
@@ -34,30 +34,30 @@ class TestMemory(TestFS, TestCase):
 
 
 class TestMemoryInvalidMode(InvalidModeMixin, TestCase):
-    FS = memory.FS
+    FS = staticmethod(memory.FS)
 
 
 class TestMemoryOpenFile(OpenFileMixin, TestCase):
-    FS = memory.FS
+    FS = staticmethod(memory.FS)
 
 
 class TestMemoryOpenWriteNonExistingFile(
     OpenWriteNonExistingFileMixin,
     TestCase,
 ):
-    FS = memory.FS
+    FS = staticmethod(memory.FS)
 
 
 class TestMemoryOpenAppendNonExistingFile(
     OpenAppendNonExistingFileMixin,
     TestCase,
 ):
-    FS = memory.FS
+    FS = staticmethod(memory.FS)
 
 
 class TestMemoryWriteLines(WriteLinesMixin, TestCase):
-    FS = memory.FS
+    FS = staticmethod(memory.FS)
 
 
 class TestNonExistentChild(NonExistentChildMixin, TestCase):
-    FS = memory.FS
+    FS = staticmethod(memory.FS)

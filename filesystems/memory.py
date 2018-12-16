@@ -22,7 +22,6 @@ class _BytesIOIsTerrible(BytesIO):
         return self.getvalue()
 
 
-@staticmethod
 def FS():
     state = _State()
     return common.create(
