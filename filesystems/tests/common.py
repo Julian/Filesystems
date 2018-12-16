@@ -1027,6 +1027,25 @@ class TestFS(object):
             os.strerror(errno.ENOENT) + ": " + str(directory),
         )
 
+    def test_list_directory_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        # /source -> /link
+        # /source/{1, 2, 3}
+
+        source, link = tempdir.descendant("source"), tempdir.descendant("link")
+
+        fs.create_directory(path=source)
+        fs.create_directory(path=source.descendant("1"))
+        fs.touch(path=source.descendant("2"))
+        fs.touch(path=source.descendant("3"))
+
+        fs.link(source=source, to=link)
+
+        self.assertEqual(set(fs.list_directory(link)), s("1", "2", "3"))
+
     def test_list_directory_link_child(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
