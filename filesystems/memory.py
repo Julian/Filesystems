@@ -35,7 +35,7 @@ def FS():
         remove_empty_directory=_fs(state.remove_empty_directory),
         temporary_directory=_fs(state.temporary_directory),
 
-        link=_fs(state.link),
+        link=lambda fs, *args, **kwargs: state.link(*args, fs=fs, **kwargs),
         readlink=_fs(state.readlink),
 
         exists=_fs(state.exists),
@@ -95,7 +95,7 @@ class _File(object):
     def remove_file(self, path):
         del self._parent[self._name]
 
-    def link(self, source, to, state):
+    def link(self, source, to, fs, state):
         raise exceptions.FileExists(to)
 
     def readlink(self, path):
@@ -143,7 +143,7 @@ class _FileChild(object):
     def remove_file(self, path):
         raise exceptions.NotADirectory(path)
 
-    def link(self, source, to, state):
+    def link(self, source, to, fs, state):
         raise exceptions.NotADirectory(to.parent())
 
     def readlink(self, path):
@@ -210,7 +210,7 @@ class _Directory(object):
     def remove_file(self, path):
         raise exceptions.PermissionError(path)
 
-    def link(self, source, to, state):
+    def link(self, source, to, fs, state):
         raise exceptions.FileExists(to)
 
     def readlink(self, path):
@@ -275,12 +275,12 @@ class _DirectoryChild(object):
     def remove_file(self, path):
         raise exceptions.FileNotFound(path)
 
-    def link(self, source, to, state):
+    def link(self, source, to, fs, state):
         self._parent[self._name] = _Link(
             name=self._name,
             parent=self._parent,
             source=source,
-            entry_at_source=lambda: state[source],
+            entry_at=lambda path=source: state[fs.realpath(path=path)],
         )
 
     def readlink(self, path):
@@ -305,16 +305,16 @@ class _Link(object):
     _name = attr.ib()
     _parent = attr.ib(repr=False)
     _source = attr.ib()
-    _entry_at_source = attr.ib(repr=False)
+    _entry_at = attr.ib(repr=False)
 
     def __getitem__(self, name):
-        return self._entry_at_source()[name]
+        return self._entry_at()[name]
 
     def create_directory(self, path):
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
-        return self._entry_at_source().list_directory(path=path)
+        return self._entry_at(path=path).list_directory(path=path)
 
     def remove_empty_directory(self, path):
         raise exceptions.NotADirectory(path)
@@ -323,25 +323,25 @@ class _Link(object):
         raise exceptions.FileExists(path)
 
     def open_file(self, path, mode):
-        return self._entry_at_source().open_file(path=path, mode=mode)
+        return self._entry_at(path=path).open_file(path=path, mode=mode)
 
     def remove_file(self, path):
         del self._parent[self._name]
 
-    def link(self, source, to, state):
+    def link(self, source, to, fs, state):
         raise exceptions.FileExists(to)
 
     def readlink(self, path):
         return self._source
 
     def exists(self):
-        return self._entry_at_source().exists()
+        return self._entry_at().exists()
 
     def is_dir(self):
-        return self._entry_at_source().is_dir()
+        return self._entry_at().is_dir()
 
     def is_file(self):
-        return self._entry_at_source().is_file()
+        return self._entry_at().is_file()
 
     def is_link(self):
         return True
@@ -376,7 +376,7 @@ class _NoSuchEntry(object):
     def remove_file(self, path):
         raise exceptions.FileNotFound(path)
 
-    def link(self, source, to, state):
+    def link(self, source, to, fs, state):
         raise exceptions.FileNotFound(to.parent())
 
     def readlink(self, path):
@@ -437,8 +437,8 @@ class _State(object):
     def remove_file(self, path):
         self[path].remove_file(path=path)
 
-    def link(self, source, to):
-        self[to].link(source=source, to=to, state=self)
+    def link(self, source, to, fs):
+        self[to].link(fs=fs, source=source, to=to, state=self)
 
     def readlink(self, path):
         return self[path].readlink(path=path)

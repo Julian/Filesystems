@@ -8,6 +8,7 @@ from filesystems.tests.common import (
     OpenFileMixin,
     OpenAppendNonExistingFileMixin,
     OpenWriteNonExistingFileMixin,
+    SymbolicLoopMixin,
     WriteLinesMixin,
 )
 
@@ -43,4 +44,8 @@ class TestNativeWriteLines(WriteLinesMixin, TestCase):
 
 
 class TestNonExistentChild(NonExistentChildMixin, TestCase):
+    FS = native.FS
+
+
+class TestSymbolicLoops(SymbolicLoopMixin, TestCase):
     FS = native.FS

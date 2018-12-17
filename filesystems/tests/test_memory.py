@@ -10,6 +10,7 @@ from filesystems.tests.common import (
     OpenFileMixin,
     OpenAppendNonExistingFileMixin,
     OpenWriteNonExistingFileMixin,
+    SymbolicLoopMixin,
     WriteLinesMixin,
 )
 
@@ -60,4 +61,8 @@ class TestMemoryWriteLines(WriteLinesMixin, TestCase):
 
 
 class TestNonExistentChild(NonExistentChildMixin, TestCase):
+    FS = staticmethod(memory.FS)
+
+
+class TestSymbolicLoops(SymbolicLoopMixin, TestCase):
     FS = staticmethod(memory.FS)

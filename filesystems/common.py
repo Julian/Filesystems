@@ -31,7 +31,7 @@ def _realpath(fs, path):
             else:
                 current = current.relative_to(real)
                 if current in seen:
-                    raise exceptions.SymbolicLoop(current)
+                    raise exceptions.SymbolicLoop(path)
                 seen.add(current)
         real = current
     return real

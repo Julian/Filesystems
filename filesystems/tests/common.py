@@ -415,88 +415,6 @@ class TestFS(object):
             os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
         )
 
-    def test_circular_links(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-        tempdir = fs.realpath(tempdir)
-
-        stuck = tempdir.descendant("stuck")
-        on = tempdir.descendant("on")
-        loop = tempdir.descendant("loop")
-
-        fs.link(source=stuck, to=on)
-        fs.link(source=on, to=loop)
-        fs.link(source=loop, to=stuck)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.realpath(stuck)
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ELOOP) + ": " + str(stuck),
-        )
-
-    def test_direct_circular_link(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-        tempdir = fs.realpath(tempdir)
-
-        loop = tempdir.descendant("loop")
-        fs.link(source=loop, to=loop)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.realpath(loop)
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ELOOP) + ": " + str(loop),
-        )
-
-    def test_link_into_a_circle(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-        tempdir = fs.realpath(tempdir)
-
-        dont = tempdir.descendant("dont")
-        fall = tempdir.descendant("fall")
-        into = tempdir.descendant("into")
-        the = tempdir.descendant("the")
-        hole = tempdir.descendant("hole")
-
-        fs.link(source=fall, to=dont)
-        fs.link(source=into, to=fall)
-        fs.link(source=the, to=into)
-        fs.link(source=the, to=hole)
-        fs.link(source=hole, to=the)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.realpath(dont)
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ELOOP) + ": " + str(the),
-        )
-
-    def test_circular_loop_child(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-        tempdir = fs.realpath(tempdir)
-
-        loop = tempdir.descendant("loop")
-        fs.link(source=loop, to=loop)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.realpath(loop.descendant("child"))
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ELOOP) + ": " + str(loop),
-        )
-
     def test_read_from_link(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -537,58 +455,6 @@ class TestFS(object):
             f.write(b"some things over here!")
 
         self.assertEqual(fs.contents_of(child), "some things over here!")
-
-    def test_read_from_loop(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        loop = tempdir.descendant("loop")
-        fs.link(source=loop, to=loop)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.open(path=loop)
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ELOOP) + ": " + str(loop),
-        )
-
-    def test_write_to_loop(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        loop = tempdir.descendant("loop")
-        fs.link(source=loop, to=loop)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.open(path=loop, mode="wb")
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ELOOP) + ": " + str(loop),
-        )
-
-    def test_create_loop_descendant(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        loop = tempdir.descendant("loop")
-        fs.link(source=loop, to=loop)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.create(path=loop.descendant("child", "path"))
-
-        # We'd really like the first one, but on a real native FS, looking for
-        # it would be a race condition, so we allow the latter.
-        acceptable = {
-            os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
-        }
-
-        self.assertIn(str(e.exception), acceptable)
 
     def test_link_nonexistant_parent(self):
         fs = self.FS()
@@ -1464,8 +1330,7 @@ class NonExistentChildMixin(object):
                     create=lambda fs, path: fs.link(source=path, to=path),
                 ),
             ),
-        ],
-        [
+        ], [
             (
                 "create_directory", dict(
                     act_on=lambda fs, path: fs.create_directory(path=path),
@@ -1566,4 +1431,80 @@ class NonExistentChildMixin(object):
                 fs.is_link(non_existing_child),
             ),
             (False, False, False, False),
+        )
+
+
+@with_scenarios()
+class SymbolicLoopMixin(object):
+
+    scenarios = multiply_scenarios(
+        [  # Size of loop
+            ("one", dict(chain=["loop"])),
+            ("two", dict(chain=["one", "two"])),
+            ("many", dict(chain=["don't", "fall", "in", "the", "hole"])),
+        ],
+        [  # Path to operate on
+            ("itself", dict(path=lambda loop: loop)),
+            ("child", dict(path=lambda loop: loop.descendant("child"))),
+        ],
+        [  # Operation
+            (
+                "realpath",
+                dict(act_on=lambda fs, path: fs.realpath(path)),
+            ), (
+                "read_bytes",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="rb")),
+            ), (
+                "read_native",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="r")),
+            ), (
+                "read_text",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="rt")),
+            ), (
+                "write_bytes",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="wb")),
+            ), (
+                "write_native",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="w")),
+            ), (
+                "write_text",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="wt")),
+            ), (
+                "append_bytes",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="ab")),
+            ), (
+                "append_native",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="a")),
+            ), (
+                "append_text",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="at")),
+            ),
+        ],
+    )
+
+    def fs_with_loop(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        for source, to in zip(self.chain, self.chain[1:]):
+            fs.link(
+                source=tempdir.descendant(source),
+                to=tempdir.descendant(to),
+            )
+        fs.link(
+            source=tempdir.descendant(self.chain[-1]),
+            to=tempdir.descendant(self.chain[0]),
+        )
+
+        return fs, tempdir.descendant(self.chain[0])
+
+    def test_it_detects_loops(self):
+        fs, loop = self.fs_with_loop()
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            self.act_on(fs=fs, path=self.path(loop))
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ELOOP) + ": " + str(self.path(loop)),
         )
