@@ -1347,7 +1347,7 @@ class OpenFileMixin(object):
 class OpenWriteNonExistingFileMixin(object):
 
     scenarios = [
-        ("bytes", dict(contents=b"שלום", mode="wb")),
+        ("bytes", dict(contents=u"שלום".encode("utf-8"), mode="wb")),
         ("native", dict(contents="שלום", mode="w")),
         ("text", dict(contents=u"שלום", mode="wt")),
     ]
