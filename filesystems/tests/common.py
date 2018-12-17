@@ -1487,6 +1487,15 @@ class NonExistentChildMixin(object):
                     ),
                 ),
             ), (
+                "read_bytes",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="rb")),
+            ), (
+                "read_native",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="r")),
+            ), (
+                "read_text",
+                dict(act_on=lambda fs, path: fs.open(path=path, mode="rt")),
+            ), (
                 "write_bytes",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="wb")),
             ), (
