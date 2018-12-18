@@ -52,6 +52,8 @@ def _remove_file(fs, path):
             raise exceptions.NotADirectory(path)
         elif error.errno == exceptions.PermissionError.errno:
             raise exceptions.PermissionError(path)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(path.parent())
         raise
 
 
@@ -78,6 +80,8 @@ def _list_directory(fs, path):
             raise exceptions.FileNotFound(path)
         elif error.errno == exceptions.NotADirectory.errno:
             raise exceptions.NotADirectory(path)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(path)
         raise
 
 
@@ -91,6 +95,8 @@ def _remove_empty_directory(fs, path):
             raise exceptions.FileNotFound(path)
         elif error.errno == exceptions.NotADirectory.errno:
             raise exceptions.NotADirectory(path)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(path.parent())
         raise
 
 
@@ -98,12 +104,14 @@ def _link(fs, source, to):
     try:
         os.symlink(str(source), str(to))
     except (IOError, OSError) as error:
-        if error.errno == exceptions.FileNotFound.errno:
+        if error.errno == exceptions.FileExists.errno:
+            raise exceptions.FileExists(to)
+        elif error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(to.parent())
         elif error.errno == exceptions.NotADirectory.errno:
             raise exceptions.NotADirectory(to.parent())
-        elif error.errno == exceptions.FileExists.errno:
-            raise exceptions.FileExists(to)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(to.parent())
         raise
 
 
@@ -117,6 +125,8 @@ def _readlink(fs, path):
             raise exceptions.NotADirectory(path)
         elif error.errno == exceptions.NotASymlink.errno:
             raise exceptions.NotASymlink(path)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(path)
         raise
     else:
         return Path.from_string(value)

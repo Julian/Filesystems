@@ -1144,46 +1144,6 @@ class TestFS(object):
             two.descendant("3"),
         )
 
-    def test_create_loop_descendant(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        loop = tempdir.descendant("loop")
-        fs.link(source=loop, to=loop)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.create(path=loop.descendant("child", "path"))
-
-        # We'd really like the first one, but on a real native FS, looking for
-        # it would be a race condition, so we allow the latter.
-        acceptable = {
-            os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
-        }
-
-        self.assertIn(str(e.exception), acceptable)
-
-    def test_create_directory_loop_descendant(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        loop = tempdir.descendant("loop")
-        fs.link(source=loop, to=loop)
-
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
-            fs.create_directory(path=loop.descendant("child", "path"))
-
-        # We'd really like the first one, but on a real native FS, looking for
-        # it would be a race condition, so we allow the latter.
-        acceptable = {
-            os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
-        }
-
-        self.assertIn(str(e.exception), acceptable)
-
 
 @with_scenarios()
 class InvalidModeMixin(object):
@@ -1475,7 +1435,7 @@ class NonExistentChildMixin(object):
 
 
 @with_scenarios()
-class SymbolicLoopMixin(object):
+class _SymbolicLoopMixin(object):
 
     scenarios = multiply_scenarios(
         [  # Size of loop
@@ -1490,7 +1450,10 @@ class SymbolicLoopMixin(object):
         [  # Operation
             (
                 "realpath",
-                dict(act_on=lambda fs, path: fs.realpath(path)),
+                dict(act_on=lambda fs, path: fs.realpath(path=path)),
+            ), (
+                "list_directory",
+                dict(act_on=lambda fs, path: fs.list_directory(path=path)),
             ), (
                 "read_bytes",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="rb")),
@@ -1551,3 +1514,128 @@ class SymbolicLoopMixin(object):
         #     str(e.exception),
         #     os.strerror(errno.ELOOP) + ": " + str(self.path(loop)),
         # )
+
+
+class SymbolicLoopMixin(_SymbolicLoopMixin):
+    def test_create_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.create(path=loop.descendant("child", "path"))
+
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
+
+    def test_create_directory_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.create_directory(path=loop.descendant("child", "path"))
+
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
+
+    def test_remove_file_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.remove_file(path=loop.descendant("child", "path"))
+
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
+
+    def test_remove_empty_directory_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.remove_empty_directory(path=loop.descendant("child", "path"))
+
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
+
+    def test_link_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.link(source=tempdir, to=loop.descendant("child", "path"))
+
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
+
+    def test_readlink_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.readlink(path=loop.descendant("child", "path"))
+
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+            os.strerror(errno.ELOOP) + ": " + str(
+                loop.descendant("child", "path"),
+            ),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
