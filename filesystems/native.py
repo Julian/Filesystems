@@ -59,12 +59,14 @@ def _create_directory(fs, path):
     try:
         os.mkdir(str(path))
     except (IOError, OSError) as error:
-        if error.errno == exceptions.FileNotFound.errno:
+        if error.errno == exceptions.FileExists.errno:
+            raise exceptions.FileExists(path)
+        elif error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path.parent())
         elif error.errno == exceptions.NotADirectory.errno:
             raise exceptions.NotADirectory(path.parent())
-        elif error.errno == exceptions.FileExists.errno:
-            raise exceptions.FileExists(path)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(path.parent())
         raise
 
 
