@@ -1502,7 +1502,7 @@ class SymbolicLoopMixin(object):
 
     def test_it_detects_loops(self):
         fs, loop = self.fs_with_loop()
-        with self.assertRaises(exceptions.SymbolicLoop) as e:
+        with self.assertRaises(exceptions.SymbolicLoop):
             self.act_on(fs=fs, path=self.path(loop))
 
         # FIXME: Temporarily disabled, since this is "wrong" at the minute for
