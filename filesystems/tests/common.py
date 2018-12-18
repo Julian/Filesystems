@@ -1144,6 +1144,26 @@ class TestFS(object):
             two.descendant("3"),
         )
 
+    def test_create_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir.descendant("loop")
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.create(path=loop.descendant("child", "path"))
+
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
+
 
 @with_scenarios()
 class InvalidModeMixin(object):
