@@ -106,7 +106,7 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
 
         with fs.create(tempdir.descendant("unittesting")) as f:
-            f.write(b"some things!")
+            f.write("some things!")
 
         with fs.open(tempdir.descendant("unittesting")) as g:
             self.assertEqual(g.read(), "some things!")
@@ -452,7 +452,7 @@ class TestFS(object):
 
         child = to.descendant("child")
         with fs.create(child) as f:
-            f.write(b"some things over here!")
+            f.write("some things over here!")
 
         self.assertEqual(fs.contents_of(child), "some things over here!")
 
