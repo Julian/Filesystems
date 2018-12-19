@@ -1,4 +1,5 @@
 from fnmatch import fnmatch
+import stat
 import sys
 
 from pyrsistent import pset
@@ -64,9 +65,7 @@ def create(
     link,
     readlink,
 
-    exists,
-    is_dir,
-    is_file,
+    stat,
     is_link,
 
     realpath=_realpath,
@@ -97,10 +96,12 @@ def create(
                 readlink=readlink,
                 realpath=realpath,
 
-                exists=exists,
-                is_dir=is_dir,
-                is_file=is_file,
+                stat=stat,
                 is_link=is_link,
+
+                exists=_exists,
+                is_dir=_is_dir,
+                is_file=_is_file,
 
                 touch=_touch,
                 children=_children,
@@ -130,6 +131,53 @@ def _touch(fs, path):
 def _open_and_read(fs, path):
     with fs.open(path=path) as file:
         return file.read()
+
+
+def _exists(fs, path):
+    """
+    Check that the given path exists on the filesystem.
+
+    Note that unlike `os.path.exists`, we *do* propagate file system errors
+    other than a non-existent path or non-existent directory component.
+
+    E.g., should EPERM or ELOOP be raised, an exception will bubble up.
+    """
+    try:
+        fs.stat(path)
+    except (exceptions.FileNotFound, exceptions.NotADirectory):
+        return False
+    return True
+
+
+def _is_dir(fs, path):
+    """
+    Check that the given path is a directory.
+
+    Note that unlike `os.path.isdir`, we *do* propagate file system errors
+    other than a non-existent path or non-existent directory component.
+
+    E.g., should EPERM or ELOOP be raised, an exception will bubble up.
+    """
+
+    try:
+        return stat.S_ISDIR(fs.stat(path).st_mode)
+    except exceptions.FileNotFound:
+        return False
+
+
+def _is_file(fs, path):
+    """
+    Check that the given path is a file.
+
+    Note that unlike `os.path.isfile`, we *do* propagate file system errors
+    other than a non-existent path or non-existent directory component.
+
+    E.g., should EPERM or ELOOP be raised, an exception will bubble up.
+    """
+    try:
+        return stat.S_ISREG(fs.stat(path).st_mode)
+    except exceptions.FileNotFound:
+        return False
 
 
 @attr.s(frozen=True)

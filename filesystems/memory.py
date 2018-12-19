@@ -1,5 +1,7 @@
 from io import BytesIO, TextIOWrapper
 from uuid import uuid4
+import os
+import stat
 
 from pyrsistent import pmap, pset
 import attr
@@ -38,9 +40,7 @@ def FS():
         link=lambda fs, *args, **kwargs: state.link(*args, fs=fs, **kwargs),
         readlink=_fs(state.readlink),
 
-        exists=_fs(state.exists),
-        is_dir=_fs(state.is_dir),
-        is_file=_fs(state.is_file),
+        stat=_fs(state.stat),
         is_link=_fs(state.is_link),
     )()
 
@@ -68,8 +68,7 @@ class _File(object):
     def create_directory(self, path):
         raise exceptions.FileExists(path)
 
-    def list_directory(self, path):
-        raise exceptions.NotADirectory(path)
+    def list_directory(self, path): raise exceptions.NotADirectory(path)
 
     def remove_empty_directory(self, path):
         raise exceptions.NotADirectory(path)
@@ -101,14 +100,8 @@ class _File(object):
     def readlink(self, path):
         raise exceptions.NotASymlink(path)
 
-    def exists(self):
-        return True
-
-    def is_dir(self):
-        return False
-
-    def is_file(self):
-        return True
+    def stat(self, path):
+        return os.stat_result((stat.S_IFREG,) + (0,) * 9)
 
     def is_link(self):
         return False
@@ -149,14 +142,8 @@ class _FileChild(object):
     def readlink(self, path):
         raise exceptions.NotADirectory(path)
 
-    def exists(self):
-        return False
-
-    def is_dir(self):
-        return False
-
-    def is_file(self):
-        return False
+    def stat(self, path):
+        raise exceptions.NotADirectory(path)
 
     def is_link(self):
         return False
@@ -216,14 +203,8 @@ class _Directory(object):
     def readlink(self, path):
         raise exceptions.NotASymlink(path)
 
-    def exists(self):
-        return True
-
-    def is_dir(self):
-        return True
-
-    def is_file(self):
-        return False
+    def stat(self, path):
+        return os.stat_result((stat.S_IFDIR,) + (0,) * 9)
 
     def is_link(self):
         return False
@@ -286,14 +267,8 @@ class _DirectoryChild(object):
     def readlink(self, path):
         raise exceptions.FileNotFound(path)
 
-    def exists(self):
-        return False
-
-    def is_dir(self):
-        return False
-
-    def is_file(self):
-        return False
+    def stat(self, path):
+        raise exceptions.FileNotFound(path)
 
     def is_link(self):
         return False
@@ -334,14 +309,8 @@ class _Link(object):
     def readlink(self, path):
         return self._source
 
-    def exists(self):
-        return self._entry_at().exists()
-
-    def is_dir(self):
-        return self._entry_at().is_dir()
-
-    def is_file(self):
-        return self._entry_at().is_file()
+    def stat(self, path):
+        return self._entry_at(path=path).stat(path=path)
 
     def is_link(self):
         return True
@@ -382,14 +351,8 @@ class _NoSuchEntry(object):
     def readlink(self, path):
         raise exceptions.FileNotFound(path)
 
-    def exists(self):
-        return False
-
-    def is_dir(self):
-        return False
-
-    def is_file(self):
-        return False
+    def stat(self, path):
+        raise exceptions.FileNotFound(path)
 
     def is_link(self):
         return False
@@ -443,14 +406,8 @@ class _State(object):
     def readlink(self, path):
         return self[path].readlink(path=path)
 
-    def exists(self, path):
-        return self[path].exists()
-
-    def is_dir(self, path):
-        return self[path].is_dir()
-
-    def is_file(self, path):
-        return self[path].is_file()
+    def stat(self, path):
+        return self[path].stat(path=path)
 
     def is_link(self, path):
         return self[path].is_link()

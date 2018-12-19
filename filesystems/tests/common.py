@@ -1387,6 +1387,10 @@ class NonExistentChildMixin(object):
                 "readlink", dict(
                     act_on=lambda fs, path: fs.readlink(path=path),
                 ),
+            ), (
+                "stat", dict(
+                    act_on=lambda fs, path: fs.stat(path=path),
+                ),
             ),
         ],
     )
@@ -1414,7 +1418,7 @@ class NonExistentChildMixin(object):
             os.strerror(self.Exception.errno) + ": " + str(path),
         )
 
-    def test_stat(self):
+    def test_exists(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -1423,15 +1427,18 @@ class NonExistentChildMixin(object):
         self.create(fs=fs, path=existing)
 
         non_existing_child = existing.descendant("non_existing", "thing")
-        self.assertEqual(
-            (
-                fs.exists(non_existing_child),
-                fs.is_dir(non_existing_child),
-                fs.is_file(non_existing_child),
-                fs.is_link(non_existing_child),
-            ),
-            (False, False, False, False),
-        )
+        self.assertFalse(fs.exists(non_existing_child))
+
+    def test_is_link(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        existing = tempdir.descendant("unittesting")
+        self.create(fs=fs, path=existing)
+
+        non_existing_child = existing.descendant("non_existing", "thing")
+        self.assertFalse(fs.is_link(non_existing_child))
 
 
 @with_scenarios()
@@ -1481,6 +1488,15 @@ class _SymbolicLoopMixin(object):
             ), (
                 "append_text",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="at")),
+            ), (
+                "stat",
+                dict(act_on=lambda fs, path: fs.stat(path=path)),
+            ), (
+                "is_dir",
+                dict(act_on=lambda fs, path: fs.is_dir(path=path)),
+            ), (
+                "is_file",
+                dict(act_on=lambda fs, path: fs.is_file(path=path)),
             ),
         ],
     )

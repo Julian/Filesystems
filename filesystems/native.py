@@ -132,6 +132,19 @@ def _readlink(fs, path):
         return Path.from_string(value)
 
 
+def _stat(fs, path):
+    try:
+        return os.stat(str(path))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(path)
+        raise
+
+
 FS = common.create(
     name="NativeFS",
 
@@ -147,8 +160,6 @@ FS = common.create(
     link=_link,
     readlink=_readlink,
 
-    exists=lambda fs, path: os.path.exists(str(path)),
-    is_dir=lambda fs, path: os.path.isdir(str(path)),
-    is_file=lambda fs, path: os.path.isfile(str(path)),
+    stat=_stat,
     is_link=lambda fs, path: os.path.islink(str(path)),
 )
