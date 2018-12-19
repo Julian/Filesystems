@@ -22,7 +22,7 @@ def _create_file(fs, path):
             raise exceptions.SymbolicLoop(path.parent())
         raise
 
-    return io.open(fd, "w+")
+    return os.fdopen(fd, "w+")
 
 
 def _open_file(fs, path, mode):
