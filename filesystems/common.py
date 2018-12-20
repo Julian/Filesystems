@@ -27,7 +27,7 @@ def _realpath(fs, path):
         while True:
             try:
                 current = fs.readlink(current)
-            except exceptions._FileSystemError:
+            except (exceptions.FileNotFound, exceptions.NotASymlink):
                 break
             else:
                 current = current.relative_to(real)
