@@ -22,7 +22,7 @@ def _realpath(fs, path):
 
     real = Path.root()
     for segment in path.segments:
-        current = real.descendant(segment)
+        current = real / segment
         seen = {current}
         while True:
             try:
@@ -113,12 +113,12 @@ def create(
 
 
 def _children(fs, path):
-    return pset(path.descendant(p) for p in fs.list_directory(path=path))
+    return pset(path / p for p in fs.list_directory(path=path))
 
 
 def _glob_children(fs, path, glob):
     return pset(
-        path.descendant(p)
+        path / p
         for p in fs.list_directory(path=path)
         if fnmatch(p, glob)
     )

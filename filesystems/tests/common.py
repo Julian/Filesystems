@@ -17,14 +17,11 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
 
         with self.assertRaises(exceptions.FileNotFound) as e:
-            fs.open(tempdir.descendant("unittesting"))
+            fs.open(tempdir / "unittesting")
 
         self.assertEqual(
-            str(e.exception), (
-                os.strerror(errno.ENOENT) +
-                ": " +
-                str(tempdir.descendant("unittesting"))
-            ),
+            str(e.exception),
+            os.strerror(errno.ENOENT) + ": " + str(tempdir / "unittesting"),
         )
 
     def test_open_read_non_existing_nested_file(self):
@@ -61,13 +58,13 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        with fs.open(tempdir.descendant("unittesting"), "ab") as f:
+        with fs.open(tempdir / "unittesting", "ab") as f:
             f.write(b"some ")
 
-        with fs.open(tempdir.descendant("unittesting"), "a") as f:
+        with fs.open(tempdir / "unittesting", "a") as f:
             f.write("things!")
 
-        with fs.open(tempdir.descendant("unittesting")) as g:
+        with fs.open(tempdir / "unittesting") as g:
             self.assertEqual(g.read(), "some things!")
 
     def test_open_append_native_and_binary_non_existing_file(self):
@@ -75,13 +72,13 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        with fs.open(tempdir.descendant("unittesting"), "a") as f:
+        with fs.open(tempdir / "unittesting", "a") as f:
             f.write("some ")
 
-        with fs.open(tempdir.descendant("unittesting"), "ab") as f:
+        with fs.open(tempdir / "unittesting", "ab") as f:
             f.write(b"things!")
 
-        with fs.open(tempdir.descendant("unittesting")) as g:
+        with fs.open(tempdir / "unittesting") as g:
             self.assertEqual(g.read(), "some things!")
 
     def test_open_append_non_existing_nested_file(self):
@@ -105,10 +102,10 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        with fs.create(tempdir.descendant("unittesting")) as f:
+        with fs.create(tempdir / "unittesting") as f:
             f.write("some things!")
 
-        with fs.open(tempdir.descendant("unittesting")) as g:
+        with fs.open(tempdir / "unittesting") as g:
             self.assertEqual(g.read(), "some things!")
 
     def test_create_file_existing_file(self):
@@ -116,17 +113,17 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        with fs.create(tempdir.descendant("unittesting")):
+        with fs.create(tempdir / "unittesting"):
             pass
 
         with self.assertRaises(exceptions.FileExists) as e:
-            fs.create(tempdir.descendant("unittesting"))
+            fs.create(tempdir / "unittesting")
 
         self.assertEqual(
             str(e.exception), (
                 os.strerror(errno.EEXIST) +
                 ": " +
-                str(tempdir.descendant("unittesting"))
+                str(tempdir / "unittesting")
             ),
         )
 
@@ -135,16 +132,16 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        fs.create_directory(tempdir.descendant("unittesting"))
+        fs.create_directory(tempdir / "unittesting")
 
         with self.assertRaises(exceptions.FileExists) as e:
-            fs.create(tempdir.descendant("unittesting"))
+            fs.create(tempdir / "unittesting")
 
         self.assertEqual(
             str(e.exception), (
                 os.strerror(errno.EEXIST) +
                 ": " +
-                str(tempdir.descendant("unittesting"))
+                str(tempdir / "unittesting")
             ),
         )
 
@@ -153,7 +150,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
 
         with self.assertRaises(exceptions.FileExists) as e:
@@ -168,13 +165,13 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir.descendant("directory")
+        directory = tempdir / "directory"
         fs.create_directory(directory)
 
-        a = directory.descendant("a")
-        b = directory.descendant("b")
+        a = directory / "a"
+        b = directory / "b"
         c = directory.descendant("b", "c")
-        d = directory.descendant("d")
+        d = directory / "d"
 
         fs.touch(path=a)
         fs.create_directory(path=b)
@@ -190,7 +187,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("child")
+        child = tempdir / "child"
 
         with self.assertRaises(exceptions.FileNotFound) as e:
             fs.remove(path=child)
@@ -206,7 +203,7 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
         tempdir = fs.realpath(tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.touch(source)
         fs.link(source=source, to=to)
 
@@ -229,7 +226,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.create_directory(source)
         fs.link(source=source, to=to)
 
@@ -252,13 +249,13 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        zero, one = tempdir / "0", tempdir / "1"
         fs.create_directory(path=zero)
         fs.link(source=zero, to=one)
 
-        fs.create_directory(path=zero.descendant("2"))
-        three = one.descendant("3")
-        fs.link(source=one.descendant("2"), to=three)
+        fs.create_directory(path=zero / "2")
+        three = one / "3"
+        fs.link(source=one / "2", to=three)
 
         self.assertEqual(
             dict(
@@ -276,7 +273,7 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
         tempdir = fs.realpath(tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
 
         self.assertEqual(
@@ -299,7 +296,7 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
         tempdir = fs.realpath(tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
 
         with self.assertRaises(exceptions.FileExists) as e:
@@ -316,7 +313,7 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
         tempdir = fs.realpath(tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.touch(path=to)
 
         with self.assertRaises(exceptions.FileExists) as e:
@@ -333,7 +330,7 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
         tempdir = fs.realpath(tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.create_directory(path=to)
 
         with self.assertRaises(exceptions.FileExists) as e:
@@ -349,7 +346,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
 
         self.assertEqual(
@@ -371,10 +368,10 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source = tempdir.descendant("source")
-        first = tempdir.descendant("first")
-        second = tempdir.descendant("second")
-        third = tempdir.descendant("third")
+        source = tempdir / "source"
+        first = tempdir / "first"
+        second = tempdir / "second"
+        third = tempdir / "third"
 
         fs.link(source=source, to=first)
         fs.link(source=first, to=second)
@@ -390,13 +387,13 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.create_directory(source)
         fs.link(source=source, to=to)
 
         self.assertEqual(
-            fs.realpath(to.descendant("child")),
-            source.descendant("child"),
+            fs.realpath(to / "child"),
+            source / "child",
         )
 
     def test_link_descendant_of_file(self):
@@ -404,11 +401,11 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source = tempdir.descendant("source")
-        not_a_dir = tempdir.descendant("dir")
+        source = tempdir / "source"
+        not_a_dir = tempdir / "dir"
         fs.touch(not_a_dir)
         with self.assertRaises(exceptions.NotADirectory) as e:
-            fs.link(source=source, to=not_a_dir.descendant("to"))
+            fs.link(source=source, to=not_a_dir / "to")
 
         self.assertEqual(
             str(e.exception),
@@ -420,7 +417,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
 
         with fs.open(source, "wb") as f:
@@ -433,7 +430,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
 
         with fs.open(to, "wb") as f:
@@ -446,11 +443,11 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.create_directory(source)
         fs.link(source=source, to=to)
 
-        child = to.descendant("child")
+        child = to / "child"
         with fs.create(child) as f:
             f.write("some things over here!")
 
@@ -461,7 +458,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source = tempdir.descendant("source")
+        source = tempdir / "source"
         orphan = tempdir.descendant("nonexistant", "orphan")
 
         with self.assertRaises(exceptions.FileNotFound) as e:
@@ -477,7 +474,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
 
         self.assertEqual(fs.realpath(to), source)
@@ -488,12 +485,12 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
         tempdir = fs.realpath(tempdir)
 
-        source, to = RelativePath("source", "dir"), tempdir.descendant("to")
+        source, to = RelativePath("source", "dir"), tempdir / "to"
         fs.link(source=source, to=to)
 
         self.assertEqual(
             fs.realpath(to),
-            to.sibling("source").descendant("dir"),
+            to.sibling("source") / "dir",
         )
 
     def test_realpath_normal_path(self):
@@ -502,7 +499,7 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
         tempdir = fs.realpath(tempdir)
 
-        source = tempdir.descendant("source")
+        source = tempdir / "source"
         self.assertEqual(fs.realpath(source), source)
 
     def test_realpath_double_link(self):
@@ -515,17 +512,17 @@ class TestFS(object):
         # /1/3 -> /1/2/3
         # realpath(/1/3) == /0/1/2/3
 
-        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
-        two = one.descendant("2")
+        zero, one = tempdir / "0", tempdir / "1"
+        two = one / "2"
         fs.create_directory(path=zero)
-        fs.create_directory(path=zero.descendant("1"))
-        fs.link(source=zero.descendant("1"), to=one)
+        fs.create_directory(path=zero / "1")
+        fs.link(source=zero / "1", to=one)
         fs.create_directory(path=two)
-        fs.create_directory(path=two.descendant("3"))
-        fs.link(source=two.descendant("3"), to=one.descendant("3"))
+        fs.create_directory(path=two / "3")
+        fs.link(source=two / "3", to=one / "3")
 
         self.assertEqual(
-            fs.realpath(one.descendant("3")),
+            fs.realpath(one / "3"),
             zero.descendant("1", "2", "3"),
         )
 
@@ -534,18 +531,18 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir.descendant("directory")
+        directory = tempdir / "directory"
         fs.create_directory(path=directory)
-        fs.touch(directory.descendant("a"))
+        fs.touch(directory / "a")
 
-        link = tempdir.descendant("link")
+        link = tempdir / "link"
         fs.link(source=directory, to=link)
         self.assertTrue(fs.is_link(path=link))
 
         fs.remove(path=link)
 
         self.assertEqual(
-            fs.children(path=directory), s(directory.descendant("a")),
+            fs.children(path=directory), s(directory / "a"),
         )
 
     def test_create_directory(self):
@@ -553,7 +550,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir.descendant("dir")
+        directory = tempdir / "dir"
         self.assertFalse(fs.is_dir(path=directory))
 
         fs.create_directory(path=directory)
@@ -573,7 +570,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir.descendant("dir")
+        directory = tempdir / "dir"
         fs.create_directory(path=directory)
         self.assertTrue(fs.is_dir(path=directory))
 
@@ -590,7 +587,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        not_a_dir = tempdir.descendant("not_a_dir")
+        not_a_dir = tempdir / "not_a_dir"
         fs.touch(not_a_dir)
 
         with self.assertRaises(exceptions.FileExists) as e:
@@ -606,7 +603,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        link = tempdir.descendant("link")
+        link = tempdir / "link"
         fs.link(source=tempdir, to=link)
 
         with self.assertRaises(exceptions.FileExists) as e:
@@ -640,12 +637,12 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        zero, one = tempdir / "0", tempdir / "1"
         fs.create_directory(path=zero)
-        fs.create_directory(path=zero.descendant("1"))
-        fs.link(source=zero.descendant("1"), to=one)
+        fs.create_directory(path=zero / "1")
+        fs.link(source=zero / "1", to=one)
 
-        two = one.descendant("2")
+        two = one / "2"
         fs.create_directory(path=two)
 
         self.assertEqual(
@@ -663,15 +660,15 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
+        zero, one = tempdir / "0", tempdir / "1"
         fs.create_directory(path=zero)
-        fs.create_directory(path=zero.descendant("1"))
-        fs.link(source=zero.descendant("1"), to=one)
+        fs.create_directory(path=zero / "1")
+        fs.link(source=zero / "1", to=one)
 
-        two = one.descendant("2")
+        two = one / "2"
         fs.create_directory(path=two)
 
-        three, four = two.descendant("3"), two.descendant("4")
+        three, four = two / "3", two / "4"
         fs.touch(three)
 
         fs.link(source=three, to=four)
@@ -691,7 +688,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir.descendant("dir")
+        directory = tempdir / "dir"
         fs.create_directory(path=directory)
         self.assertTrue(fs.is_dir(path=directory))
 
@@ -703,9 +700,9 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        nonempty = tempdir.descendant("dir")
+        nonempty = tempdir / "dir"
         fs.create_directory(path=nonempty)
-        fs.create_directory(nonempty.descendant("dir2"))
+        fs.create_directory(nonempty / "dir2")
         self.assertTrue(fs.is_dir(path=nonempty))
 
         with self.assertRaises(exceptions.DirectoryNotEmpty) as e:
@@ -721,7 +718,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir.descendant("dir")
+        directory = tempdir / "dir"
         self.assertFalse(fs.is_dir(path=directory))
 
         with self.assertRaises(exceptions.FileNotFound) as e:
@@ -737,7 +734,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("file")
+        child = tempdir / "file"
         fs.touch(path=child)
         self.assertTrue(fs.is_file(path=child))
 
@@ -754,11 +751,11 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir.descendant("dir")
+        directory = tempdir / "dir"
         fs.create_directory(path=directory)
         self.assertTrue(fs.is_dir(path=directory))
 
-        link = tempdir.descendant("link")
+        link = tempdir / "link"
         fs.link(source=directory, to=link)
         self.assertTrue(fs.is_dir(path=link))
 
@@ -775,7 +772,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("child")
+        child = tempdir / "child"
         fs.touch(path=child)
         self.assertTrue(fs.exists(path=child))
 
@@ -787,7 +784,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("child")
+        child = tempdir / "child"
         fs.touch(path=child)
         self.assertTrue(fs.exists(path=child))
 
@@ -799,7 +796,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("child")
+        child = tempdir / "child"
         self.assertFalse(fs.is_file(path=child))
 
         with self.assertRaises(exceptions.FileNotFound) as e:
@@ -815,7 +812,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("child")
+        child = tempdir / "child"
         fs.create_directory(path=child)
         self.assertTrue(fs.exists(path=child))
 
@@ -831,9 +828,9 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("child")
+        child = tempdir / "child"
         fs.create_directory(path=child)
-        fs.touch(child.descendant("grandchild"))
+        fs.touch(child / "grandchild")
         self.assertTrue(fs.exists(path=child))
 
         with self.assertRaises(exceptions.PermissionError) as e:
@@ -863,7 +860,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        nonexistant = tempdir.descendant("solipsism")
+        nonexistant = tempdir / "solipsism"
         self.assertEqual(
             dict(
                 exists=fs.exists(path=nonexistant),
@@ -879,8 +876,8 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        a = tempdir.descendant("a")
-        b = tempdir.descendant("b")
+        a = tempdir / "a"
+        b = tempdir / "b"
         c = tempdir.descendant("b", "c")
 
         fs.touch(path=a)
@@ -900,7 +897,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir.descendant("dir")
+        directory = tempdir / "dir"
         self.assertFalse(fs.is_dir(path=directory))
 
         with self.assertRaises(exceptions.FileNotFound) as e:
@@ -919,12 +916,12 @@ class TestFS(object):
         # /source -> /link
         # /source/{1, 2, 3}
 
-        source, link = tempdir.descendant("source"), tempdir.descendant("link")
+        source, link = tempdir / "source", tempdir / "link"
 
         fs.create_directory(path=source)
-        fs.create_directory(path=source.descendant("1"))
-        fs.touch(path=source.descendant("2"))
-        fs.touch(path=source.descendant("3"))
+        fs.create_directory(path=source / "1")
+        fs.touch(path=source / "2")
+        fs.touch(path=source / "3")
 
         fs.link(source=source, to=link)
 
@@ -939,13 +936,13 @@ class TestFS(object):
         # /1/3 -> /1/2/3
         # realpath(/1/3) == /0/1/2/3
 
-        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
-        two = one.descendant("2")
+        zero, one = tempdir / "0", tempdir / "1"
+        two = one / "2"
         fs.create_directory(path=zero)
-        fs.create_directory(path=zero.descendant("1"))
-        fs.link(source=zero.descendant("1"), to=one)
+        fs.create_directory(path=zero / "1")
+        fs.link(source=zero / "1", to=one)
         fs.create_directory(path=two)
-        fs.create_directory(path=two.descendant("3"))
+        fs.create_directory(path=two / "3")
         self.assertEqual(set(fs.list_directory(two)), {"3"})
 
     def test_list_file(self):
@@ -953,7 +950,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        not_a_dir = tempdir.descendant("not_a_dir")
+        not_a_dir = tempdir / "not_a_dir"
         fs.touch(not_a_dir)
 
         with self.assertRaises(exceptions.NotADirectory) as e:
@@ -969,7 +966,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("a")
+        child = tempdir / "a"
         self.assertFalse(fs.exists(path=child))
 
         fs.touch(path=child)
@@ -988,10 +985,10 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        a = tempdir.descendant("a")
-        b = tempdir.descendant("b")
+        a = tempdir / "a"
+        b = tempdir / "b"
         c = tempdir.descendant("b", "c")
-        d = tempdir.descendant("d")
+        d = tempdir / "d"
 
         fs.touch(path=a)
         fs.create_directory(path=b)
@@ -1005,11 +1002,11 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        a = tempdir.descendant("a")
-        b = tempdir.descendant("b")
+        a = tempdir / "a"
+        b = tempdir / "b"
         c = tempdir.descendant("b", "c")
-        abc = tempdir.descendant("abc")
-        fedcba = tempdir.descendant("fedcba")
+        abc = tempdir / "abc"
+        fedcba = tempdir / "fedcba"
 
         fs.touch(path=a)
         fs.create_directory(path=b)
@@ -1027,11 +1024,11 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
+        with fs.open(tempdir / "unittesting", "wb") as f:
             f.write(b"some more things!")
 
         self.assertEqual(
-            fs.contents_of(tempdir.descendant("unittesting")),
+            fs.contents_of(tempdir / "unittesting"),
             "some more things!",
         )
 
@@ -1051,7 +1048,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source, to = tempdir.descendant("source"), tempdir.descendant("to")
+        source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
         self.assertEqual(fs.readlink(to), source)
 
@@ -1060,10 +1057,10 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        source = tempdir.descendant("source")
-        first = tempdir.descendant("first")
-        second = tempdir.descendant("second")
-        third = tempdir.descendant("third")
+        source = tempdir / "source"
+        first = tempdir / "first"
+        second = tempdir / "second"
+        third = tempdir / "third"
 
         fs.link(source=source, to=first)
         fs.link(source=first, to=second)
@@ -1075,7 +1072,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("child")
+        child = tempdir / "child"
         fs.touch(child)
         with self.assertRaises(exceptions.NotASymlink) as e:
             fs.readlink(child)
@@ -1101,7 +1098,7 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        child = tempdir.descendant("child")
+        child = tempdir / "child"
         with self.assertRaises(exceptions.FileNotFound) as e:
             fs.readlink(child)
 
@@ -1115,7 +1112,7 @@ class TestFS(object):
         self.addCleanup(fs.remove, tempdir)
         tempdir = fs.realpath(tempdir)
 
-        source, to = RelativePath("source", "dir"), tempdir.descendant("to")
+        source, to = RelativePath("source", "dir"), tempdir / "to"
         fs.link(source=source, to=to)
 
         self.assertEqual(fs.readlink(to), source)
@@ -1130,19 +1127,16 @@ class TestFS(object):
         # /1/3 -> /1/2/3
         # readlink(/0/1/3) == /1/2/3
 
-        zero, one = tempdir.descendant("0"), tempdir.descendant("1")
-        two = one.descendant("2")
+        zero, one = tempdir / "0", tempdir / "1"
+        two = one / "2"
         fs.create_directory(path=zero)
-        fs.create_directory(path=zero.descendant("1"))
-        fs.link(source=zero.descendant("1"), to=one)
+        fs.create_directory(path=zero / "1")
+        fs.link(source=zero / "1", to=one)
         fs.create_directory(path=two)
-        fs.create_directory(path=two.descendant("3"))
-        fs.link(source=two.descendant("3"), to=one.descendant("3"))
+        fs.create_directory(path=two / "3")
+        fs.link(source=two / "3", to=one / "3")
 
-        self.assertEqual(
-            fs.readlink(zero.descendant("1", "3")),
-            two.descendant("3"),
-        )
+        self.assertEqual(fs.readlink(zero.descendant("1", "3")), two / "3")
 
 
 @with_scenarios()
@@ -1162,7 +1156,7 @@ class InvalidModeMixin(object):
         self.addCleanup(fs.remove, tempdir)
 
         with self.assertRaises(exceptions.InvalidMode):
-            with fs.open(tempdir.descendant("unittesting"), self.mode):
+            with fs.open(tempdir / "unittesting", self.mode):
                 pass
 
 
@@ -1200,10 +1194,10 @@ class OpenFileMixin(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        with fs.open(tempdir.descendant("unittesting"), "wb") as f:
+        with fs.open(tempdir / "unittesting", "wb") as f:
             f.write(self.bytes(self.expected))
 
-        with fs.open(tempdir.descendant("unittesting"), self.mode) as g:
+        with fs.open(tempdir / "unittesting", self.mode) as g:
             contents = g.read()
             self.assertEqual(contents, self.expected)
             self.assertIsInstance(contents, type(self.expected))
@@ -1223,10 +1217,10 @@ class OpenWriteNonExistingFileMixin(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        with fs.open(tempdir.descendant("unittesting"), self.mode) as f:
+        with fs.open(tempdir / "unittesting", self.mode) as f:
             f.write(self.contents)
 
-        with fs.open(tempdir.descendant("unittesting")) as g:
+        with fs.open(tempdir / "unittesting") as g:
             self.assertEqual(g.read(), "שלום")
 
 
@@ -1244,13 +1238,13 @@ class OpenAppendNonExistingFileMixin(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        with fs.open(tempdir.descendant("unittesting"), self.mode) as f:
+        with fs.open(tempdir / "unittesting", self.mode) as f:
             f.write(self.first)
 
-        with fs.open(tempdir.descendant("unittesting"), self.mode) as f:
+        with fs.open(tempdir / "unittesting", self.mode) as f:
             f.write(self.second)
 
-        with fs.open(tempdir.descendant("unittesting")) as g:
+        with fs.open(tempdir / "unittesting") as g:
             self.assertEqual(g.read(), "some things!")
 
 
@@ -1290,10 +1284,10 @@ class WriteLinesMixin(object):
         newline = self.to_write(u"\n")
         to_write = self.to_write(text)
 
-        with fs.open(tempdir.descendant("unittesting"), self.mode) as f:
+        with fs.open(tempdir / "unittesting", self.mode) as f:
             f.writelines(line + newline for line in to_write.splitlines())
 
-        with fs.open(tempdir.descendant("unittesting")) as g:
+        with fs.open(tempdir / "unittesting") as g:
             self.assertEqual(g.read(), text)
 
 
@@ -1400,7 +1394,7 @@ class NonExistentChildMixin(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        existing = tempdir.descendant("unittesting")
+        existing = tempdir / "unittesting"
         self.create(fs=fs, path=existing)
 
         non_existing_child = existing.descendant("non_existing", "thing")
@@ -1423,7 +1417,7 @@ class NonExistentChildMixin(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        existing = tempdir.descendant("unittesting")
+        existing = tempdir / "unittesting"
         self.create(fs=fs, path=existing)
 
         non_existing_child = existing.descendant("non_existing", "thing")
@@ -1434,7 +1428,7 @@ class NonExistentChildMixin(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        existing = tempdir.descendant("unittesting")
+        existing = tempdir / "unittesting"
         self.create(fs=fs, path=existing)
 
         non_existing_child = existing.descendant("non_existing", "thing")
@@ -1452,7 +1446,7 @@ class _SymbolicLoopMixin(object):
         ],
         [  # Path to operate on
             ("itself", dict(path=lambda loop: loop)),
-            ("child", dict(path=lambda loop: loop.descendant("child"))),
+            ("child", dict(path=lambda loop: loop / "child")),
         ],
         [  # Operation
             (
@@ -1508,13 +1502,10 @@ class _SymbolicLoopMixin(object):
         tempdir = fs.realpath(tempdir)
 
         for source, to in zip(self.chain, self.chain[1:]):
-            fs.link(
-                source=tempdir.descendant(source),
-                to=tempdir.descendant(to),
-            )
+            fs.link(source=tempdir / source, to=tempdir / to)
         fs.link(
-            source=tempdir.descendant(self.chain[-1]),
-            to=tempdir.descendant(self.chain[0]),
+            source=tempdir / self.chain[-1],
+            to=tempdir / self.chain[0],
         )
 
         return fs, tempdir.descendant(self.chain[0])
@@ -1538,7 +1529,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        loop = tempdir.descendant("loop")
+        loop = tempdir / "loop"
         fs.link(source=loop, to=loop)
 
         with self.assertRaises(exceptions.SymbolicLoop) as e:
@@ -1548,7 +1539,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         # it would be a race condition, so we allow the latter.
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+            os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
         }
 
         self.assertIn(str(e.exception), acceptable)
@@ -1558,7 +1549,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        loop = tempdir.descendant("loop")
+        loop = tempdir / "loop"
         fs.link(source=loop, to=loop)
 
         with self.assertRaises(exceptions.SymbolicLoop) as e:
@@ -1568,7 +1559,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         # it would be a race condition, so we allow the latter.
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+            os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
         }
 
         self.assertIn(str(e.exception), acceptable)
@@ -1578,7 +1569,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        loop = tempdir.descendant("loop")
+        loop = tempdir / "loop"
         fs.link(source=loop, to=loop)
 
         with self.assertRaises(exceptions.SymbolicLoop) as e:
@@ -1588,7 +1579,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         # it would be a race condition, so we allow the latter.
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+            os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
         }
 
         self.assertIn(str(e.exception), acceptable)
@@ -1598,7 +1589,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        loop = tempdir.descendant("loop")
+        loop = tempdir / "loop"
         fs.link(source=loop, to=loop)
 
         with self.assertRaises(exceptions.SymbolicLoop) as e:
@@ -1608,7 +1599,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         # it would be a race condition, so we allow the latter.
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+            os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
         }
 
         self.assertIn(str(e.exception), acceptable)
@@ -1618,7 +1609,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        loop = tempdir.descendant("loop")
+        loop = tempdir / "loop"
         fs.link(source=loop, to=loop)
 
         with self.assertRaises(exceptions.SymbolicLoop) as e:
@@ -1628,7 +1619,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         # it would be a race condition, so we allow the latter.
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+            os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
         }
 
         self.assertIn(str(e.exception), acceptable)
@@ -1638,7 +1629,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        loop = tempdir.descendant("loop")
+        loop = tempdir / "loop"
         fs.link(source=loop, to=loop)
 
         with self.assertRaises(exceptions.SymbolicLoop) as e:
@@ -1648,7 +1639,7 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         # it would be a race condition, so we allow the latter.
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
-            os.strerror(errno.ELOOP) + ": " + str(loop.descendant("child")),
+            os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
             os.strerror(errno.ELOOP) + ": " + str(
                 loop.descendant("child", "path"),
             ),

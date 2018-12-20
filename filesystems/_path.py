@@ -11,6 +11,11 @@ class Path(object):
     def __init__(self, *segments):
         self.segments = pvector(segments)
 
+    def __div__(self, other):
+        if not isinstance(other, str):  # FIXME: Unicode paths
+            return NotImplemented
+        return self.descendant(other)
+
     def __repr__(self):
         return "<Path {}>".format(self)
 
@@ -68,7 +73,7 @@ class Path(object):
     def sibling(self, name):
         if not self.segments:
             raise ValueError("The root file path has no siblings.")
-        return self.parent().descendant(name)
+        return self.parent() / name
 
     def relative_to(self, path):
         """

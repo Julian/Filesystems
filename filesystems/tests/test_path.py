@@ -6,6 +6,13 @@ from filesystems._path import RelativePath
 
 
 class TestPath(TestCase):
+    def test_div(self):
+        self.assertEqual(Path("a") / "b" / "c", Path("a", "b", "c"))
+
+    def test_div_nonsense(self):
+        with self.assertRaises(TypeError):
+            Path("a") / object()
+
     def test_descendant(self):
         self.assertEqual(Path("a", "b").descendant("c"), Path("a", "b", "c"))
 
