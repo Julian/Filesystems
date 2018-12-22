@@ -34,7 +34,6 @@ class Path(object):
     def from_string(cls, path):
         """
         Create a path out of an OS-specific string.
-
         """
 
         if not path:
@@ -55,7 +54,6 @@ class Path(object):
     def heritage(self):
         """
         The (top-down) direct ancestors of this path, including itself.
-
         """
 
         segments = pvector()
@@ -80,7 +78,6 @@ class Path(object):
         Resolve this path against another ``Path``.
 
         A ``Path`` is always absolute, and therefore always resolves to itself.
-
         """
 
         return self
@@ -100,7 +97,6 @@ class RelativePath(object):
     def relative_to(self, path):
         """
         Resolve this path against another ``Path``.
-
         """
 
         return path.descendant(*self.segments)

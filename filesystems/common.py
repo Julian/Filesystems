@@ -17,7 +17,6 @@ def _realpath(fs, path):
 
         The ``os.path`` module's realpath does not error or warn about
         loops, but we do, following the behavior of GNU ``realpath(1)``!
-
     """
 
     real = Path.root()
@@ -73,7 +72,6 @@ def create(
 ):
     """
     Create a new kind of filesystem.
-
     """
 
     return attr.s(hash=True)(

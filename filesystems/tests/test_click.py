@@ -22,7 +22,6 @@ def parse(type, value):
     Invoke a ``ParamType`` to convert a value in integration.
 
     No idea if there's a simpler way to do this.
-
     """
 
     result = []

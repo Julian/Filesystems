@@ -7,14 +7,12 @@ import attr
 class InvalidPath(Exception):
     """
     The given string path is not valid.
-
     """
 
 
 class InvalidMode(Exception):
     """
     The given mode is not valid.
-
     """
 
 
