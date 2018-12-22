@@ -10,20 +10,52 @@ from filesystems.common import _PY3
 from filesystems._path import RelativePath
 
 
-class TestFS(object):
-    def test_open_read_non_existing_file(self):
+@with_scenarios()
+class _NonExistingFileMixin(object):
+
+    scenarios = [
+        (
+            "read_bytes",
+            dict(act_on=lambda fs, path: fs.open(path=path, mode="rb")),
+        ), (
+            "read_native",
+            dict(act_on=lambda fs, path: fs.open(path=path, mode="r")),
+        ), (
+            "read_text",
+            dict(act_on=lambda fs, path: fs.open(path=path, mode="rt")),
+        ), (
+            "stat",
+            dict(act_on=lambda fs, path: fs.stat(path=path)),
+        ), (
+            "list_directory",
+            dict(act_on=lambda fs, path: fs.list_directory(path=path)),
+        ), (
+            "remove_empty_directory",
+            dict(act_on=lambda fs, path: fs.remove_empty_directory(path=path)),
+        ), (
+            "remove_file",
+            dict(act_on=lambda fs, path: fs.remove_file(path=path)),
+        ), (
+            "readlink",
+            dict(act_on=lambda fs, path: fs.readlink(path=path)),
+        ),
+    ]
+
+    def test_non_existing(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
         with self.assertRaises(exceptions.FileNotFound) as e:
-            fs.open(tempdir / "unittesting")
+            self.act_on(fs=fs, path=tempdir / "does not exist")
 
         self.assertEqual(
             str(e.exception),
-            os.strerror(errno.ENOENT) + ": " + str(tempdir / "unittesting"),
+            os.strerror(errno.ENOENT) + ": " + str(tempdir / "does not exist"),
         )
 
+
+class TestFS(_NonExistingFileMixin):
     def test_open_read_non_existing_nested_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -181,21 +213,6 @@ class TestFS(object):
         fs.remove(directory)
 
         self.assertEqual(fs.children(path=tempdir), s())
-
-    def test_remove_non_existing_thing(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        child = tempdir / "child"
-
-        with self.assertRaises(exceptions.FileNotFound) as e:
-            fs.remove(path=child)
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ENOENT) + ": " + str(child),
-        )
 
     def test_link(self):
         fs = self.FS()
@@ -713,22 +730,6 @@ class TestFS(object):
             os.strerror(errno.ENOTEMPTY) + ": " + str(nonempty),
         )
 
-    def test_remove_nonexisting_empty_directory(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        directory = tempdir / "dir"
-        self.assertFalse(fs.is_dir(path=directory))
-
-        with self.assertRaises(exceptions.FileNotFound) as e:
-            fs.remove_empty_directory(path=directory)
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ENOENT) + ": " + str(directory),
-        )
-
     def test_remove_empty_directory_but_its_a_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -790,22 +791,6 @@ class TestFS(object):
 
         fs.remove_file(path=child)
         self.assertFalse(fs.exists(path=child))
-
-    def test_remove_nonexisting_file(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        child = tempdir / "child"
-        self.assertFalse(fs.is_file(path=child))
-
-        with self.assertRaises(exceptions.FileNotFound) as e:
-            fs.remove_file(path=child)
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ENOENT) + ": " + str(child),
-        )
 
     def test_remove_file_on_empty_directory(self):
         fs = self.FS()
@@ -891,22 +876,6 @@ class TestFS(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
         self.assertEqual(set(fs.list_directory(tempdir)), set())
-
-    def test_list_non_existing_directory(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        directory = tempdir / "dir"
-        self.assertFalse(fs.is_dir(path=directory))
-
-        with self.assertRaises(exceptions.FileNotFound) as e:
-            fs.list_directory(directory)
-
-        self.assertEqual(
-            str(e.exception),
-            os.strerror(errno.ENOENT) + ": " + str(directory),
-        )
 
     def test_list_directory_link(self):
         fs = self.FS()
@@ -1093,19 +1062,6 @@ class TestFS(object):
             str(e.exception), os.strerror(errno.EINVAL) + ": " + str(tempdir),
         )
 
-    def test_readlink_non_existing_file(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        child = tempdir / "child"
-        with self.assertRaises(exceptions.FileNotFound) as e:
-            fs.readlink(child)
-
-        self.assertEqual(
-            str(e.exception), os.strerror(errno.ENOENT) + ": " + str(child),
-        )
-
     def test_readlink_relative(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -1289,6 +1245,7 @@ class WriteLinesMixin(object):
 
         with fs.open(tempdir / "unittesting") as g:
             self.assertEqual(g.read(), text)
+
 
 
 @with_scenarios()
