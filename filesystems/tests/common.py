@@ -1486,6 +1486,9 @@ class _SymbolicLoopMixin(object):
                 "stat",
                 dict(act_on=lambda fs, path: fs.stat(path=path)),
             ), (
+                "exists",
+                dict(act_on=lambda fs, path: fs.exists(path=path)),
+            ), (
                 "is_dir",
                 dict(act_on=lambda fs, path: fs.is_dir(path=path)),
             ), (
