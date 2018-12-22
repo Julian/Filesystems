@@ -1649,3 +1649,35 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         }
 
         self.assertIn(str(e.exception), acceptable)
+
+    def test_is_link_loop(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir / "loop"
+        fs.link(source=loop, to=loop)
+        self.assertTrue(fs.is_link(path=loop))
+
+    def test_is_link_loop_descendant(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        loop = tempdir / "loop"
+        fs.link(source=loop, to=loop)
+
+        with self.assertRaises(exceptions.SymbolicLoop) as e:
+            fs.is_link(path=loop.descendant("child", "path"))
+
+        # We'd really like the first one, but on a real native FS, looking for
+        # it would be a race condition, so we allow the latter.
+        acceptable = {
+            os.strerror(errno.ELOOP) + ": " + str(loop),
+            os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
+            os.strerror(errno.ELOOP) + ": " + str(
+                loop.descendant("child", "path"),
+            ),
+        }
+
+        self.assertIn(str(e.exception), acceptable)
