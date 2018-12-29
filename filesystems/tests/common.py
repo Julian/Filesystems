@@ -264,6 +264,17 @@ class TestFS(_NonExistingFileMixin):
 
         self.assertEqual(fs.children(path=tempdir), s())
 
+    def test_removing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.removing(path=tempdir / "directory") as path:
+            self.assertFalse(fs.is_dir(path=path))
+            fs.create_directory(path=path)
+            self.assertTrue(fs.is_dir(path=path))
+        self.assertFalse(fs.is_dir(path=path))
+
     def test_link(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()

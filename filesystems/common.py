@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from fnmatch import fnmatch
 import stat
 
@@ -77,7 +78,9 @@ def create(
                 open=lambda fs, path, mode="r": open_file(
                     fs=fs, path=path, mode=mode,
                 ),
+
                 remove_file=remove_file,
+                removing=_removing,
 
                 get_contents=_get_contents,
                 set_contents=_set_contents,
@@ -109,6 +112,14 @@ def create(
             ),
         ),
     )
+
+
+@contextmanager
+def _removing(fs, path):
+    try:
+        yield path
+    finally:
+        fs.remove(path=path)
 
 
 def _get_contents(fs, path):
