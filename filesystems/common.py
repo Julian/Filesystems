@@ -79,6 +79,10 @@ def create(
                 ),
                 remove_file=remove_file,
 
+                get_contents=_get_contents,
+                set_contents=_set_contents,
+                create_with_contents=_create_with_contents,
+
                 remove=remove,
 
                 create_directory=create_directory,
@@ -101,9 +105,25 @@ def create(
                 children=_children,
                 glob_children=_glob_children,
                 contents_of=_open_and_read,
+
             ),
         ),
     )
+
+
+def _get_contents(fs, path):
+    with fs.open(path=path) as file:
+        return file.read()
+
+
+def _set_contents(fs, path, contents):
+    with fs.open(path=path, mode="w") as file:
+        file.write(contents)
+
+
+def _create_with_contents(fs, path, contents):
+    with fs.create(path=path) as file:
+        file.write(contents)
 
 
 def _children(fs, path):

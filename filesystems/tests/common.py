@@ -192,6 +192,56 @@ class TestFS(_NonExistingFileMixin):
             str(e.exception), os.strerror(errno.EEXIST) + ": " + str(to),
         )
 
+    def test_get_set_contents(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        fs.set_contents(tempdir / "unittesting", "foo\nbar\nbaz")
+        self.assertEqual(
+            fs.get_contents(path=tempdir / "unittesting"),
+            "foo\nbar\nbaz",
+        )
+
+    def test_set_contents_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        fs.set_contents(tempdir / "unittesting", "foo\nbar\nbaz")
+        fs.set_contents(tempdir / "unittesting", "spam\nquux\n")
+
+        self.assertEqual(
+            fs.get_contents(path=tempdir / "unittesting"),
+            "spam\nquux\n",
+        )
+
+    def test_create_with_contents(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        fs.create_with_contents(tempdir / "unittesting", "foo\nbar\nbaz")
+
+        self.assertEqual(
+            fs.get_contents(path=tempdir / "unittesting"),
+            "foo\nbar\nbaz",
+        )
+
+    def test_create_with_contents_existing_file(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        fs.set_contents(tempdir / "unittesting", "foo\nbar\nbaz")
+        with self.assertRaises(exceptions.FileExists):
+            fs.create_with_contents(tempdir / "unittesting", "spam\nquux\n")
+
+        self.assertEqual(
+            fs.get_contents(path=tempdir / "unittesting"),
+            "foo\nbar\nbaz",
+        )
+
     def test_remove(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
