@@ -1,14 +1,10 @@
 from fnmatch import fnmatch
 import stat
-import sys
 
 from pyrsistent import pset
 import attr
 
-from filesystems import Path, exceptions
-
-
-_PY3 = sys.version_info[0] >= 3
+from filesystems import _PY3, Path, exceptions
 
 
 def _realpath(fs, path):

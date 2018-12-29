@@ -3,6 +3,7 @@ import os
 from pyrsistent import pvector
 import attr
 
+from filesystems import _PY3
 from filesystems.exceptions import InvalidPath
 
 
@@ -15,6 +16,9 @@ class Path(object):
         if not isinstance(other, str):  # FIXME: Unicode paths
             return NotImplemented
         return self.descendant(other)
+
+    if _PY3:
+        __truediv__ = __div__
 
     def __repr__(self):
         return "<Path {}>".format(self)
