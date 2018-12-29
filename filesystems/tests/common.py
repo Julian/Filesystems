@@ -1247,7 +1247,6 @@ class WriteLinesMixin(object):
             self.assertEqual(g.read(), text)
 
 
-
 @with_scenarios()
 class NonExistentChildMixin(object):
 
