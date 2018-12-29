@@ -1,7 +1,7 @@
-from unittest import TestCase
+from unittest import TestCase, skipIf
 import os
 
-from filesystems import Path, exceptions
+from filesystems import _PY3, Path, exceptions
 from filesystems._path import RelativePath
 
 
@@ -143,8 +143,25 @@ class TestPath(TestCase):
             "<Path /a/b/c>"
         )
 
+    @skipIf(not _PY3, "PathLike is PY3-only.")
+    def test_is_pathlike(self):
+        self.assertEqual(
+            os.fspath(Path.from_string(os.sep + os.sep.join("abc"))),
+            os.sep + os.sep.join("abc"),
+        )
+
 
 class TestRelativePath(TestCase):
+    def test_div(self):
+        self.assertEqual(
+            RelativePath("a") / "b" / "c",
+            RelativePath("a", "b", "c"),
+        )
+
+    def test_div_nonsense(self):
+        with self.assertRaises(TypeError):
+            RelativePath("a") / object()
+
     def test_relative_to(self):
         self.assertEqual(
             RelativePath("a", "b", "c").relative_to(Path("d", "e")),
@@ -160,4 +177,23 @@ class TestRelativePath(TestCase):
         self.assertEqual(
             repr(RelativePath("a", "b", "c")),
             "<Path a/b/c>"
+        )
+
+    def test_descendant(self):
+        self.assertEqual(
+            RelativePath("a", "b").descendant("c"),
+            RelativePath("a", "b", "c"),
+        )
+
+    def test_multi_descendant(self):
+        self.assertEqual(
+            RelativePath("a").descendant("b", "c"),
+            RelativePath("a", "b", "c"),
+        )
+
+    @skipIf(not _PY3, "PathLike is PY3-only.")
+    def test_is_pathlike(self):
+        self.assertEqual(
+            os.fspath(RelativePath("a", "b", "c")),
+            os.path.join("a", "b", "c"),
         )

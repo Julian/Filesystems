@@ -17,14 +17,15 @@ class Path(object):
             return NotImplemented
         return self.descendant(other)
 
-    if _PY3:
-        __truediv__ = __div__
-
     def __repr__(self):
         return "<Path {}>".format(self)
 
     def __str__(self):
         return os.sep + os.sep.join(self.segments)
+
+    if _PY3:
+        __truediv__ = __div__
+        __fspath__ = __str__
 
     @classmethod
     def cwd(cls):
@@ -92,11 +93,23 @@ class RelativePath(object):
     def __init__(self, *segments):
         self.segments = pvector(segments)
 
+    def __div__(self, other):
+        if not isinstance(other, str):  # FIXME: Unicode paths
+            return NotImplemented
+        return self.descendant(other)
+
     def __repr__(self):
         return "<Path {}>".format(self)
 
     def __str__(self):
         return os.sep.join(self.segments)
+
+    if _PY3:
+        __truediv__ = __div__
+        __fspath__ = __str__
+
+    def descendant(self, *segments):
+        return self.__class__(*self.segments.extend(segments))
 
     def relative_to(self, path):
         """
