@@ -143,6 +143,12 @@ class TestPath(TestCase):
             "<Path /a/b/c>"
         )
 
+    def test_expanded(self):
+        self.assertEqual(
+            Path.expanded("~/foo/~/bar"),
+            Path.from_string(os.path.expanduser("~/foo/~/bar")),
+        )
+
     @skipIf(not _PY3, "PathLike is PY3-only.")
     def test_is_pathlike(self):
         self.assertEqual(

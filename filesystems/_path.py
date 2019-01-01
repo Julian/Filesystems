@@ -1,4 +1,4 @@
-import os
+import os.path
 
 from pyrsistent import pvector
 import attr
@@ -30,6 +30,10 @@ class Path(object):
     @classmethod
     def cwd(cls):
         return cls.from_string(os.getcwd())
+
+    @classmethod
+    def expanded(cls, path):
+        return cls.from_string(os.path.expanduser(path))
 
     @classmethod
     def root(cls):
