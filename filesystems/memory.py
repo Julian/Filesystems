@@ -25,25 +25,7 @@ class _BytesIOIsTerrible(BytesIO):
 
 
 def FS():
-    state = _State()
-    return common.create(
-        name="MemoryFS",
-
-        create_file=_fs(state.create_file),
-        open_file=_fs(state.open_file),
-        remove_file=_fs(state.remove_file),
-
-        create_directory=_fs(state.create_directory),
-        list_directory=_fs(state.list_directory),
-        remove_empty_directory=_fs(state.remove_empty_directory),
-        temporary_directory=_fs(state.temporary_directory),
-
-        stat=_fs(state.stat),
-
-        lstat=_fs(state.lstat),
-        link=lambda fs, *args, **kwargs: state.link(*args, fs=fs, **kwargs),
-        readlink=_fs(state.readlink),
-    )()
+    return _State().FS(name="MemoryFS")
 
 
 def _fs(fn):
@@ -370,6 +352,26 @@ class _State(object):
         for segment in path.segments:
             node = node[segment]
         return node
+
+    def FS(self, name):
+        return common.create(
+            name=name,
+
+            create_file=_fs(self.create_file),
+            open_file=_fs(self.open_file),
+            remove_file=_fs(self.remove_file),
+
+            create_directory=_fs(self.create_directory),
+            list_directory=_fs(self.list_directory),
+            remove_empty_directory=_fs(self.remove_empty_directory),
+            temporary_directory=_fs(self.temporary_directory),
+
+            stat=_fs(self.stat),
+
+            lstat=_fs(self.lstat),
+            link=lambda fs, *args, **kwargs: self.link(*args, fs=fs, **kwargs),
+            readlink=_fs(self.readlink),
+        )()
 
     def create_directory(self, path):
         self[path].create_directory(path=path)
