@@ -8,7 +8,7 @@ import attr
 from filesystems import _PY3, Path, exceptions
 
 
-def _realpath(fs, path):
+def _realpath(fs, path, seen=pset()):
     """
     .. warning::
 
@@ -19,7 +19,7 @@ def _realpath(fs, path):
     real = Path.root()
     for segment in path.segments:
         current = real / segment
-        seen = {current}
+        seen = seen.add(current)
         while True:
             try:
                 current = fs.readlink(current)
@@ -29,7 +29,7 @@ def _realpath(fs, path):
                 current = current.relative_to(real)
                 if current in seen:
                     raise exceptions.SymbolicLoop(path)
-                seen.add(current)
+                current = fs.realpath(current, seen=seen)
         real = current
     return real
 

@@ -464,6 +464,7 @@ class TestFS(_NonExistingFileMixin):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
 
         source, to = tempdir / "source", tempdir / "to"
         fs.create_directory(source)
@@ -551,6 +552,7 @@ class TestFS(_NonExistingFileMixin):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
 
         source, to = tempdir / "source", tempdir / "to"
         fs.link(source=source, to=to)
@@ -602,6 +604,45 @@ class TestFS(_NonExistingFileMixin):
         self.assertEqual(
             fs.realpath(one / "3"),
             zero.descendant("1", "2", "3"),
+        )
+
+    def test_realpath_mega_link(self):
+        """
+        Now with even more nested links!
+
+        Make sure we don't just accidentally solve the double link case
+        and not the more general one.
+        """
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+        tempdir = fs.realpath(tempdir)
+
+        # /1 -> /0/1
+        # /2/3 -> /1/2/3
+        # /3 -> /2/3
+        # /3/5 -> /3/4/5
+        # realpath(/3/5) == /0/1/2/3/4/5
+
+        directories = (
+            tempdir / "0",
+            tempdir / "1",
+            tempdir / "2",
+            tempdir / "3",
+        )
+        fs.create_directory(path=directories[0])
+        fs.create_directory(path=directories[0] / "1")
+        fs.create_directory(path=directories[2])
+        fs.link(source=directories[0] / "1", to=directories[1])
+        fs.create_directory(path=directories[1] / "2")
+        fs.create_directory(path=directories[1] / "2" / "3")
+        fs.link(source=directories[1] / "2" / "3", to=directories[2] / "3")
+        fs.link(source=directories[2] / "3", to=directories[3])
+        fs.link(source=directories[3] / "4" / "5", to=directories[3] / "5")
+
+        self.assertEqual(
+            fs.realpath(tempdir / "3" / "5"),
+            directories[0].descendant("1", "2", "3", "4", "5"),
         )
 
     def test_remove_does_not_follow_directory_links(self):
