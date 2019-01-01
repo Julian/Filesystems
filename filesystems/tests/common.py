@@ -195,6 +195,19 @@ class TestFS(_NonExistingFileMixin):
             str(e.exception), os.strerror(errno.EEXIST) + ": " + str(to),
         )
 
+    def test_get_contents(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir / "unittesting", "wb") as f:
+            f.write(b"some more things!")
+
+        self.assertEqual(
+            fs.get_contents(tempdir / "unittesting"),
+            "some more things!",
+        )
+
     def test_get_set_contents(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -461,7 +474,7 @@ class TestFS(_NonExistingFileMixin):
         with fs.open(source, "wb") as f:
             f.write(b"some things way over here!")
 
-        self.assertEqual(fs.contents_of(third), "some things way over here!")
+        self.assertEqual(fs.get_contents(third), "some things way over here!")
 
     def test_link_child(self):
         fs = self.FS()
@@ -505,7 +518,7 @@ class TestFS(_NonExistingFileMixin):
         with fs.open(source, "wb") as f:
             f.write(b"some things over here!")
 
-        self.assertEqual(fs.contents_of(to), "some things over here!")
+        self.assertEqual(fs.get_contents(to), "some things over here!")
 
     def test_write_to_link(self):
         fs = self.FS()
@@ -518,7 +531,7 @@ class TestFS(_NonExistingFileMixin):
         with fs.open(to, "wb") as f:
             f.write(b"some things over here!")
 
-        self.assertEqual(fs.contents_of(source), "some things over here!")
+        self.assertEqual(fs.get_contents(source), "some things over here!")
 
     def test_write_to_created_child(self):
         fs = self.FS()
@@ -533,7 +546,7 @@ class TestFS(_NonExistingFileMixin):
         with fs.create(child) as f:
             f.write("some things over here!")
 
-        self.assertEqual(fs.contents_of(child), "some things over here!")
+        self.assertEqual(fs.get_contents(child), "some things over here!")
 
     def test_link_nonexistant_parent(self):
         fs = self.FS()
@@ -1091,19 +1104,6 @@ class TestFS(_NonExistingFileMixin):
         self.assertEqual(
             fs.glob_children(path=tempdir, glob="*b*"),
             s(b, abc, fedcba),
-        )
-
-    def test_contents_of(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        with fs.open(tempdir / "unittesting", "wb") as f:
-            f.write(b"some more things!")
-
-        self.assertEqual(
-            fs.contents_of(tempdir / "unittesting"),
-            "some more things!",
         )
 
     # With how crazy computers are, I'm not actually 100% sure that

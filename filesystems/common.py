@@ -85,7 +85,6 @@ def create(
                 remove_empty_directory=remove_empty_directory,
                 temporary_directory=temporary_directory,
 
-                contents_of=_open_and_read,
                 get_contents=_get_contents,
                 set_contents=_set_contents,
                 create_with_contents=_create_with_contents,
