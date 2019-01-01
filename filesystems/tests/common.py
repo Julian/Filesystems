@@ -1217,8 +1217,7 @@ class InvalidModeMixin(object):
         self.addCleanup(fs.remove, tempdir)
 
         with self.assertRaises(exceptions.InvalidMode):
-            with fs.open(tempdir / "unittesting", self.mode):
-                pass
+            fs.open(tempdir / "unittesting", self.mode)
 
 
 @with_scenarios()
