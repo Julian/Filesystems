@@ -145,6 +145,19 @@ def _stat(fs, path):
         raise
 
 
+def _lstat(fs, path):
+    try:
+        return os.lstat(str(path))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(path)
+        elif error.errno == exceptions.SymbolicLoop.errno:
+            raise exceptions.SymbolicLoop(path)
+        raise
+
+
 FS = common.create(
     name="NativeFS",
 
@@ -157,9 +170,9 @@ FS = common.create(
     remove_empty_directory=_remove_empty_directory,
     temporary_directory=lambda fs: Path.from_string(tempfile.mkdtemp()),
 
+    stat=_stat,
+
+    lstat=_lstat,
     link=_link,
     readlink=_readlink,
-
-    stat=_stat,
-    is_link=lambda fs, path: os.path.islink(str(path)),
 )

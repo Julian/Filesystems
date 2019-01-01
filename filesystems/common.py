@@ -49,8 +49,8 @@ def _recursive_remove(fs, path):
 def create(
     name,
 
-    open_file,
     create_file,
+    open_file,
     remove_file,
 
     create_directory,
@@ -58,11 +58,11 @@ def create(
     remove_empty_directory,
     temporary_directory,
 
+    stat,
+
+    lstat,
     link,
     readlink,
-
-    stat,
-    is_link,
 
     realpath=_realpath,
     remove=_recursive_remove,
@@ -78,37 +78,37 @@ def create(
                 open=lambda fs, path, mode="r": open_file(
                     fs=fs, path=path, mode=mode,
                 ),
-
                 remove_file=remove_file,
-                removing=_removing,
-
-                get_contents=_get_contents,
-                set_contents=_set_contents,
-                create_with_contents=_create_with_contents,
-
-                remove=remove,
 
                 create_directory=create_directory,
                 list_directory=list_directory,
                 remove_empty_directory=remove_empty_directory,
                 temporary_directory=temporary_directory,
 
+                contents_of=_open_and_read,
+                get_contents=_get_contents,
+                set_contents=_set_contents,
+                create_with_contents=_create_with_contents,
+
+                remove=remove,
+                removing=_removing,
+
+                stat=stat,
+
+                lstat=lstat,
                 link=link,
                 readlink=readlink,
                 realpath=realpath,
 
-                stat=stat,
-                is_link=is_link,
-
                 exists=_exists,
                 is_dir=_is_dir,
                 is_file=_is_file,
+                is_link=_is_link,
 
                 touch=_touch,
+
                 children=_children,
                 glob_children=_glob_children,
-                contents_of=_open_and_read,
-
             ),
         ),
     )
@@ -201,6 +201,22 @@ def _is_file(fs, path):
     """
     try:
         return stat.S_ISREG(fs.stat(path).st_mode)
+    except exceptions.FileNotFound:
+        return False
+
+
+def _is_link(fs, path):
+    """
+    Check that the given path is a symbolic link.
+
+    Note that unlike `os.path.islink`, we *do* propagate file system errors
+    other than a non-existent path or non-existent directory component.
+
+    E.g., should EPERM or ELOOP be raised, an exception will bubble up.
+    """
+
+    try:
+        return stat.S_ISLNK(fs.lstat(path).st_mode)
     except exceptions.FileNotFound:
         return False
 

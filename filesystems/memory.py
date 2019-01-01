@@ -28,6 +28,7 @@ def FS():
     state = _State()
     return common.create(
         name="MemoryFS",
+
         create_file=_fs(state.create_file),
         open_file=_fs(state.open_file),
         remove_file=_fs(state.remove_file),
@@ -37,11 +38,11 @@ def FS():
         remove_empty_directory=_fs(state.remove_empty_directory),
         temporary_directory=_fs(state.temporary_directory),
 
+        stat=_fs(state.stat),
+
+        lstat=_fs(state.lstat),
         link=lambda fs, *args, **kwargs: state.link(*args, fs=fs, **kwargs),
         readlink=_fs(state.readlink),
-
-        stat=_fs(state.stat),
-        is_link=_fs(state.is_link),
     )()
 
 
@@ -103,8 +104,7 @@ class _File(object):
     def stat(self, path):
         return os.stat_result((stat.S_IFREG,) + (0,) * 9)
 
-    def is_link(self):
-        return False
+    lstat = stat
 
 
 @attr.s(hash=True)
@@ -145,8 +145,7 @@ class _FileChild(object):
     def stat(self, path):
         raise exceptions.NotADirectory(path)
 
-    def is_link(self):
-        return False
+    lstat = stat
 
 
 @attr.s(hash=True)
@@ -206,8 +205,7 @@ class _Directory(object):
     def stat(self, path):
         return os.stat_result((stat.S_IFDIR,) + (0,) * 9)
 
-    def is_link(self):
-        return False
+    lstat = stat
 
 
 @attr.s(hash=True)
@@ -270,8 +268,7 @@ class _DirectoryChild(object):
     def stat(self, path):
         raise exceptions.FileNotFound(path)
 
-    def is_link(self):
-        return False
+    lstat = stat
 
 
 @attr.s(hash=True)
@@ -312,8 +309,8 @@ class _Link(object):
     def stat(self, path):
         return self._entry_at(path=path).stat(path=path)
 
-    def is_link(self):
-        return True
+    def lstat(self, path):
+        return os.stat_result((stat.S_IFLNK,) + (0,) * 9)
 
 
 @attr.s(hash=True)
@@ -354,8 +351,7 @@ class _NoSuchEntry(object):
     def stat(self, path):
         raise exceptions.FileNotFound(path)
 
-    def is_link(self):
-        return False
+    lstat = stat
 
 
 _NO_SUCH_ENTRY = _NoSuchEntry()
@@ -406,8 +402,8 @@ class _State(object):
     def readlink(self, path):
         return self[path].readlink(path=path)
 
+    def lstat(self, path):
+        return self[path].lstat(path=path)
+
     def stat(self, path):
         return self[path].stat(path=path)
-
-    def is_link(self, path):
-        return self[path].is_link()

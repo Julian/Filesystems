@@ -27,6 +27,9 @@ class _NonExistingFileMixin(object):
             "stat",
             dict(act_on=lambda fs, path: fs.stat(path=path)),
         ), (
+            "lstat",
+            dict(act_on=lambda fs, path: fs.lstat(path=path)),
+        ), (
             "list_directory",
             dict(act_on=lambda fs, path: fs.list_directory(path=path)),
         ), (
@@ -1443,6 +1446,10 @@ class NonExistentChildMixin(object):
                 "stat", dict(
                     act_on=lambda fs, path: fs.stat(path=path),
                 ),
+            ), (
+                "lstat", dict(
+                    act_on=lambda fs, path: fs.lstat(path=path),
+                ),
             ),
         ],
     )
@@ -1480,17 +1487,6 @@ class NonExistentChildMixin(object):
 
         non_existing_child = existing.descendant("non_existing", "thing")
         self.assertFalse(fs.exists(non_existing_child))
-
-    def test_is_link(self):
-        fs = self.FS()
-        tempdir = fs.temporary_directory()
-        self.addCleanup(fs.remove, tempdir)
-
-        existing = tempdir / "unittesting"
-        self.create(fs=fs, path=existing)
-
-        non_existing_child = existing.descendant("non_existing", "thing")
-        self.assertFalse(fs.is_link(non_existing_child))
 
 
 @with_scenarios()
