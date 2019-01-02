@@ -43,6 +43,8 @@ def install_python_linux(version):
         ],
     )
 
+    return 'python{}'.format(version)
+
 
 def install_python_darwin(version):
     # TODO: get the latest, not the earliest
@@ -52,12 +54,18 @@ def install_python_darwin(version):
     check_call(['pyenv', 'install', pyenv_version])
     check_call(['pyenv', 'global', pyenv_version])
 
+    return os.path.join(
+        os.path.expanduser('~'),
+        '.pyenv',
+        'shims',
+        'python{}'.format(version),
+    ),
+
 
 def platform_dispatch(d, *args, **kwargs):
     for name, f in d.items():
         if sys.platform.startswith(name):
-            f(*args, **kwargs)
-            break
+            return f(*args, **kwargs)
     else:
         raise Exception('Platform not supported: {}'.format(sys.platform))
 
@@ -69,7 +77,7 @@ def install_python(*args, **kwargs):
         # 'win': install_python_windows,
     }
 
-    platform_dispatch(d, *args, **kwargs)
+    return platform_dispatch(d, *args, **kwargs)
 
 
 def get_virtualenv(version):
@@ -91,7 +99,7 @@ def get_virtualenv(version):
 
 def main():
     version = os.environ['TRAVIS_PYTHON_VERSION']
-    install_python(version)
+    python_path = install_python(version)
 
     virtualenv_path = get_virtualenv('16.2.0')
 
@@ -102,12 +110,7 @@ def main():
 
     check_call(
         [
-            os.path.join(
-                os.path.expanduser('~'),
-                '.pyenv',
-                'shims',
-                'python{}'.format(version),
-            ),
+            python_path,
             '-m', 'virtualenv',
             env_path,
         ],
