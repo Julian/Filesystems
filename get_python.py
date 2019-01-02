@@ -102,7 +102,12 @@ def main():
 
     check_call(
         [
-            os.path.join(os.path.expanduser('~'), 'python{}'.format(version)),
+            os.path.join(
+                os.path.expanduser('~'),
+                '.pyenv',
+                'shims',
+                'python{}'.format(version),
+            ),
             '-m', 'virtualenv',
             env_path,
         ],
