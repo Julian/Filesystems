@@ -44,6 +44,15 @@ def install_python_linux(version):
     )
 
 
+def install_python_darwin(version):
+    # TODO: get the latest, not the earliest
+    pyenv_version = '{}.0'.format(version)
+
+    check_call(['brew', 'install', 'readline', 'xz', 'pyenv'])
+    check_call(['pyenv', 'install', pyenv_version])
+    check_call(['pyenv', 'global', pyenv_version])
+
+
 def platform_dispatch(d, *args, **kwargs):
     for name, f in d.items():
         if sys.platform.startswith(name):
@@ -56,7 +65,7 @@ def platform_dispatch(d, *args, **kwargs):
 def install_python(*args, **kwargs):
     d = {
         'linux': install_python_linux,
-        # 'darwin': install_python_darwin,
+        'darwin': install_python_darwin,
         # 'win': install_python_windows,
     }
 
@@ -93,7 +102,7 @@ def main():
 
     check_call(
         [
-            'python{}'.format(version),
+            os.path.join(os.path.expanduser('~'), 'python{}'.format(version)),
             '-m', 'virtualenv',
             env_path,
         ],
