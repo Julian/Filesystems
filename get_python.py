@@ -48,7 +48,7 @@ def install_python_linux(version):
 
 def install_python_darwin(version):
     # TODO: get the latest, not the earliest
-    pyenv_version = '{}.0'.format(version)
+    pyenv_version = version
 
     check_call(['pyenv', 'install', pyenv_version])
     check_call(['pyenv', 'global', pyenv_version])
