@@ -16,6 +16,7 @@ def get_url(url, path):
     check_call(
         [
             'curl',
+            '-L',
             '-o', path,
             url,
         ],
