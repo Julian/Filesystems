@@ -105,7 +105,7 @@ def main():
     env_path = '.venv'
 
     env = dict(os.environ)
-    env['PYTHON_PATH'] = virtualenv_path
+    env['PYTHONPATH'] = virtualenv_path
 
     check_call(
         [
