@@ -60,6 +60,20 @@ class TestPath(TestCase):
             RelativePath("a", "b", "c"),
         )
 
+    def test_from_string_trailing_slash(self):
+        self.assertEqual(
+            Path.from_string(os.sep + os.sep.join("ab") + os.sep),
+            Path("a", "b"),
+        )
+
+    # Not sure this is better than only stripping one, but it's easier to
+    # do, so we start with this.
+    def test_from_string_multiple_trailing_slashes(self):
+        self.assertEqual(
+            Path.from_string(os.sep + os.sep.join("ab") + os.sep + os.sep),
+            Path("a", "b"),
+        )
+
     def test_from_string_repeated_separator(self):
         self.assertEqual(
             Path.from_string(
@@ -69,11 +83,10 @@ class TestPath(TestCase):
                     os.sep * 2 +
                     "b" +
                     os.sep +
-                    "c" +
-                    os.sep * 2
+                    "c"
                 ),
             ),
-            Path("", "", "a", "", "b", "c", "", ""),
+            Path("", "", "a", "", "b", "c"),
         )
 
     def test_from_string_relative_repeated_separator(self):

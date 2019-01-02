@@ -48,7 +48,7 @@ class Path(object):
         if not path:
             raise InvalidPath(path)
 
-        drive, rest = os.path.splitdrive(path)
+        drive, rest = os.path.splitdrive(path.rstrip(os.sep))
         split = rest.split(os.sep)
         if split[0]:
             return RelativePath(*split)
