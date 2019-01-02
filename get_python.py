@@ -58,7 +58,7 @@ def install_python_darwin(version):
         '.pyenv',
         'shims',
         'python{}'.format(version),
-    ),
+    )
 
 
 def platform_dispatch(d, *args, **kwargs):
