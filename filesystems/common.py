@@ -71,46 +71,43 @@ def create(
     Create a new kind of filesystem.
     """
 
-    return attr.s(hash=True)(
-        type(
-            name, (object,), dict(
-                create=create_file,
-                open=lambda fs, path, mode="r": open_file(
-                    fs=fs, path=path, mode=mode,
-                ),
-                remove_file=remove_file,
-
-                create_directory=create_directory,
-                list_directory=list_directory,
-                remove_empty_directory=remove_empty_directory,
-                temporary_directory=temporary_directory,
-
-                get_contents=_get_contents,
-                set_contents=_set_contents,
-                create_with_contents=_create_with_contents,
-
-                remove=remove,
-                removing=_removing,
-
-                stat=stat,
-
-                lstat=lstat,
-                link=link,
-                readlink=readlink,
-                realpath=realpath,
-
-                exists=_exists,
-                is_dir=_is_dir,
-                is_file=_is_file,
-                is_link=_is_link,
-
-                touch=_touch,
-
-                children=_children,
-                glob_children=_glob_children,
-            ),
+    methods = dict(
+        create=create_file,
+        open=lambda fs, path, mode="r": open_file(
+            fs=fs, path=path, mode=mode,
         ),
+        remove_file=remove_file,
+
+        create_directory=create_directory,
+        list_directory=list_directory,
+        remove_empty_directory=remove_empty_directory,
+        temporary_directory=temporary_directory,
+
+        get_contents=_get_contents,
+        set_contents=_set_contents,
+        create_with_contents=_create_with_contents,
+
+        remove=remove,
+        removing=_removing,
+
+        stat=stat,
+
+        lstat=lstat,
+        link=link,
+        readlink=readlink,
+        realpath=realpath,
+
+        exists=_exists,
+        is_dir=_is_dir,
+        is_file=_is_file,
+        is_link=_is_link,
+
+        touch=_touch,
+
+        children=_children,
+        glob_children=_glob_children,
     )
+    return attr.s(hash=True)(type(name, (object,), methods))
 
 
 @contextmanager
