@@ -62,33 +62,41 @@ def install_python(*args, **kwargs):
     platform_dispatch(d, *args, **kwargs)
 
 
-def get_virtualenv():
-    url = (
-        'https://raw.githubusercontent.com'
-        '/pypa/virtualenv/16.2.0/virtualenv.py'
-    )
+def get_virtualenv(version):
+    url = 'https://github.com/pypa/virtualenv/archive/{}.zip'.format(version)
 
-    path = 'virtualenv.py'
+    path = 'virtualenv_archive'
 
     get_url(url=url, path=path)
 
-    return path
+    check_call(
+        [
+            'unzip',
+            path,
+        ],
+    )
+
+    return 'virtualenv-{}'.format(version)
 
 
 def main():
     version = os.environ['TRAVIS_PYTHON_VERSION']
     install_python(version)
 
-    virtualenv_py = get_virtualenv()
+    virtualenv_path = get_virtualenv('16.2.0')
 
     env_path = '.venv'
+
+    env = dict(os.environ)
+    env['PYTHON_PATH'] = virtualenv_path
 
     check_call(
         [
             'python{}'.format(version),
-            virtualenv_py,
+            '-m', 'virtualenv',
             env_path,
         ],
+        env=env,
     )
 
 
