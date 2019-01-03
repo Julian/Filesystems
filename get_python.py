@@ -9,7 +9,6 @@ pyenv_root = os.path.join(cache_root, 'pyenv')
 
 def check_call(args, *pargs, **kwargs):
     args = list(args)
-    kwargs.setdefault('check', True)
     print('Launching: ')
     for arg in args:
         print('    {}'.format(arg))
@@ -60,43 +59,57 @@ def install_python_linux(version):
     return python_name_from_version(version)
 
 
-def install_pyenv():
-    pyenv_root_parent = os.path.dirname(pyenv_root)
-    os.makedirs(pyenv_root_parent, exist_ok=True)
+class PyEnv:
+    def __init__(self, root):
+        self.root = root
 
-    pyenv_archive = 'pyenv_archive.zip'
+    @classmethod
+    def install(cls, root):
+        root_parent = os.path.dirname(root)
+        os.makedirs(root_parent, exist_ok=True)
 
-    get_url(
-        url='https://github.com/pyenv/pyenv/archive/master.zip',
-        path=pyenv_archive,
-    )
+        archive = 'pyenv_archive.zip'
 
-    check_call(['unzip', '-d', pyenv_root_parent, pyenv_archive])
-    os.rename(
-        src=os.path.join(pyenv_root_parent, 'pyenv-master'),
-        dst=pyenv_root,
-    )
+        get_url(
+            url='https://github.com/pyenv/pyenv/archive/master.zip',
+            path=archive,
+        )
 
-    # TODO: mm, side affects
-    os.environ['PYENV_ROOT'] = pyenv_root
+        check_call(['unzip', '-d', root_parent, archive])
+        os.rename(
+            src=os.path.join(root_parent, 'pyenv-master'),
+            dst=pyenv_root,
+        )
 
-    pyenv_path = os.path.join(pyenv_root, 'bin', 'pyenv')
+        pyenv = cls(root=root)
 
-    check_call([pyenv_path, 'rehash'])
+        pyenv.run('rehash')
 
-    return pyenv_path
+        return pyenv
+
+    def python_path(self, version):
+        return os.path.join(
+            self.root,
+            'shims',
+            python_name_from_version(version),
+        )
+
+    def run(self, *args):
+        env = dict(os.environ)
+        env['PYENV_ROOT'] = self.root
+
+        command = (os.path.join(self.root, 'bin', 'pyenv'),)
+        command += args
+
+        check_call(command, env=env)
 
 
 def install_python_darwin(version):
-    pyenv_path = install_pyenv()
-    check_call([pyenv_path, 'install', version])
-    check_call([pyenv_path, 'global', version])
+    pyenv = PyEnv.install(root=pyenv_root)
+    pyenv.run('install', version)
+    pyenv.run('global', version)
 
-    return os.path.join(
-        pyenv_root,
-        'shims',
-        python_name_from_version(version),
-    )
+    return pyenv.python_path(version)
 
 
 def platform_dispatch(d, *args, **kwargs):
