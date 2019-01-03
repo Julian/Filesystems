@@ -47,11 +47,8 @@ def install_python_linux(version):
 
 
 def install_python_darwin(version):
-    # TODO: get the latest, not the earliest
-    pyenv_version = os.environ['PYTHON{}'.format(version.replace('.', '_'))]
-
-    check_call(['pyenv', 'install', pyenv_version])
-    check_call(['pyenv', 'global', pyenv_version])
+    check_call(['pyenv', 'install', version])
+    check_call(['pyenv', 'global', version])
 
     return os.path.join(
         os.path.expanduser('~'),
@@ -97,7 +94,7 @@ def get_virtualenv(version):
 
 
 def main():
-    version = os.environ['TRAVIS_PYTHON_VERSION']
+    version = os.environ['PYTHON']
     python_path = install_python(version)
 
     virtualenv_path = get_virtualenv('16.2.0')
