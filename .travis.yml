@@ -3,18 +3,12 @@ language: generic
 dist: xenial
 
 env:
-  global:
-    - PYTHON2_7=2.7.15
-    - PYTHON3_4=3.4.9
-    - PYTHON3_5=3.5.6
-    - PYTHON3_6=3.6.8
-    - PYTHON3_7=3.7.2
   matrix:
-    - TRAVIS_PYTHON_VERSION=2.7
-    - TRAVIS_PYTHON_VERSION=3.4
-    - TRAVIS_PYTHON_VERSION=3.5
-    - TRAVIS_PYTHON_VERSION=3.6
-    - TRAVIS_PYTHON_VERSION=3.7
+    - TRAVIS_PYTHON_VERSION=2.7.15
+    - TRAVIS_PYTHON_VERSION=3.4.9
+    - TRAVIS_PYTHON_VERSION=3.5.6
+    - TRAVIS_PYTHON_VERSION=3.6.8
+    - TRAVIS_PYTHON_VERSION=3.7.2
     - TRAVIS_PYTHON_VERSION=pypy2.7-6.0
     - TRAVIS_PYTHON_VERSION=pypy3.5-6.0
 
@@ -24,13 +18,15 @@ os:
 
 matrix:
   allow_failures:
-    - env: TRAVIS_PYTHON_VERSION=3.4
-    - env: TRAVIS_PYTHON_VERSION=3.5
-    - env: TRAVIS_PYTHON_VERSION=3.6
-    - env: TRAVIS_PYTHON_VERSION=3.7
+    - env: TRAVIS_PYTHON_VERSION=3.4.9
+    - env: TRAVIS_PYTHON_VERSION=3.5.6
+    - env: TRAVIS_PYTHON_VERSION=3.6.8
+    - env: TRAVIS_PYTHON_VERSION=3.7.2
     - env: TRAVIS_PYTHON_VERSION=pypy3.5-6.0
 
 install:
+  - export PYENV_PYTHON=$TRAVIS_PYTHON_VERSION
+  - export TRAVIS_PYTHON_VERSION=$(echo $TRAVIS_PYTHON_VERSION | sed '/^pypy/! s/.[^.]\+$//')
   - export PATH=$HOME/.pyenv/shims:$PATH
   - python get_python.py
   - source .venv/bin/activate
