@@ -56,6 +56,7 @@ def install_python_linux(version):
 
 
 def install_python_darwin(version):
+    check_call(['pyenv', 'update'])
     check_call(['pyenv', 'install', version])
     check_call(['pyenv', 'global', version])
 
