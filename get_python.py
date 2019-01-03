@@ -80,8 +80,8 @@ class PyEnv:
 
         check_call(['unzip', '-d', root_parent, archive])
         os.rename(
-            src=os.path.join(root_parent, 'pyenv-master'),
-            dst=pyenv_root,
+            os.path.join(root_parent, 'pyenv-master'),
+            pyenv_root,
         )
 
         pyenv = cls(root=root)
