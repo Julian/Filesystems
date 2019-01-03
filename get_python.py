@@ -24,7 +24,7 @@ def get_url(url, path):
 
 
 def python_name_from_version(version):
-    version = '.'.join(version.split('.')[:2])
+    version = '.'.join(version.replace('-', '.').split('.')[:2])
 
     if version.startswith('pypy'):
         return version
