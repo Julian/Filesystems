@@ -3,8 +3,13 @@ import subprocess
 import sys
 
 
+cache_root = 'cache'
+pyenv_root = os.path.join(cache_root, 'pyenv')
+
+
 def check_call(args, *pargs, **kwargs):
     args = list(args)
+    kwargs.setDefault('check', True)
     print('Launching: ')
     for arg in args:
         print('    {}'.format(arg))
@@ -55,14 +60,40 @@ def install_python_linux(version):
     return python_name_from_version(version)
 
 
+def install_pyenv():
+    pyenv_root_parent = os.path.dirname(pyenv_root)
+    os.makedirs(pyenv_root_parent, exist_ok=True)
+
+    pyenv_archive = 'pyenv_archive.zip'
+
+    get_url(
+        url='https://github.com/pyenv/pyenv/archive/master.zip',
+        path=pyenv_archive,
+    )
+
+    check_call(['unzip', '-d', pyenv_root_parent, pyenv_archive])
+    os.rename(
+        src=os.path.join(pyenv_root_parent, 'pyenv-master'),
+        dst=pyenv_root,
+    )
+
+    # TODO: mm, side affects
+    os.environ['PYENV_ROOT'] = pyenv_root
+
+    pyenv_path = os.path.join(pyenv_root, 'bin', 'pyenv')
+
+    check_call([pyenv_path, 'rehash'])
+
+    return pyenv_path
+
+
 def install_python_darwin(version):
-    check_call(['pyenv', 'update'])
-    check_call(['pyenv', 'install', version])
-    check_call(['pyenv', 'global', version])
+    pyenv_path = install_pyenv()
+    check_call([pyenv_path, 'install', version])
+    check_call([pyenv_path, 'global', version])
 
     return os.path.join(
-        os.path.expanduser('~'),
-        '.pyenv',
+        pyenv_root,
         'shims',
         python_name_from_version(version),
     )
