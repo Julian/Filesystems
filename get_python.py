@@ -23,6 +23,15 @@ def get_url(url, path):
     )
 
 
+def python_name_from_version(version):
+    version = '.'.join(version.split('.')[:2])
+
+    if version.startswith('pypy'):
+        return version
+
+    return 'python{}'.format(version)
+
+
 def install_python_linux(version):
     archive_file = 'python_archive'
     url = (
@@ -43,7 +52,7 @@ def install_python_linux(version):
         ],
     )
 
-    return 'python{}'.format(version)
+    return python_name_from_version(version)
 
 
 def install_python_darwin(version):
@@ -54,7 +63,7 @@ def install_python_darwin(version):
         os.path.expanduser('~'),
         '.pyenv',
         'shims',
-        'python{}'.format(version),
+        python_name_from_version(version),
     )
 
 
