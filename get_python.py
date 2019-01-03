@@ -9,7 +9,7 @@ pyenv_root = os.path.join(cache_root, 'pyenv')
 
 def check_call(args, *pargs, **kwargs):
     args = list(args)
-    kwargs.setDefault('check', True)
+    kwargs.setdefault('check', True)
     print('Launching: ')
     for arg in args:
         print('    {}'.format(arg))
