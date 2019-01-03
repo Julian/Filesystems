@@ -66,7 +66,10 @@ class PyEnv:
     @classmethod
     def install(cls, root):
         root_parent = os.path.dirname(root)
-        os.makedirs(root_parent, exist_ok=True)
+        try:
+            os.makedirs(root_parent)
+        except os.error:
+             pass
 
         archive = 'pyenv_archive.zip'
 
