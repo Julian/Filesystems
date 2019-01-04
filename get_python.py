@@ -165,11 +165,28 @@ def get_virtualenv(version):
     return 'virtualenv-{}'.format(version)
 
 
+class ForEval:
+    def __init__(self):
+        self.lines = []
+
+    def add(self, *lines):
+        self.lines.extend(lines)
+        for line in lines:
+            print(line)
+
+    def for_log(self):
+        return '\n'.join(self.lines)
+
+
 def main():
     logger = logging.getLogger()
     log_path = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     logger.addHandler(logging.FileHandler(log_path))
     logger.setLevel(logging.DEBUG)
+
+    for_eval = ForEval()
+
+    for_eval.add('cat {}'.format(log_path))
 
     version = os.environ['PYTHON']
     python_path = install_python(version)
@@ -192,21 +209,19 @@ def main():
 
     travis_python_version = version.replace('-', '.').split('.')[:2]
 
-    for_eval = '''
-        cat {log_path}
+    the_rest = '''
         export TRAVIS_PYTHON_VERSION={travis_python_version}
         export PATH={python_path}:$PATH
         source {env_path}/bin/activate
     '''.format(
-        log_path=log_path,
         travis_python_version=travis_python_version,
         python_path=os.path.dirname(python_path),
         env_path=env_path,
     )
 
-    logger.log(for_eval)
+    for_eval.add(the_rest.splitlines())
 
-    print(for_eval)
+    logger.log(for_eval.for_log())
 
 
 main()
