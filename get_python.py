@@ -117,6 +117,8 @@ class PyEnv:
             logger.info('Contents of {}'.format(directory))
             logger.info('\n'.join(os.listdir(directory)))
 
+        return file_path
+
     def run(self, *args):
         env = dict(os.environ)
         env['PYENV_ROOT'] = self.root
