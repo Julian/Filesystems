@@ -219,7 +219,7 @@ def main():
         env_path=env_path,
     )
 
-    for_eval.add(the_rest.splitlines())
+    for_eval.add(*the_rest.splitlines())
 
     logger.log(for_eval.for_log())
 
