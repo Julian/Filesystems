@@ -165,8 +165,9 @@ def get_virtualenv(version):
     return 'virtualenv-{}'.format(version)
 
 
-def _main(log_path):
+def main():
     logger = logging.getLogger()
+    log_path = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     logger.addHandler(logging.FileHandler(log_path))
     logger.setLevel(logging.DEBUG)
 
@@ -206,17 +207,6 @@ def _main(log_path):
     logger.log(for_eval)
 
     print(for_eval)
-
-
-def main():
-    log_path = os.path.splitext(os.path.basename(__file__))[0] + '.log'
-
-    try:
-        _main(log_path=log_path)
-    finally:
-        with open(log_path) as f:
-            for line in log_path:
-                sys.stderr.write(line)
 
 
 main()
