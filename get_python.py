@@ -170,7 +170,7 @@ def main():
         env=env,
     )
 
-    travis_python_version = version.replace('-').split('.')[:2]
+    travis_python_version = version.replace('-', '.').split('.')[:2]
 
     print('''
         export TRAVIS_PYTHON_VERSION={travis_python_version}
