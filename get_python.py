@@ -221,7 +221,7 @@ def main():
 
     for_eval.add(*the_rest.splitlines())
 
-    logger.log(for_eval.for_log())
+    logger.info(for_eval.for_log())
 
 
 main()
