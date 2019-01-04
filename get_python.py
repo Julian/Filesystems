@@ -207,7 +207,9 @@ def main():
         env=env,
     )
 
-    travis_python_version = '.'.join(version.replace('-', '.').split('.')[:2])
+    version_segments = 1 if version.startswith('pypy') else 2
+    split_version = version.replace('-', '.').split('.')
+    travis_python_version = '.'.join(split_version[:version_segments])
 
     the_rest = '''
         export TRAVIS_PYTHON_VERSION={travis_python_version}
