@@ -133,6 +133,7 @@ def install_python_via_pyenv(version):
     pyenv.run('install', version)
     pyenv.run('rehash')
     pyenv.run('global', version)
+    pyenv.run('rehash')
 
     return pyenv.python_path(version)
 
