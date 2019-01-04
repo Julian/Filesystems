@@ -51,7 +51,7 @@ def python_name_from_version(version):
     return 'python{}'.format(version)
 
 
-def install_python_linux(version):
+def install_python_like_travis(version):
     archive_file = 'python_archive'
     url = (
         'https://s3.amazonaws.com'
@@ -122,7 +122,7 @@ class PyEnv:
         check_call(command, env=env)
 
 
-def install_python_darwin(version):
+def install_python_via_pyenv(version):
     pyenv = PyEnv.install(root=pyenv_root)
     pyenv.run('install', version)
     pyenv.run('global', version)
@@ -140,8 +140,8 @@ def platform_dispatch(d, *args, **kwargs):
 
 def install_python(*args, **kwargs):
     d = {
-        'linux': install_python_linux,
-        'darwin': install_python_darwin,
+        'linux': install_python_via_pyenv,
+        'darwin': install_python_via_pyenv,
         # 'win': install_python_windows,
     }
 
