@@ -107,8 +107,6 @@ class PyEnv:
 
         pyenv = cls(root=root)
 
-        pyenv.run('rehash')
-
         return pyenv
 
     def python_path(self, version):
@@ -133,6 +131,7 @@ class PyEnv:
 def install_python_via_pyenv(version):
     pyenv = PyEnv.install(root=pyenv_root)
     pyenv.run('install', version)
+    pyenv.run('rehash')
     pyenv.run('global', version)
 
     return pyenv.python_path(version)
