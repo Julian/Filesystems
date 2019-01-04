@@ -9,9 +9,9 @@ pyenv_root = os.path.join(cache_root, 'pyenv')
 
 def check_call(args, *pargs, **kwargs):
     args = list(args)
-    print('Launching: ')
+    sys.stderr.write('Launching: \n')
     for arg in args:
-        print('    {}'.format(arg))
+        sys.stderr.write('    {}\n'.format(arg))
 
     return subprocess.check_call(args, *pargs, **kwargs)
 
