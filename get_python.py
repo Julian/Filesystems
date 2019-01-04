@@ -170,5 +170,17 @@ def main():
         env=env,
     )
 
+    travis_python_version = version.replace('-').split('.')[:2]
+
+    print('''
+        export TRAVIS_PYTHON_VERSION={travis_python_version}
+        export PATH={python_path}:$PATH
+        source {env_path}/bin/activate
+    '''.format(
+        travis_python_version=travis_python_version,
+        python_path=os.path.dirname(python_path),
+        env_path=env_path,
+    ))
+
 
 main()
