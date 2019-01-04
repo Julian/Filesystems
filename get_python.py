@@ -50,10 +50,11 @@ def python_name_from_version(version):
     tweaked_version = '.'.join(split_version[:version_segments])
 
     if is_pypy:
-        return tweaked_version
+        return {
+            'pypy2': 'pypy',
+        }.get(tweaked_version, tweaked_version)
 
     return 'python{}'.format(tweaked_version)
-
 
 
 def install_python_like_travis(version):
