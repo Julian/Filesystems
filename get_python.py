@@ -5,8 +5,6 @@ import sys
 
 
 logger = logging.getLogger(__name__)
-log_path = os.path.splitext(os.path.basename(__file__)[0]) + '.log'
-logger.fileHandler(log_path)
 
 
 cache_root = 'cache'
@@ -23,7 +21,7 @@ def check_call(args, *pargs, **kwargs):
         args,
         *pargs,
         stderr=subprocess.STDOUT,
-        **kwargs,
+        **kwargs
     )
 
     stdout, _ = process.communicate()
@@ -167,6 +165,11 @@ def get_virtualenv(version):
 
 
 def main():
+    logger = logging.getLogger()
+    log_path = os.path.splitext(os.path.basename(__file__)[0]) + '.log'
+    logger.fileHandler(log_path)
+    logger.setLevel(logging.DEBUG)
+
     version = os.environ['PYTHON']
     python_path = install_python(version)
 
