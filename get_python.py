@@ -50,9 +50,9 @@ def python_name_from_version(version):
     tweaked_version = '.'.join(split_version[:version_segments])
 
     if is_pypy:
-        return version
+        return tweaked_version
 
-    return 'python{}'.format(version)
+    return 'python{}'.format(tweaked_version)
 
 
 
