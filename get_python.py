@@ -205,6 +205,7 @@ def main():
 
     env = dict(os.environ)
     env['PYTHONPATH'] = virtualenv_path
+    env['PYENV_ROOT'] = pyenv_root
 
     check_call(
         [
