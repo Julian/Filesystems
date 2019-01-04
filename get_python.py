@@ -21,6 +21,7 @@ def check_call(args, *pargs, **kwargs):
         args,
         *pargs,
         stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE,
         **kwargs
     )
 
