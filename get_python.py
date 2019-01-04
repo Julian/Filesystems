@@ -166,7 +166,7 @@ def get_virtualenv(version):
 
 def main():
     logger = logging.getLogger()
-    log_path = os.path.splitext(os.path.basename(__file__)[0]) + '.log'
+    log_path = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     logger.fileHandler(log_path)
     logger.setLevel(logging.DEBUG)
 
