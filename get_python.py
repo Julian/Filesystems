@@ -43,12 +43,17 @@ def get_url(url, path):
 
 
 def python_name_from_version(version):
-    version = '.'.join(version.replace('-', '.').split('.')[:2])
+    is_pypy = version.startswith('pypy')
 
-    if version.startswith('pypy'):
+    version_segments = 1 if is_pypy else 2
+    split_version = version.replace('-', '.').split('.')
+    tweaked_version = '.'.join(split_version[:version_segments])
+
+    if is_pypy:
         return version
 
     return 'python{}'.format(version)
+
 
 
 def install_python_like_travis(version):
@@ -207,10 +212,6 @@ def main():
         env=env,
     )
 
-    version_segments = 1 if version.startswith('pypy') else 2
-    split_version = version.replace('-', '.').split('.')
-    travis_python_version = '.'.join(split_version[:version_segments])
-
     python_path = os.path.dirname(python_path)
     if len(python_path) > 0:
         for_eval.add('export PATH={}:$PATH'.format(python_path))
@@ -219,7 +220,7 @@ def main():
         export TRAVIS_PYTHON_VERSION={travis_python_version}
         source {env_path}/bin/activate
     '''.format(
-        travis_python_version=travis_python_version,
+        travis_python_version=python_name_from_version(version),
         env_path=env_path,
     )
 
