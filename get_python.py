@@ -192,7 +192,7 @@ def main():
 
     travis_python_version = version.replace('-', '.').split('.')[:2]
 
-    print('''
+    for_eval = '''
         cat {log_path}
         export TRAVIS_PYTHON_VERSION={travis_python_version}
         export PATH={python_path}:$PATH
@@ -202,7 +202,11 @@ def main():
         travis_python_version=travis_python_version,
         python_path=os.path.dirname(python_path),
         env_path=env_path,
-    ))
+    )
+
+    logger.log(for_eval)
+
+    print(for_eval)
 
 
 main()
