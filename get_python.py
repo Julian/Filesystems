@@ -111,11 +111,11 @@ class PyEnv:
         return pyenv
 
     def python_path(self, version):
-        return os.path.join(
-            self.root,
-            'shims',
-            python_name_from_version(version),
-        )
+        directory = os.path.join(self.root, 'shims')
+        file_path = os.path.join(directory, python_name_from_version(version))
+        if not os.path.exists(file_path):
+            logger.info('Contents of {}'.format(directory))
+            logger.info('\n'.join(os.listdir(directory)))
 
     def run(self, *args):
         env = dict(os.environ)
