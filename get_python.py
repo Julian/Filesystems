@@ -1,6 +1,12 @@
+import logging
 import os
 import subprocess
 import sys
+
+
+logger = logging.getLogger(__name__)
+log_path = os.path.splitext(os.path.basename(__file__)[0]) + '.log'
+logger.fileHandler(log_path)
 
 
 cache_root = 'cache'
@@ -9,11 +15,21 @@ pyenv_root = os.path.join(cache_root, 'pyenv')
 
 def check_call(args, *pargs, **kwargs):
     args = list(args)
-    sys.stderr.write('Launching: \n')
+    logger.info('Launching: ')
     for arg in args:
-        sys.stderr.write('    {}\n'.format(arg))
+        logger.info('    {}'.format(arg))
 
-    return subprocess.check_call(args, *pargs, **kwargs)
+    process = subprocess.Popen(
+        args,
+        *pargs,
+        stderr=subprocess.STDOUT,
+        **kwargs,
+    )
+
+    stdout, _ = process.communicate()
+
+    for line in stdout.splitlines():
+        logger.info(line)
 
 
 def get_url(url, path):
@@ -173,10 +189,12 @@ def main():
     travis_python_version = version.replace('-', '.').split('.')[:2]
 
     print('''
+        cat {log_path}
         export TRAVIS_PYTHON_VERSION={travis_python_version}
         export PATH={python_path}:$PATH
         source {env_path}/bin/activate
     '''.format(
+        log_path=log_path,
         travis_python_version=travis_python_version,
         python_path=os.path.dirname(python_path),
         env_path=env_path,
