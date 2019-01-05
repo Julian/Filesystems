@@ -136,7 +136,7 @@ def install_python_windows(version):
         '/python-{version}-amd64.exe'.format(version=version)
     )
 
-    installer = 'python.exe'
+    installer = os.path.join(os.getcwd(), 'python.exe')
 
     get_url(url=url, path=installer)
 
