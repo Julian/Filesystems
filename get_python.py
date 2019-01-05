@@ -110,7 +110,7 @@ class PyEnv:
         return pyenv
 
     def python_path(self, version):
-        return os.path.join(self.root, 'versions', version, 'python')
+        return os.path.join(self.root, 'versions', version, 'bin', 'python')
 
     def run(self, *args):
         env = dict(os.environ)
