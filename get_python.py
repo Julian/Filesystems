@@ -7,8 +7,9 @@ import sys
 logger = logging.getLogger(__name__)
 
 
-cache_root = 'cache'
+cache_root = os.path.join(os.getcwd(), 'cache')
 pyenv_root = os.path.join(cache_root, 'pyenv')
+windows_python_root = os.path.join(cache_root, 'python')
 
 
 def check_call(args, *pargs, **kwargs):
@@ -129,6 +130,29 @@ def install_python_via_pyenv(version):
     return pyenv.python_path(version)
 
 
+def install_python_windows(version):
+    url = (
+        'https://www.python.org/ftp/python/{version}'
+        '/python-{version}-amd64.exe'.format(version=version)
+    )
+
+    installer = 'python.exe'
+
+    get_url(url=url, path=installer)
+
+    check_call(
+        [
+            installer,
+            '/quiet',
+            'TargetDir={}'.format(windows_python_root),
+            'Include_doc=0',
+            'Include_debug=0',
+        ],
+    )
+
+    return os.path.join(windows_python_root, 'python.exe')
+
+
 def platform_dispatch(d, *args, **kwargs):
     for name, f in d.items():
         if sys.platform.startswith(name):
@@ -141,7 +165,7 @@ def install_python(*args, **kwargs):
     d = {
         'linux': install_python_via_pyenv,
         'darwin': install_python_via_pyenv,
-        # 'win': install_python_windows,
+        'win': install_python_windows,
     }
 
     return platform_dispatch(d, *args, **kwargs)
