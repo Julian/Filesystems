@@ -110,13 +110,7 @@ class PyEnv:
         return pyenv
 
     def python_path(self, version):
-        directory = os.path.join(self.root, 'shims')
-        file_path = os.path.join(directory, python_name_from_version(version))
-        if not os.path.exists(file_path):
-            logger.info('Contents of {}'.format(directory))
-            logger.info('\n'.join(os.listdir(directory)))
-
-        return file_path
+        return os.path.join(self.root, 'versions', version, 'python')
 
     def run(self, *args):
         env = dict(os.environ)
@@ -131,9 +125,6 @@ class PyEnv:
 def install_python_via_pyenv(version):
     pyenv = PyEnv.install(root=pyenv_root)
     pyenv.run('install', version)
-    pyenv.run('rehash')
-    pyenv.run('global', version)
-    pyenv.run('rehash')
 
     return pyenv.python_path(version)
 
@@ -205,7 +196,6 @@ def main():
 
     env = dict(os.environ)
     env['PYTHONPATH'] = virtualenv_path
-    env['PYENV_ROOT'] = pyenv_root
 
     check_call(
         [
