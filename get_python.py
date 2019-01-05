@@ -221,6 +221,11 @@ def main():
     env = dict(os.environ)
     env['PYTHONPATH'] = virtualenv_path
 
+    python_dir = os.path.dirname(python_path)
+    logger.info('Content of: {}'.format(python_dir))
+    for name in os.listdir(python_dir):
+        logger.info('    {}'.format(name))
+
     check_call(
         [
             python_path,
