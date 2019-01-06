@@ -19,8 +19,8 @@ os:
 
 matrix:
   allow_failures:
-    - env: PYTHON=3.4.9
-    - env: PYTHON=3.5.6
+    - env: PYTHON=3.4.4
+    - env: PYTHON=3.5.4
     - env: PYTHON=3.6.8
     - env: PYTHON=3.7.2
     - env: PYTHON=pypy3.5-6.0.0

@@ -130,11 +130,24 @@ def install_python_via_pyenv(version):
     return pyenv.python_path(version)
 
 
-def install_python_windows(version):
-    url = (
+def windows_cpython_installer_url(version):
+    split_version = [int(x) for x in version.split('.')]
+    dash_or_dot = '.' if split_version < (3, 5) else '-'
+
+    return (
         'https://www.python.org/ftp/python/{version}'
-        '/python-{version}-amd64.exe'.format(version=version)
+        '/python-{version}{dash_or_dot}amd64.msi'.format(
+            version=version,
+            dash_or_dot=dash_or_dot,
+        )
     )
+
+
+def install_python_windows(version):
+    if version.startswith('pypy'):
+        url = windows_pypy_installer_url(version)
+    else:
+        url = windows_cpython_installer_url(version)
 
     installer = os.path.join(os.getcwd(), 'python.exe')
 
@@ -145,8 +158,6 @@ def install_python_windows(version):
             installer,
             '/quiet',
             'TargetDir={}'.format(windows_python_root),
-            'Include_doc=0',
-            'Include_debug=0',
         ],
     )
 
