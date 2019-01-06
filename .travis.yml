@@ -5,8 +5,8 @@ dist: xenial
 env:
   matrix:
     - PYTHON=2.7.15
-    - PYTHON=3.4.9
-    - PYTHON=3.5.6
+    - PYTHON=3.4.4
+    - PYTHON=3.5.4
     - PYTHON=3.6.8
     - PYTHON=3.7.2
     - PYTHON=pypy2.7-6.0.0
