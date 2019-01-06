@@ -136,7 +136,8 @@ def windows_cpython_installer_url(version):
 
     return (
         'https://www.python.org/ftp/python/{version}'
-        '/python-{version}{dash_or_dot}amd64.msi'.format(
+        '/python-{version}.msi'.format(
+        # '/python-{version}{dash_or_dot}amd64.msi'.format(
             version=version,
             dash_or_dot=dash_or_dot,
         )
