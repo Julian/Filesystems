@@ -169,7 +169,7 @@ def install_python_windows(version):
 
 
 def get_platform(d, *args, **kwargs):
-    for name, f in d.items():
+    for name in ('linux', 'darwin', 'win'):
         if sys.platform.startswith(name):
             return name
     else:
