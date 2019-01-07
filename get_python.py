@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 import sys
+import textwrap
 
 
 logger = logging.getLogger(__name__)
@@ -202,28 +203,30 @@ def get_virtualenv(version):
     return 'virtualenv-{}'.format(version)
 
 
-class ForEval:
-    def __init__(self):
-        self.lines = []
+def create_sh_content(version, env_path, python_path):
+    set_path = None
+    if len(python_path) > 0:
+        set_path = 'export PATH={}:$PATH\n'.format(python_path)
 
-    def add(self, *lines):
-        self.lines.extend(lines)
-        for line in lines:
-            print(line)
+    content = textwrap.dedent('''\
+    export TRAVIS_PYTHON_VERSION={travis_python_version}
+    source {env_path}/bin/activate
+    {set_path}
+    ''').format(
+        travis_python_version=python_name_from_version(version),
+        env_path=env_path,
+        set_path=set_path if set_path is not None else '',
+    )
 
-    def for_log(self):
-        return '\n'.join(self.lines)
+    return content.strip() + '\n'
 
 
 def main():
     logger = logging.getLogger()
     log_path = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     logger.addHandler(logging.FileHandler(log_path))
+    logger.addHandler(logging.StreamHandler())
     logger.setLevel(logging.DEBUG)
-
-    for_eval = ForEval()
-
-    for_eval.add('cat {}'.format(log_path))
 
     version = os.environ['PYTHON']
     python_path = install_python(version)
@@ -250,20 +253,18 @@ def main():
     )
 
     python_path = os.path.dirname(python_path)
-    if len(python_path) > 0:
-        for_eval.add('export PATH={}:$PATH'.format(python_path))
 
-    the_rest = '''
-        export TRAVIS_PYTHON_VERSION={travis_python_version}
-        source {env_path}/bin/activate
-    '''.format(
-        travis_python_version=python_name_from_version(version),
+    script_content = create_sh_content(
+        version=version,
         env_path=env_path,
+        python_path=python_path,
     )
 
-    for_eval.add(*the_rest.splitlines())
+    logger.info('   script content:')
+    logger.info(script_content)
 
-    logger.info(for_eval.for_log())
+    with open('get_python.sh', 'w') as f:
+        f.write(script_content)
 
 
 main()
