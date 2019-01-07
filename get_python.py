@@ -164,6 +164,9 @@ def windows_cpython_install(url):
 
 
 def windows_pypy_installer_url(version):
+    start, _, rest = version.partition('.')
+    _, _, end = version.partition('-')
+    version = start + '-v' + end
     url = 'https://bitbucket.org/pypy/pypy/downloads/{version}-win32.zip'
     url = url.format(version=version)
     return url
