@@ -132,8 +132,8 @@ def install_python_via_pyenv(version):
 
 def windows_cpython_installer_url(version):
     split_version = [int(x) for x in version.split('.')]
-    dash_or_dot = '.' if split_version < (3, 5) else '-'
-    msi_or_exe = 'msi' if split_version < (3, 5) else 'exe'
+    dash_or_dot = '.' if split_version < [3, 5] else '-'
+    msi_or_exe = 'msi' if split_version < [3, 5] else 'exe'
 
     return (
         'https://www.python.org/ftp/python/{version}'
