@@ -168,12 +168,16 @@ def install_python_windows(version):
     return os.path.join(windows_python_root, 'python.exe')
 
 
-def platform_dispatch(d, *args, **kwargs):
+def get_platform(d, *args, **kwargs):
     for name, f in d.items():
         if sys.platform.startswith(name):
-            return f(*args, **kwargs)
+            return name
     else:
         raise Exception('Platform not supported: {}'.format(sys.platform))
+
+
+def platform_dispatch(d, *args, **kwargs):
+    return d[the_platform](*args, **kwargs)
 
 
 def install_python(*args, **kwargs):
@@ -208,13 +212,16 @@ def create_sh_content(version, env_path, python_path):
     if len(python_path) > 0:
         set_path = 'export PATH={}:$PATH\n'.format(python_path)
 
+    bin_or_scripts = 'scripts' if the_platform == 'win' else 'bin'
+
     content = textwrap.dedent('''\
     export TRAVIS_PYTHON_VERSION={travis_python_version}
-    source {env_path}/bin/activate
+    source {env_path}/{bin_or_scripts}/activate
     {set_path}
     ''').format(
         travis_python_version=python_name_from_version(version),
         env_path=env_path,
+        bin_or_scripts=bin_or_scripts,
         set_path=set_path if set_path is not None else '',
     )
 
@@ -267,4 +274,5 @@ def main():
         f.write(script_content)
 
 
+the_platform = get_platform()
 main()
