@@ -147,12 +147,7 @@ def windows_cpython_installer_url(version):
     )
 
 
-def install_python_windows(version):
-    if version.startswith('pypy'):
-        url = windows_pypy_installer_url(version)
-    else:
-        url = windows_cpython_installer_url(version)
-
+def windows_cpython_install(url):
     installer = os.path.join(os.getcwd(), 'python.exe')
 
     get_url(url=url, path=installer)
@@ -166,6 +161,41 @@ def install_python_windows(version):
     )
 
     return os.path.join(windows_python_root, 'python.exe')
+
+
+def windows_pypy_installer_url(version):
+    url = 'https://bitbucket.org/pypy/pypy/downloads/{version}-win32.zip'
+    url = url.format(version=version)
+    return url
+
+
+def windows_pypy_install(version, url):
+    archive = os.path.join(os.getcwd(), 'python.zip')
+
+    get_url(url=url, path=archive)
+
+    check_call(
+        [
+            'unzip',
+            archive,
+        ],
+    )
+
+    os.rename(
+        '{version}-win32'.format(version=version),
+        windows_python_root,
+    )
+
+    return os.path.join(windows_python_root, 'pypy.exe')
+
+
+def install_python_windows(version):
+    if version.startswith('pypy'):
+        url = windows_pypy_installer_url(version)
+        return windows_pypy_install(url)
+
+    url = windows_cpython_installer_url(version)
+    return windows_cpython_install(version, url)
 
 
 def get_platform():
