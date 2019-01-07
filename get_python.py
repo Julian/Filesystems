@@ -192,10 +192,10 @@ def windows_pypy_install(version, url):
 def install_python_windows(version):
     if version.startswith('pypy'):
         url = windows_pypy_installer_url(version)
-        return windows_pypy_install(url)
+        return windows_pypy_install(version, url)
 
     url = windows_cpython_installer_url(version)
-    return windows_cpython_install(version, url)
+    return windows_cpython_install(url)
 
 
 def get_platform():
