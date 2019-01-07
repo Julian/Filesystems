@@ -168,7 +168,7 @@ def install_python_windows(version):
     return os.path.join(windows_python_root, 'python.exe')
 
 
-def get_platform(d, *args, **kwargs):
+def get_platform():
     for name in ('linux', 'darwin', 'win'):
         if sys.platform.startswith(name):
             return name
