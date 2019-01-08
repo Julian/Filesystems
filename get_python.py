@@ -188,6 +188,8 @@ def windows_pypy_install(version, url):
         ],
     )
 
+    os.makedirs(os.path.dirname(windows_python_root))
+
     version = windows_pypy_file_version(version)
     os.rename(
         '{version}-win32'.format(version=version),
