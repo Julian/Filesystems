@@ -294,7 +294,7 @@ def main():
 
     virtualenv_path = get_virtualenv('16.2.0')
 
-    env_path = os.path.join(os.path.getcwd(), '.venv')
+    env_path = os.path.join(os.getcwd(), '.venv')
 
     env = dict(os.environ)
     env['PYTHONPATH'] = virtualenv_path
