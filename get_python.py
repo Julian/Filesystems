@@ -252,7 +252,11 @@ def create_sh_content(version, env_path, python_path):
     if len(python_path) > 0:
         set_path = 'export PATH={}:$PATH\n'.format(python_path)
 
-    bin_or_scripts = 'Scripts' if the_platform == 'win' else 'bin'
+    bin_or_scripts = (
+        'Scripts'
+        if the_platform == 'win' and not version.startswith('pypy')
+        else 'bin'
+    )
 
     logger.info('    ---- dir checks')
 
@@ -265,8 +269,6 @@ def create_sh_content(version, env_path, python_path):
     logger.info(os.listdir(activate_path))
 
     activate_path = os.path.join(activate_path, 'activate')
-    logger.info('         ---- {}'.format(activate_path))
-    logger.info(os.listdir(activate_path))
 
     content = textwrap.dedent('''\
     export TRAVIS_PYTHON_VERSION={travis_python_version}
