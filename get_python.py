@@ -252,15 +252,29 @@ def create_sh_content(version, env_path, python_path):
     if len(python_path) > 0:
         set_path = 'export PATH={}:$PATH\n'.format(python_path)
 
-    bin_or_scripts = 'scripts' if the_platform == 'win' else 'bin'
+    bin_or_scripts = 'Scripts' if the_platform == 'win' else 'bin'
+
+    logger.info('    ---- dir checks')
+
+    activate_path = env_path
+    logger.info('         ---- {}'.format(activate_path))
+    logger.info(os.listdir(activate_path))
+
+    activate_path = os.path.join(activate_path, bin_or_scripts)
+    logger.info('         ---- {}'.format(activate_path))
+    logger.info(os.listdir(activate_path))
+
+    activate_path = os.path.join(activate_path, 'activate')
+    logger.info('         ---- {}'.format(activate_path))
+    logger.info(os.listdir(activate_path))
 
     content = textwrap.dedent('''\
     export TRAVIS_PYTHON_VERSION={travis_python_version}
-    source {env_path}/{bin_or_scripts}/activate
+    source {activate_path}
     {set_path}
     ''').format(
         travis_python_version=python_name_from_version(version),
-        env_path=env_path,
+        activate_path=activate_path,
         bin_or_scripts=bin_or_scripts,
         set_path=set_path if set_path is not None else '',
     )
@@ -280,7 +294,7 @@ def main():
 
     virtualenv_path = get_virtualenv('16.2.0')
 
-    env_path = '.venv'
+    env_path = os.path.join(os.path.getcwd(), '.venv')
 
     env = dict(os.environ)
     env['PYTHONPATH'] = virtualenv_path
