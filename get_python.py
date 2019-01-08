@@ -225,6 +225,11 @@ def windows_pypy_install(version, url):
 
     v = '' if version[len('pypy')] == 2 else '3'
 
+    logger.info('   --- windows_pypy_install()')
+    logger.info('   --- {!r}'.format(version))
+    logger.info('   --- {!r}'.format(version[len('pypy')]))
+    logger.info('   --- {!r}'.format(v))
+
     return os.path.join(windows_python_root, 'pypy{v}.exe'.format(v=v))
 
 
