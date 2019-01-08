@@ -14,6 +14,17 @@ pyenv_root = os.path.join(cache_root, 'pyenv')
 windows_python_root = os.path.join(cache_root, 'python')
 
 
+def get_platform():
+    for name in ('linux', 'darwin', 'win'):
+        if sys.platform.startswith(name):
+            return name
+    else:
+        raise Exception('Platform not supported: {}'.format(sys.platform))
+
+
+the_platform = get_platform()
+
+
 def check_call(args, *pargs, **kwargs):
     args = list(args)
     logger.info('Launching: ')
@@ -132,6 +143,21 @@ def install_python_via_pyenv(version):
     return pyenv.python_path(version)
 
 
+def install_python_via_pyenv_darwin(version):
+    check_call(
+        [
+            'sudo',
+            'installer',
+            '-pkg',
+            '/Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg',
+            '-target',
+            '/',
+        ],
+    )
+
+    return install_python_via_pyenv(version)
+
+
 def windows_cpython_installer_url(version):
     split_version = [int(x) for x in version.split('.')]
     dash_or_dot = '.' if split_version < [3, 5] else '-'
@@ -197,7 +223,9 @@ def windows_pypy_install(version, url):
         windows_python_root,
     )
 
-    return os.path.join(windows_python_root, 'pypy.exe')
+    v = '' if version[len('pypy')] == 2 else '3'
+
+    return os.path.join(windows_python_root, 'pypy{v}.exe'.format(v=v))
 
 
 def install_python_windows(version):
@@ -209,14 +237,6 @@ def install_python_windows(version):
     return windows_cpython_install(url)
 
 
-def get_platform():
-    for name in ('linux', 'darwin', 'win'):
-        if sys.platform.startswith(name):
-            return name
-    else:
-        raise Exception('Platform not supported: {}'.format(sys.platform))
-
-
 def platform_dispatch(d, *args, **kwargs):
     return d[the_platform](*args, **kwargs)
 
@@ -224,7 +244,7 @@ def platform_dispatch(d, *args, **kwargs):
 def install_python(*args, **kwargs):
     d = {
         'linux': install_python_via_pyenv,
-        'darwin': install_python_via_pyenv,
+        'darwin': install_python_via_pyenv_darwin,
         'win': install_python_windows,
     }
 
@@ -331,5 +351,4 @@ def main():
         f.write(script_content)
 
 
-the_platform = get_platform()
 main()
