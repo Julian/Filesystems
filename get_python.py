@@ -305,7 +305,7 @@ def create_sh_content(version, env_path, python_path):
     return content.strip() + '\n'
 
 
-def main():
+def main(sh_name):
     logger = logging.getLogger()
     log_path = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     logger.addHandler(logging.FileHandler(log_path))
@@ -347,8 +347,8 @@ def main():
     logger.info('   script content:')
     logger.info(script_content)
 
-    with open('get_python.sh', 'w') as f:
+    with open(sh_name, 'w') as f:
         f.write(script_content)
 
 
-main()
+main(sh_name='get_python.sh')
