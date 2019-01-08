@@ -1,5 +1,6 @@
 import logging
 import os
+import posixpath
 import subprocess
 import sys
 import textwrap
@@ -264,11 +265,11 @@ def create_sh_content(version, env_path, python_path):
     logger.info('         ---- {}'.format(activate_path))
     logger.info(os.listdir(activate_path))
 
-    activate_path = os.path.join(activate_path, bin_or_scripts)
+    activate_path = posixpath.join(activate_path, bin_or_scripts)
     logger.info('         ---- {}'.format(activate_path))
     logger.info(os.listdir(activate_path))
 
-    activate_path = os.path.join(activate_path, 'activate')
+    activate_path = posixpath.join(activate_path, 'activate')
 
     content = textwrap.dedent('''\
     export TRAVIS_PYTHON_VERSION={travis_python_version}
@@ -296,7 +297,7 @@ def main():
 
     virtualenv_path = get_virtualenv('16.2.0')
 
-    env_path = os.path.join(os.getcwd(), '.venv')
+    env_path = '.venv'
 
     env = dict(os.environ)
     env['PYTHONPATH'] = virtualenv_path
