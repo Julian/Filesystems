@@ -223,7 +223,7 @@ def windows_pypy_install(version, url):
         windows_python_root,
     )
 
-    v = '' if version[len('pypy')] == 2 else '3'
+    v = '' if version[len('pypy')] == '2' else '3'
 
     logger.info('   --- windows_pypy_install()')
     logger.info('   --- {!r}'.format(version))
