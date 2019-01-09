@@ -1,4 +1,4 @@
-from unittest import TestCase, skip, skipIf
+from unittest import TestCase, skipIf
 import os
 
 from zope.interface import verify
