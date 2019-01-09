@@ -245,8 +245,8 @@ def install_python_windows(version):
             'choco',
             'install',
             'python{}'.format(major_version),
-            version,
-            '\InstallDir:{}'.format(windows_python_root),
+            '--version' version,
+            '--params', '\InstallDir:{}'.format(windows_python_root),
         ],
     )
 
