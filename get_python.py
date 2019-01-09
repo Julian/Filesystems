@@ -94,7 +94,7 @@ def install_python_like_travis(version):
     return python_name_from_version(version)
 
 
-class PyEnv:
+class PyEnv(object):
     def __init__(self, root):
         self.root = root
 
