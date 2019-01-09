@@ -251,7 +251,7 @@ def install_python_windows(version):
              '/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE'
              '/vcredist_x64.exe'
         )
-    elif version.split('.')[:2] == [3. 4]:
+    elif version.split('.')[:2] == [3, 4]:
         redist_urls[32] = (
             'https://download.microsoft.com'
             '/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC'
