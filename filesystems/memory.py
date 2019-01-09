@@ -176,7 +176,7 @@ class _Directory(object):
         raise exceptions.IsADirectory(path)
 
     def remove_file(self, path):
-        raise exceptions.PermissionError(path)
+        raise exceptions._UnlinkNonFileError(path)
 
     def link(self, source, to, fs, state):
         raise exceptions.FileExists(to)
