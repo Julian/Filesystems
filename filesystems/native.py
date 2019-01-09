@@ -48,6 +48,8 @@ def _remove_file(fs, path):
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
+        elif error.errno == exceptions.IsADirectory.errno:
+            raise exceptions.IsADirectory(path)
         elif error.errno == exceptions.NotADirectory.errno:
             raise exceptions.NotADirectory(path)
         elif error.errno == exceptions.PermissionError.errno:

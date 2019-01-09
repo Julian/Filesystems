@@ -1,5 +1,6 @@
 import errno
 import os
+import platform
 
 import attr
 
@@ -65,3 +66,14 @@ class PermissionError(_FileSystemError):
 class SymbolicLoop(_FileSystemError):
     errno = errno.ELOOP
     message = os.strerror(errno)
+
+
+# On macOS, calling unlink on a directory raises EPERM.  I do not understand
+# why, and man 2 unlink doesn't exactly discuss it, but it seems to be the
+# case.
+#
+# On Linux you get the expected EISDIR.
+if platform.system() == "Darwin":
+    _UnlinkNonFileError = PermissionError
+else:
+    _UnlinkNonFileError = IsADirectory

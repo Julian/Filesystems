@@ -1,8 +1,10 @@
 from unittest import TestCase, skipIf
 import os
 
-from filesystems import _PY3, Path, exceptions
-from filesystems._path import RelativePath
+from zope.interface import verify
+
+from filesystems import _PY3, exceptions, interfaces
+from filesystems._path import Path, RelativePath
 
 
 class TestPath(TestCase):
@@ -162,6 +164,9 @@ class TestPath(TestCase):
             Path.from_string(os.path.expanduser("~/foo/~/bar")),
         )
 
+    def test_interface(self):
+        verify.verifyClass(interfaces.Path, Path)
+
     @skipIf(not _PY3, "PathLike is PY3-only.")
     def test_is_pathlike(self):
         self.assertEqual(
@@ -198,6 +203,34 @@ class TestRelativePath(TestCase):
             "<Path a/b/c>"
         )
 
+    def test_basename(self):
+        self.assertEqual(RelativePath("a", "b").basename(), "b")
+
+    def test_dirname(self):
+        self.assertEqual(
+            RelativePath("a", "b", "c").dirname(),
+            os.path.join("a", "b"),
+        )
+
+    def test_parent(self):
+        self.assertEqual(RelativePath("a", "b").parent(), RelativePath("a"))
+
+    def test_heritage(self):
+        self.assertEqual(
+            list(RelativePath("a", "b", "c", "d").heritage()), [
+                RelativePath("a"),
+                RelativePath("a", "b"),
+                RelativePath("a", "b", "c"),
+                RelativePath("a", "b", "c", "d"),
+            ],
+        )
+
+    def test_sibling(self):
+        self.assertEqual(
+            RelativePath("a", "b").sibling("c"),
+            RelativePath("a", "c"),
+        )
+
     def test_descendant(self):
         self.assertEqual(
             RelativePath("a", "b").descendant("c"),
@@ -216,3 +249,6 @@ class TestRelativePath(TestCase):
             os.fspath(RelativePath("a", "b", "c")),
             os.path.join("a", "b", "c"),
         )
+
+    def test_interface(self):
+        verify.verifyClass(interfaces.Path, RelativePath)

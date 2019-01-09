@@ -1,12 +1,14 @@
 import os.path
 
 from pyrsistent import pvector
+from zope.interface import implementer
 import attr
 
-from filesystems import _PY3
+from filesystems import _PY3, interfaces
 from filesystems.exceptions import InvalidPath
 
 
+@implementer(interfaces.Path)
 @attr.s(these={"segments": attr.ib()}, init=False, repr=False, hash=True)
 class Path(object):
     def __init__(self, *segments):
@@ -92,6 +94,7 @@ class Path(object):
         return self
 
 
+@implementer(interfaces.Path)
 @attr.s(these={"segments": attr.ib()}, init=False, repr=False, hash=True)
 class RelativePath(object):
     def __init__(self, *segments):
@@ -112,8 +115,31 @@ class RelativePath(object):
         __truediv__ = __div__
         __fspath__ = __str__
 
+    def basename(self):
+        return (self.segments or [""])[-1]
+
+    def dirname(self):
+        return str(self.parent())
+
+    def parent(self):
+        return self.__class__(*self.segments[:-1])
+
+    def heritage(self):
+        """
+        The (top-down) direct ancestors of this path, including itself.
+        """
+
+        segments = pvector()
+        for segment in self.segments[:-1]:
+            segments = segments.append(segment)
+            yield self.__class__(*segments)
+        yield self
+
     def descendant(self, *segments):
         return self.__class__(*self.segments.extend(segments))
+
+    def sibling(self, name):
+        return self.parent() / name
 
     def relative_to(self, path):
         """
