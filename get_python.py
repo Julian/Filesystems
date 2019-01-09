@@ -239,6 +239,7 @@ def install_python_windows(version):
         return windows_pypy_install(version, url)
 
     redist_urls = {}
+    redist_arguments = {}
 
     split_version = [int(x) for x in version.split('.')]
 
@@ -253,6 +254,7 @@ def install_python_windows(version):
              '/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE'
              '/vcredist_x64.exe'
         )
+        redist_arguments = ['/qb']
     elif split_version[:2] == [3, 4]:
         redist_urls[32] = (
             'https://download.microsoft.com'
@@ -264,13 +266,14 @@ def install_python_windows(version):
             '/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC'
             '/vcredist_x64.exe'
         )
+        redist_arguments = ['/passive', '/norestart']
 
     bitness = 64
     redist_url = redist_urls.get(bitness)
     if redist_url is not None:
         redist_path = 'redist.exe'
         get_url(url=redist_url, path=redist_path)
-        check_call([redist_path])
+        check_call([redist_path] + redist_arguments)
 
     url = windows_cpython_installer_url(version)
     return windows_cpython_install(url)
