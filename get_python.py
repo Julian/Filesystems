@@ -246,7 +246,7 @@ def install_python_windows(version):
             'install',
             'python{}'.format(major_version),
             version,
-            '\InstallDir', windows_python_root,
+            '\InstallDir:{}'.format(windows_python_root),
         ],
     )
 
