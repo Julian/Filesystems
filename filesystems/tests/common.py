@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import errno
 import os
+import platform
 
 from pyrsistent import s
 from testscenarios import multiply_scenarios, with_scenarios
@@ -919,11 +920,20 @@ class TestFS(_NonExistingFileMixin):
         fs.create_directory(path=child)
         self.assertTrue(fs.exists(path=child))
 
-        with self.assertRaises(exceptions.PermissionError) as e:
+        # On macOS, this raises EPERM. I do not understand why, but that seems
+        # to be the case.
+        #
+        # On Linux you get the expected EISDIR.
+        if platform.system() == "Darwin":
+            Expected = exceptions.PermissionError
+        else:
+            Expected = exceptions.IsADirectory
+
+        with self.assertRaises(Expected) as e:
             fs.remove_file(path=child)
         self.assertEqual(
             str(e.exception),
-            os.strerror(errno.EPERM) + ": " + str(child),
+            os.strerror(Expected.errno) + ": " + str(child),
         )
 
     def test_remove_file_on_nonempty_directory(self):
@@ -936,11 +946,20 @@ class TestFS(_NonExistingFileMixin):
         fs.touch(child / "grandchild")
         self.assertTrue(fs.exists(path=child))
 
-        with self.assertRaises(exceptions.PermissionError) as e:
+        # On macOS, this raises EPERM. I do not understand why, but that seems
+        # to be the case.
+        #
+        # On Linux you get the expected EISDIR.
+        if platform.system() == "Darwin":
+            Expected = exceptions.PermissionError
+        else:
+            Expected = exceptions.IsADirectory
+
+        with self.assertRaises(Expected) as e:
             fs.remove_file(path=child)
         self.assertEqual(
             str(e.exception),
-            os.strerror(errno.EPERM) + ": " + str(child),
+            os.strerror(Expected.errno) + ": " + str(child),
         )
 
     def test_remove_nonexisting_file_nonexisting_directory(self):
