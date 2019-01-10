@@ -251,7 +251,7 @@ def install_python_windows(version):
     )
 
     # TODO: why isn't InstallDir being respected?
-    return 'c:/Python{}'.format(''.join(split_version[:2]))
+    return 'c:/Python{}/python.exe'.format(''.join(split_version[:2]))
 
     # return os.path.join(windows_python_root, 'python.exe')
 
