@@ -10,19 +10,19 @@ class Path(Interface):
         """
 
     if _PY3:
+        def __fspath__():
+            """
+            Render the path as a string.
+            """
+
         def __truediv__(other):
             """
             Traverse to a child of this path.
             """
-
-        def __fspath__(other):
-            """
-            Render the path as a string.
-            """
     else:
         def __div__(other):
             """
-            Render the path as a string.
+            Traverse to a child of this path.
             """
 
     def basename():
