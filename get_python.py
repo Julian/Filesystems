@@ -238,19 +238,22 @@ def install_python_windows(version):
         url = windows_pypy_installer_url(version)
         return windows_pypy_install(version, url)
 
-    major_version = version[0]
+    split_version = version.split('.')
 
     check_call(
         [
             'choco',
             'install',
-            'python{}'.format(major_version),
+            'python{}'.format(split_version[0]),
             '--version', version,
             '--params', '\InstallDir:{}'.format(windows_python_root),
         ],
     )
 
-    return os.path.join(windows_python_root, 'python.exe')
+    # TODO: why isn't InstallDir being respected?
+    return 'c:/Python{}'.format(''.join(split_version[:2]))
+
+    # return os.path.join(windows_python_root, 'python.exe')
 
     # redist_urls = {}
     # redist_arguments = {}
