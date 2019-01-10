@@ -3,7 +3,7 @@ import os
 
 from zope.interface import verify
 
-from filesystems import _PY3, exceptions, interfaces
+from filesystems import _PY36, exceptions, interfaces
 from filesystems._path import Path, RelativePath
 
 
@@ -167,7 +167,7 @@ class TestPath(TestCase):
     def test_interface(self):
         verify.verifyClass(interfaces.Path, Path)
 
-    @skipIf(not _PY3, "PathLike is PY3-only.")
+    @skipIf(not _PY36, "PathLike is PY3.6+")
     def test_is_pathlike(self):
         self.assertEqual(
             os.fspath(Path.from_string(os.sep + os.sep.join("abc"))),
@@ -243,7 +243,7 @@ class TestRelativePath(TestCase):
             RelativePath("a", "b", "c"),
         )
 
-    @skipIf(not _PY3, "PathLike is PY3-only.")
+    @skipIf(not _PY36, "PathLike is PY3.6+")
     def test_is_pathlike(self):
         self.assertEqual(
             os.fspath(RelativePath("a", "b", "c")),
