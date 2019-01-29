@@ -8,6 +8,10 @@ from filesystems import _PY3, interfaces
 from filesystems.exceptions import InvalidPath
 
 
+if _PY3:
+    basestring = bytes, str
+
+
 @implementer(interfaces.Path)
 @attr.s(these={"segments": attr.ib()}, init=False, repr=False, hash=True)
 class Path(object):
@@ -15,7 +19,7 @@ class Path(object):
         self.segments = pvector(segments)
 
     def __div__(self, other):
-        if not isinstance(other, str):  # FIXME: Unicode paths
+        if not isinstance(other, basestring):  # FIXME: Unicode paths
             return NotImplemented
         return self.descendant(other)
 
@@ -101,7 +105,7 @@ class RelativePath(object):
         self.segments = pvector(segments)
 
     def __div__(self, other):
-        if not isinstance(other, str):  # FIXME: Unicode paths
+        if not isinstance(other, basestring):  # FIXME: Unicode paths
             return NotImplemented
         return self.descendant(other)
 
