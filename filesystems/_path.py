@@ -12,22 +12,53 @@ if _PY3:
     basestring = bytes, str
 
 
+def __div__(self, other):
+    if not isinstance(other, basestring):  # FIXME: Unicode paths
+        return NotImplemented
+    return self.descendant(other)
+
+
+def basename(self):
+    return (self.segments or [""])[-1]
+
+
+def dirname(self):
+    return str(self.parent())
+
+
+def heritage(self):
+    """
+    The (top-down) direct ancestors of this path, including itself.
+    """
+
+    segments = pvector()
+    for segment in self.segments[:-1]:
+        segments = segments.append(segment)
+        yield self.__class__(*segments)
+    yield self
+
+
+def descendant(self, *segments):
+    return self.__class__(*self.segments.extend(segments))
+
+
+def parent(self):
+    return self.__class__(*self.segments[:-1])
+
+
 @implementer(interfaces.Path)
 @attr.s(these={"segments": attr.ib()}, init=False, repr=False, hash=True)
 class Path(object):
     def __init__(self, *segments):
         self.segments = pvector(segments)
 
-    def __div__(self, other):
-        if not isinstance(other, basestring):  # FIXME: Unicode paths
-            return NotImplemented
-        return self.descendant(other)
-
     def __repr__(self):
         return "<Path {}>".format(self)
 
     def __str__(self):
         return os.sep + os.sep.join(self.segments)
+
+    __div__ = __div__
 
     if _PY3:
         __truediv__ = __div__
@@ -60,28 +91,8 @@ class Path(object):
             return RelativePath(*split)
         return cls(*split[1:])
 
-    def basename(self):
-        return (self.segments or [""])[-1]
-
-    def dirname(self):
-        return str(self.parent())
-
-    def heritage(self):
-        """
-        The (top-down) direct ancestors of this path, including itself.
-        """
-
-        segments = pvector()
-        for segment in self.segments[:-1]:
-            segments = segments.append(segment)
-            yield self.__class__(*segments)
-        yield self
-
-    def descendant(self, *segments):
-        return self.__class__(*self.segments.extend(segments))
-
-    def parent(self):
-        return self.__class__(*self.segments[:-1])
+    descendant = descendant
+    parent = parent
 
     def sibling(self, name):
         if not self.segments:
@@ -104,11 +115,6 @@ class RelativePath(object):
     def __init__(self, *segments):
         self.segments = pvector(segments)
 
-    def __div__(self, other):
-        if not isinstance(other, basestring):  # FIXME: Unicode paths
-            return NotImplemented
-        return self.descendant(other)
-
     def __repr__(self):
         return "<Path {}>".format(self)
 
@@ -119,28 +125,11 @@ class RelativePath(object):
         __truediv__ = __div__
         __fspath__ = __str__
 
-    def basename(self):
-        return (self.segments or [""])[-1]
-
-    def dirname(self):
-        return str(self.parent())
-
-    def parent(self):
-        return self.__class__(*self.segments[:-1])
-
-    def heritage(self):
-        """
-        The (top-down) direct ancestors of this path, including itself.
-        """
-
-        segments = pvector()
-        for segment in self.segments[:-1]:
-            segments = segments.append(segment)
-            yield self.__class__(*segments)
-        yield self
-
-    def descendant(self, *segments):
-        return self.__class__(*self.segments.extend(segments))
+    basename = basename
+    dirname = dirname
+    parent = parent
+    heritage = heritage
+    descendant = descendant
 
     def sibling(self, name):
         return self.parent() / name
