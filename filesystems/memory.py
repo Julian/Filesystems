@@ -4,6 +4,7 @@ import os
 import stat
 
 from pyrsistent import pmap, pset
+from zope.interface import implementer
 import attr
 
 from filesystems import Path, common, exceptions

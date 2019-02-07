@@ -4,8 +4,9 @@ import os
 
 from pyrsistent import s
 from testscenarios import multiply_scenarios, with_scenarios
+from zope.interface import verify
 
-from filesystems import Path, exceptions
+from filesystems import Path, exceptions, interfaces
 from filesystems.common import _PY3
 from filesystems._path import RelativePath
 
@@ -1204,6 +1205,9 @@ class TestFS(_NonExistingFileMixin):
         fs.link(source=two / "3", to=one / "3")
 
         self.assertEqual(fs.readlink(zero.descendant("1", "3")), two / "3")
+
+    def test_interface(self):
+        verify.verifyObject(interfaces.Filesystem, self.FS())
 
 
 @with_scenarios()

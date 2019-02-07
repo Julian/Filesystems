@@ -3,9 +3,10 @@ from fnmatch import fnmatch
 import stat
 
 from pyrsistent import pset
+from zope.interface import implementer
 import attr
 
-from filesystems import _PY3, Path, exceptions
+from filesystems import _PY3, Path, exceptions, interfaces
 
 
 def _realpath(fs, path, seen=pset()):
@@ -107,7 +108,8 @@ def create(
         children=_children,
         glob_children=_glob_children,
     )
-    return attr.s(hash=True)(type(name, (object,), methods))
+    cls = attr.s(hash=True)(type(name, (object,), methods))
+    return implementer(interfaces.Filesystem)(cls)
 
 
 @contextmanager
