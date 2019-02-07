@@ -1,4 +1,4 @@
-from zope.interface import Interface
+from zope.interface import Attribute, Interface
 
 from filesystems import _PY3
 
@@ -78,6 +78,9 @@ class Filesystem(Interface):
 
 
 class Path(Interface):
+
+    segments = Attribute("The path segments that make up this path")
+
     def __str__():
         """
         Render the path as a string.
