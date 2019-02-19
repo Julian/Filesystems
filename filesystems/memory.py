@@ -51,7 +51,8 @@ class _File(object):
     def create_directory(self, path):
         raise exceptions.FileExists(path)
 
-    def list_directory(self, path): raise exceptions.NotADirectory(path)
+    def list_directory(self, path):
+        raise exceptions.NotADirectory(path)
 
     def remove_empty_directory(self, path):
         raise exceptions.NotADirectory(path)
