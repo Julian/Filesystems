@@ -76,6 +76,13 @@ class _File(object):
         return file
 
     def remove_file(self, path):
+        self._disappear()
+
+    def moving(self, source, to, new_name):
+        self._disappear()
+        return _File(name=new_name, parent=to, contents=self._contents)
+
+    def _disappear(self):
         del self._parent[self._name]
 
     def link(self, source, to, fs, state):
@@ -171,7 +178,7 @@ class _Directory(object):
     def remove_empty_directory(self, path):
         if self._children:
             raise exceptions.DirectoryNotEmpty(path)
-        del self._parent[self._name]
+        self._disappear()
 
     def create_file(self, path):
         raise exceptions.FileExists(path)
@@ -181,6 +188,13 @@ class _Directory(object):
 
     def remove_file(self, path):
         raise exceptions._UnlinkNonFileError(path)
+
+    def moving(self, source, to, new_name):
+        self._disappear()
+        return _Directory(name=new_name, parent=to, children=self._children)
+
+    def _disappear(self):
+        del self._parent[self._name]
 
     def link(self, source, to, fs, state):
         raise exceptions.FileExists(to)
@@ -241,6 +255,16 @@ class _DirectoryChild(object):
 
     def remove_file(self, path):
         raise exceptions.FileNotFound(path)
+
+    def move_from(self, source, state):
+        self._parent[self._name] = state[source].moving(
+            source=source,
+            to=self._parent,
+            new_name=self._name,
+        )
+
+    def moving(self, source, to, new_name):
+        raise exceptions.FileNotFound(source)
 
     def link(self, source, to, fs, state):
         self._parent[self._name] = _Link(
@@ -391,6 +415,8 @@ class _State(object):
             remove_empty_directory=_fs(self.remove_empty_directory),
             temporary_directory=_fs(self.temporary_directory),
 
+            move=_fs(self.move),
+
             stat=_fs(self.stat),
 
             lstat=_fs(self.lstat),
@@ -430,6 +456,9 @@ class _State(object):
 
     def remove_file(self, path):
         self[path].remove_file(path=path)
+
+    def move(self, source, to):
+        self[to].move_from(source=source, state=self)
 
     def link(self, source, to, fs):
         self[to].link(fs=fs, source=source, to=to, state=self)

@@ -168,6 +168,17 @@ def _lstat(fs, path):
         raise
 
 
+def _move(fs, source, to):
+    try:
+        os.rename(str(source), str(to))
+    except (IOError, OSError) as error:
+        if error.errno == exceptions.FileNotFound.errno:
+            raise exceptions.FileNotFound(source)
+        elif error.errno == exceptions.NotADirectory.errno:
+            raise exceptions.NotADirectory(source)
+        raise
+
+
 FS = common.create(
     name="NativeFS",
 
@@ -179,6 +190,8 @@ FS = common.create(
     list_directory=_list_directory,
     remove_empty_directory=_remove_empty_directory,
     temporary_directory=lambda fs: Path.from_string(tempfile.mkdtemp()),
+
+    move=_move,
 
     stat=_stat,
 

@@ -39,6 +39,12 @@ class _NonExistingFileMixin(object):
             "remove_file",
             dict(act_on=lambda fs, path: fs.remove_file(path=path)),
         ), (
+            "move", dict(
+                act_on=lambda fs, path: fs.move(
+                    source=path, to=path.sibling("some-sibling"),
+                ),
+            ),
+        ), (
             "readlink",
             dict(act_on=lambda fs, path: fs.readlink(path=path)),
         ),
@@ -281,6 +287,80 @@ class TestFS(_NonExistingFileMixin):
             fs.get_contents(path=tempdir / "unittesting"),
             "foo\nbar\nbaz",
         )
+
+    def test_move(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir / "source", tempdir / "to"
+        fs.set_contents(source, "foo\nbar\nbaz")
+        fs.move(source=source, to=to)
+
+        self.assertEqual(
+            fs.get_contents(path=to),
+            "foo\nbar\nbaz",
+        )
+
+        with self.assertRaises(exceptions.FileNotFound):
+            fs.get_contents(path=source)
+
+    def test_move_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        fs.create_directory(tempdir / "dir")
+        source, to = tempdir / "source", tempdir / "dir" / "to"
+
+        fs.create_directory(source)
+        fs.set_contents(source / "foo", "foo\nbar\nbaz")
+        fs.create_directory(source / "bar")
+        fs.set_contents(source / "bar" / "baz", "spam\neggs\n")
+        fs.move(source=source, to=to)
+
+        self.assertEqual(
+            (
+                fs.children(to),
+                fs.get_contents(to / "foo"),
+                fs.get_contents(to / "bar" / "baz"),
+            ), (
+                {to / "foo", to / "bar"},
+                "foo\nbar\nbaz",
+                "spam\neggs\n",
+            ),
+        )
+
+        with self.assertRaises(exceptions.FileNotFound):
+            fs.list_directory(path=source)
+
+    def test_move_empty_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source, to = tempdir / "source", tempdir / "to"
+        fs.create_directory(source)
+        fs.move(source=source, to=to)
+
+        self.assertEqual(fs.children(to), set())
+        with self.assertRaises(exceptions.FileNotFound):
+            fs.list_directory(path=source)
+
+    def test_move_existing(self):
+        pass
+
+    def test_move_existing_directory(self):
+        pass
+
+    def test_move_existing_empty_directory(self):
+        pass
+
+    def test_move_onto_self(self):
+        pass
+
+    def test_move_directory_onto_self(self):
+        pass
 
     def test_remove(self):
         fs = self.FS()
@@ -1893,6 +1973,12 @@ class NonExistentChildMixin(object):
                 "remove_empty_directory", dict(
                     act_on=lambda fs, path: fs.remove_empty_directory(
                         path=path,
+                    ),
+                ),
+            ), (
+                "move", dict(
+                    act_on=lambda fs, path: fs.move(
+                        source=path, to=path.sibling("some-sibling"),
                     ),
                 ),
             ), (
