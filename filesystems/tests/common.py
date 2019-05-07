@@ -1206,6 +1206,21 @@ class TestFS(_NonExistingFileMixin):
 
         self.assertEqual(fs.readlink(zero.descendant("1", "3")), two / "3")
 
+    def test_bind(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        source = fs.bind(path=tempdir / "source")
+        verify.verifyObject(interfaces._BoundPath, source)
+
+        source.touch()
+        source.link_to(tempdir / "to")
+
+        to = source.sibling("to")
+
+        self.assertTrue(to.is_file())
+
     def test_interface(self):
         verify.verifyObject(interfaces.Filesystem, self.FS())
 

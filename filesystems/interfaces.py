@@ -76,6 +76,9 @@ class Filesystem(Interface):
     def glob_children(path, pattern):
         pass
 
+    def bind(path):
+        pass
+
 
 class Path(Interface):
 
@@ -136,3 +139,80 @@ class Path(Interface):
         """
         Resolve a path relative to this one.
         """
+
+
+class _BoundPath(Path, Interface):
+    def create():
+        pass
+
+    def open(mode):
+        pass
+
+    def remove_file():
+        pass
+
+    def create_directory():
+        pass
+
+    def list_directory():
+        pass
+
+    def remove_empty_directory():
+        pass
+
+    def temporary_directory():
+        pass
+
+    def get_contents():
+        pass
+
+    def set_contents(contents):
+        pass
+
+    def create_with_contents(contents):
+        pass
+
+    def remove():
+        pass
+
+    def removing():
+        pass
+
+    def stat():
+        pass
+
+    def lstat():
+        pass
+
+    def link_from(path):
+        pass
+
+    def link_to(path):
+        pass
+
+    def readlink():
+        pass
+
+    def realpath():
+        pass
+
+    def exists():
+        pass
+
+    def is_dir():
+        pass
+
+    def is_file():
+        pass
+
+    def is_link():
+        pass
+
+    def touch():
+        pass
+
+    def children():
+        pass
+
+    def glob_children(pattern):
+        pass

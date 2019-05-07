@@ -6,7 +6,7 @@ from pyrsistent import pset
 from zope.interface import implementer
 import attr
 
-from filesystems import _PY3, Path, exceptions, interfaces
+from filesystems import _PY3, _path as _path_module, exceptions, interfaces
 
 
 def _realpath(fs, path, seen=pset()):
@@ -17,7 +17,7 @@ def _realpath(fs, path, seen=pset()):
         loops, but we do, following the behavior of GNU ``realpath(1)``!
     """
 
-    real = Path.root()
+    real = _path_module.Path.root()
     for segment in path.segments:
         current = real / segment
         seen = seen.add(current)
@@ -107,6 +107,8 @@ def create(
 
         children=_children,
         glob_children=_glob_children,
+
+        bind=lambda self, path: _BoundPath(path=path, fs=self),
     )
     cls = attr.s(hash=True)(type(name, (object,), methods))
     return implementer(interfaces.Filesystem)(cls)
@@ -278,6 +280,122 @@ class _FileMode(object):
 
     def io_open_string(self):
         return self.activity + self.mode
+
+
+@implementer(interfaces._BoundPath)
+@attr.s(hash=True)
+class _BoundPath(object):
+    """
+    A path bound to a specific filesystem.
+    """
+
+    _fs = attr.ib()
+    _path = attr.ib()
+
+    __div__ = _path_module.__div__
+    basename = _path_module.basename
+    dirname = _path_module.dirname
+
+    @property
+    def segments(self):
+        return self._path.segments
+
+    def heritage(self):
+        return (
+            self.__class__(fs=self._fs, path=path)
+            for path in self._path.heritage()
+        )
+
+    def parent(self):
+        return self.__class__(fs=self._fs, path=self._path.parent())
+
+    def descendant(self, *segments):
+        descendant = self._path.descendant(*segments)
+        return self.__class__(fs=self._fs, path=descendant)
+
+    def sibling(self, name):
+        return self._fs.bind(path=self._path.sibling(name))
+
+    def relative_to(self, path):
+        return self._fs.bind(path=self._path.relative_to(path=path))
+
+    def create(self):
+        return self._fs.create(path=self._path)
+
+    def open(self, mode):
+        return self._fs.open(path=self._path, mode=mode)
+
+    def remove_file(self):
+        return self._fs.remove_file(path=self._path)
+
+    def create_directory(self):
+        return self._fs.create_directory(path=self._path)
+
+    def list_directory(self):
+        return self._fs.list_directory(path=self._path)
+
+    def remove_empty_directory(self):
+        return self._fs.remove_empty_directory(path=self._path)
+
+    def temporary_directory(self):
+        return self._fs.temporary_directory(path=self._path)
+
+    def get_contents(self):
+        return self._fs.get_contents(path=self._path)
+
+    def set_contents(self, contents):
+        return self._fs.set_contents(path=self._path, contents=contents)
+
+    def create_with_contents(self, contents):
+        return self._fs.create_with_contents(
+            path=self._path,
+            contents=contents,
+        )
+
+    def remove(self):
+        return self._fs.remove(path=self._path)
+
+    def removing(self):
+        return self._fs.removing(path=self._path)
+
+    def stat(self):
+        return self._fs.stat(path=self._path)
+
+    def lstat(self):
+        return self._fs.lstat(path=self._path)
+
+    def link_from(self, path):
+        return self._fs.link(source=path, to=self._path)
+
+    def link_to(self, path):
+        return self._fs.link(source=self._path, to=path)
+
+    def readlink(self):
+        return self._fs.link(path=self._path)
+
+    def realpath(self):
+        return self._fs.realpath(path=self._path)
+
+    def exists(self):
+        return self._fs.exists(path=self._path)
+
+    def is_dir(self):
+        return self._fs.is_dir(path=self._path)
+
+    def is_file(self):
+        return self._fs.is_file(path=self._path)
+
+    def is_link(self):
+        return self._fs.is_link(path=self._path)
+
+    def touch(self):
+        return self._fs.touch(path=self._path)
+
+    def children(self):
+        return self._fs.children(path=self._path)
+
+    def glob_children(self, pattern):
+        return self._fs.glob_children(path=self._path, pattern=pattern)
 
 
 def _parse_mode(mode):
