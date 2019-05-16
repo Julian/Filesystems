@@ -219,6 +219,30 @@ class TestFS(_NonExistingFileMixin):
             "foo\nbar\nbaz",
         )
 
+    def test_get_contents_text(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        with fs.open(tempdir / "unittesting", "wb") as f:
+            f.write(b"שלום")
+
+        self.assertEqual(
+            fs.get_contents(tempdir / "unittesting", mode="t"),
+            u"שלום",
+        )
+
+    def test_get_set_contents_text(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        fs.set_contents(tempdir / "unittesting", u"שלום", mode="t")
+        self.assertEqual(
+            fs.get_contents(path=tempdir / "unittesting", mode="t"),
+            u"שלום",
+        )
+
     def test_set_contents_existing_file(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()

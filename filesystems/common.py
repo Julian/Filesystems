@@ -83,8 +83,12 @@ def create(
         remove_empty_directory=remove_empty_directory,
         temporary_directory=temporary_directory,
 
-        get_contents=_get_contents,
-        set_contents=_set_contents,
+        get_contents=lambda fs, path, mode="": _get_contents(
+            fs=fs, path=path, mode=mode,
+        ),
+        set_contents=lambda fs, path, contents, mode="": _set_contents(
+            fs=fs, path=path, contents=contents, mode=mode,
+        ),
         create_with_contents=_create_with_contents,
 
         remove=remove,
@@ -118,13 +122,13 @@ def _removing(fs, path):
         fs.remove(path=path)
 
 
-def _get_contents(fs, path):
-    with fs.open(path=path) as file:
+def _get_contents(fs, path, mode):
+    with fs.open(path=path, mode="r" + mode) as file:
         return file.read()
 
 
-def _set_contents(fs, path, contents):
-    with fs.open(path=path, mode="w") as file:
+def _set_contents(fs, path, contents, mode):
+    with fs.open(path=path, mode="w" + mode) as file:
         file.write(contents)
 
 
