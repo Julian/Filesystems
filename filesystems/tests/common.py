@@ -225,7 +225,7 @@ class TestFS(_NonExistingFileMixin):
         self.addCleanup(fs.remove, tempdir)
 
         with fs.open(tempdir / "unittesting", "wb") as f:
-            f.write(b"שלום")
+            f.write(u"שלום".encode("utf-8"))
 
         self.assertEqual(
             fs.get_contents(tempdir / "unittesting", mode="t"),
