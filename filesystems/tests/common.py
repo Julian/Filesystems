@@ -791,6 +791,14 @@ class TestFS(_NonExistingFileMixin):
             os.strerror(errno.ENOENT) + ": " + str(directory.parent()),
         )
 
+    def test_create_directory_returns_the_new_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir / "dir"
+        self.assertEqual(fs.create_directory(tempdir / "dir"), directory)
+
     def test_create_directory_link_child(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()

@@ -71,6 +71,10 @@ def create(
     Create a new kind of filesystem.
     """
 
+    def _create_directory(fs, path):
+        create_directory(fs, path)
+        return path
+
     methods = dict(
         create=create_file,
         open=lambda fs, path, mode="r": open_file(
@@ -78,7 +82,7 @@ def create(
         ),
         remove_file=remove_file,
 
-        create_directory=create_directory,
+        create_directory=_create_directory,
         list_directory=list_directory,
         remove_empty_directory=remove_empty_directory,
         temporary_directory=temporary_directory,
