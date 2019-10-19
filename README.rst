@@ -12,9 +12,9 @@ Filesystems
    :alt: Supported Python versions
    :target: https://pypi.python.org/pypi/filesystems
 
-.. |Travis| image:: https://travis-ci.org/Julian/Filesystems.svg?branch=master
+.. |Travis| image:: https://travis-ci.com/Julian/Filesystems.svg?branch=master
    :alt: Travis build status
-   :target: https://travis-ci.org/Julian/Filesystems
+   :target: https://travis-ci.com/Julian/Filesystems
 
 .. |AppVeyor| image:: https://ci.appveyor.com/api/projects/status/wyp8asrcj807jo2o/branch/master?svg=true
    :alt: AppVeyor build status
