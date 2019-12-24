@@ -2,7 +2,7 @@
 Filesystems
 ===========
 
-|PyPI| |Pythons| |Travis| |AppVeyor|
+|PyPI| |Pythons| |CI| |AppVeyor|
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/filesystems.svg
    :alt: PyPI version
@@ -12,9 +12,9 @@ Filesystems
    :alt: Supported Python versions
    :target: https://pypi.python.org/pypi/filesystems
 
-.. |Travis| image:: https://travis-ci.com/Julian/Filesystems.svg?branch=master
-   :alt: Travis build status
-   :target: https://travis-ci.com/Julian/Filesystems
+.. |CI| image:: https://github.com/Julian/Filesystems/workflows/CI/badge.svg
+  :alt: Build status
+  :target: https://github.com/Julian/Filesystems/actions?query=workflow%3ACI
 
 .. |AppVeyor| image:: https://ci.appveyor.com/api/projects/status/wyp8asrcj807jo2o/branch/master?svg=true
    :alt: AppVeyor build status
