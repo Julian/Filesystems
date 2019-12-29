@@ -308,6 +308,7 @@ class _NoSuchEntry(object):
         return self
 
     def create_directory(self, path, parents=False):
+        # TODO: exception for parents=True?
         raise exceptions.FileNotFound(path.parent())
 
     def list_directory(self, path):
@@ -375,7 +376,13 @@ class _State(object):
         )()
 
     def create_directory(self, path, parents=False):
-        self[path].create_directory(path=path, parents=parents)
+        if parents:
+            for maybe_parent in path.heritage():
+                a = self[maybe_parent]
+                if isinstance(a, _DirectoryChild):
+                    a.create_directory(path=maybe_parent)
+        else:
+            self[path].create_directory(path=path, parents=parents)
 
     def list_directory(self, path):
         return self[path].list_directory(path=path)
