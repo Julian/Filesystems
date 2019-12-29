@@ -59,9 +59,12 @@ def _remove_file(fs, path):
         raise
 
 
-def _create_directory(fs, path):
+def _create_directory(fs, path, parents=False):
     try:
-        os.mkdir(str(path))
+        if parents:
+            os.makedirs(str(path))
+        else:
+            os.mkdir(str(path))
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileExists.errno:
             raise exceptions.FileExists(path)

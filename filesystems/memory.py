@@ -48,7 +48,7 @@ class _File(object):
     def __getitem__(self, name):
         return _FileChild(parent=self._parent)
 
-    def create_directory(self, path):
+    def create_directory(self, path, parents=False):
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -101,7 +101,7 @@ class _FileChild(object):
     def __getitem__(self, name):
         return self
 
-    def create_directory(self, path):
+    def create_directory(self, path, parents=False):
         raise exceptions.NotADirectory(path.parent())
 
     def list_directory(self, path):
@@ -159,7 +159,7 @@ class _Directory(object):
     def __delitem__(self, name):
         self._children = self._children.remove(name)
 
-    def create_directory(self, path):
+    def create_directory(self, path, parents=False):
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -205,7 +205,7 @@ class _DirectoryChild(object):
     def __getitem__(self, name):
         return _NO_SUCH_ENTRY
 
-    def create_directory(self, path):
+    def create_directory(self, path, parents=False):
         self._parent[self._name] = _Directory(
             name=self._name,
             parent=self._parent,
@@ -265,7 +265,7 @@ class _Link(object):
     def __getitem__(self, name):
         return self._entry_at()[name]
 
-    def create_directory(self, path):
+    def create_directory(self, path, parents=False):
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -307,7 +307,7 @@ class _NoSuchEntry(object):
     def __getitem__(self, name):
         return self
 
-    def create_directory(self, path):
+    def create_directory(self, path, parents=False):
         raise exceptions.FileNotFound(path.parent())
 
     def list_directory(self, path):
@@ -374,8 +374,8 @@ class _State(object):
             readlink=_fs(self.readlink),
         )()
 
-    def create_directory(self, path):
-        self[path].create_directory(path=path)
+    def create_directory(self, path, parents=False):
+        self[path].create_directory(path=path, parents=parents)
 
     def list_directory(self, path):
         return self[path].list_directory(path=path)
