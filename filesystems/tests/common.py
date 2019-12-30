@@ -729,11 +729,9 @@ class TestFS(_NonExistingFileMixin):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        directory = tempdir / "dir" / "sub1" / "sub2" / "sub3"
-        self.assertFalse(fs.is_dir(path=directory.parent().parent().parent()))
-        self.assertFalse(fs.is_dir(path=directory.parent().parent()))
-        self.assertFalse(fs.is_dir(path=directory.parent()))
-        self.assertFalse(fs.is_dir(path=directory))
+        top_dir = tempdir / "dir"
+        directory = top_dir / "sub1" / "sub2" / "sub3"
+        self.assertFalse(fs.is_dir(path=top_dir))
 
         fs.create_directory(path=directory, parents=True)
 
