@@ -377,10 +377,11 @@ class _State(object):
 
     def create_directory(self, path, parents=False):
         if parents:
-            for maybe_parent in path.heritage():
-                a = self[maybe_parent]
-                if isinstance(a, _DirectoryChild):
-                    a.create_directory(path=maybe_parent)
+            for each in path.heritage():
+                try:
+                    self[each].create_directory(path=each)
+                except exceptions.FileExists:
+                    pass
         else:
             self[path].create_directory(path=path, parents=parents)
 
