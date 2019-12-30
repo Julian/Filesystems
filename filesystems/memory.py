@@ -381,7 +381,8 @@ class _State(object):
                 try:
                     self[each].create_directory(path=each)
                 except exceptions.FileExists:
-                    pass
+                    if each == path:
+                        raise
         else:
             self[path].create_directory(path=path, parents=parents)
 
