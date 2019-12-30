@@ -59,7 +59,7 @@ def _remove_file(fs, path):
         raise
 
 
-def _create_directory(fs, path, parents=False):
+def _create_directory(fs, path, parents):
     try:
         if parents:
             os.makedirs(str(path))
