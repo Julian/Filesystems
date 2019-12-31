@@ -203,13 +203,15 @@ class _DirectoryChild(object):
     _parent = attr.ib(repr=False)
 
     def __getitem__(self, name):
-        return _NO_SUCH_ENTRY
+        return _NoSuchEntry(parent=self, name=name)
 
     def create_directory(self, path, parents):
-        self._parent[self._name] = _Directory(
+        directory = _Directory(
             name=self._name,
             parent=self._parent,
         )
+        self._parent[self._name] = directory
+        return directory
 
     def list_directory(self, path):
         raise exceptions.FileNotFound(path)
@@ -299,16 +301,25 @@ class _Link(object):
 @attr.s(hash=True)
 class _NoSuchEntry(object):
     """
-    A non-existent node that also cannot be created.
+    A non-existent node that also cannot be created alone.
 
     It has no existing parent. What a shame.
     """
 
+    _name = attr.ib()
+    _parent = attr.ib()
+
     def __getitem__(self, name):
-        return self
+        return _NoSuchEntry(parent=self, name=name)
 
     def create_directory(self, path, parents):
-        # TODO: exception for parents=True?
+        if parents:
+            parent = self._parent.create_directory(path=path, parents=parents)
+            directory = parent[self._name].create_directory(
+                path=path,
+                parents=False,
+            )
+            return directory
         raise exceptions.FileNotFound(path.parent())
 
     def list_directory(self, path):
@@ -336,9 +347,6 @@ class _NoSuchEntry(object):
         raise exceptions.FileNotFound(path)
 
     lstat = stat
-
-
-_NO_SUCH_ENTRY = _NoSuchEntry()
 
 
 @attr.s(hash=True)
@@ -377,14 +385,12 @@ class _State(object):
 
     def create_directory(self, path, parents):
         if parents:
-            for each in path.heritage():
-                try:
-                    self[each].create_directory(path=each, parents=False)
-                except exceptions.FileExists:
-                    if each == path:
-                        raise
-        else:
-            self[path].create_directory(path=path, parents=parents)
+            parent = path.parent()
+            try:
+                self[parent].create_directory(path=parent, parents=parents)
+            except exceptions.FileExists:
+                parents = False
+        self[path].create_directory(path=path, parents=parents)
 
     def list_directory(self, path):
         return self[path].list_directory(path=path)
