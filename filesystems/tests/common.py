@@ -724,7 +724,27 @@ class TestFS(_NonExistingFileMixin):
             dict(exists=True, is_dir=True, is_file=False, is_link=False),
         )
 
-    def test_create_directory_and_parents(self):
+    def test_create_directory_with_parents(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir / "dir"
+        self.assertFalse(fs.is_dir(path=directory))
+
+        fs.create_directory(path=directory, parents=True)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=directory),
+                is_dir=fs.is_dir(path=directory),
+                is_file=fs.is_file(path=directory),
+                is_link=fs.is_link(path=directory),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=False),
+        )
+
+    def test_create_deep_directory_with_parents(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
