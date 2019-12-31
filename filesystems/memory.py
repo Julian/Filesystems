@@ -384,12 +384,6 @@ class _State(object):
         )()
 
     def create_directory(self, path, parents):
-        if parents:
-            parent = path.parent()
-            try:
-                self[parent].create_directory(path=parent, parents=parents)
-            except exceptions.FileExists:
-                parents = False
         self[path].create_directory(path=path, parents=parents)
 
     def list_directory(self, path):
