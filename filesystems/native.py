@@ -59,9 +59,9 @@ def _remove_file(fs, path):
         raise
 
 
-def _create_directory(fs, path, parents):
+def _create_directory(fs, path, with_parents):
     try:
-        if parents:
+        if with_parents:
             os.makedirs(str(path))
         else:
             os.mkdir(str(path))

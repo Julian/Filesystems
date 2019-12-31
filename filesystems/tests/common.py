@@ -732,7 +732,7 @@ class TestFS(_NonExistingFileMixin):
         directory = tempdir / "dir"
         self.assertFalse(fs.is_dir(path=directory))
 
-        fs.create_directory(path=directory, parents=True)
+        fs.create_directory(path=directory, with_parents=True)
 
         self.assertEqual(
             dict(
@@ -753,7 +753,7 @@ class TestFS(_NonExistingFileMixin):
         directory = top_dir / "sub1" / "sub2" / "sub3"
         self.assertFalse(fs.is_dir(path=top_dir))
 
-        fs.create_directory(path=directory, parents=True)
+        fs.create_directory(path=directory, with_parents=True)
 
         self.assertEqual(
             dict(
@@ -792,7 +792,7 @@ class TestFS(_NonExistingFileMixin):
         self.assertTrue(fs.is_dir(path=directory))
 
         with self.assertRaises(exceptions.FileExists) as e:
-            fs.create_directory(path=directory, parents=True)
+            fs.create_directory(path=directory, with_parents=True)
 
         self.assertEqual(
             str(e.exception),
