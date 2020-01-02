@@ -71,8 +71,8 @@ def create(
     Create a new kind of filesystem.
     """
 
-    def _create_directory(fs, path):
-        create_directory(fs, path)
+    def _create_directory(fs, path, with_parents=False):
+        create_directory(fs, path, with_parents=with_parents)
         return path
 
     methods = dict(

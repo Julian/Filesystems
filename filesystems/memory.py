@@ -48,7 +48,7 @@ class _File(object):
     def __getitem__(self, name):
         return _FileChild(parent=self._parent)
 
-    def create_directory(self, path):
+    def create_directory(self, path, with_parents):
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -101,7 +101,7 @@ class _FileChild(object):
     def __getitem__(self, name):
         return self
 
-    def create_directory(self, path):
+    def create_directory(self, path, with_parents):
         raise exceptions.NotADirectory(path.parent())
 
     def list_directory(self, path):
@@ -159,7 +159,7 @@ class _Directory(object):
     def __delitem__(self, name):
         self._children = self._children.remove(name)
 
-    def create_directory(self, path):
+    def create_directory(self, path, with_parents):
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -203,13 +203,15 @@ class _DirectoryChild(object):
     _parent = attr.ib(repr=False)
 
     def __getitem__(self, name):
-        return _NO_SUCH_ENTRY
+        return _NoSuchEntry(parent=self, name=name)
 
-    def create_directory(self, path):
-        self._parent[self._name] = _Directory(
+    def create_directory(self, path, with_parents):
+        directory = _Directory(
             name=self._name,
             parent=self._parent,
         )
+        self._parent[self._name] = directory
+        return directory
 
     def list_directory(self, path):
         raise exceptions.FileNotFound(path)
@@ -265,7 +267,7 @@ class _Link(object):
     def __getitem__(self, name):
         return self._entry_at()[name]
 
-    def create_directory(self, path):
+    def create_directory(self, path, with_parents):
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -299,15 +301,28 @@ class _Link(object):
 @attr.s(hash=True)
 class _NoSuchEntry(object):
     """
-    A non-existent node that also cannot be created.
+    A non-existent node that also cannot be created alone.
 
     It has no existing parent. What a shame.
     """
 
-    def __getitem__(self, name):
-        return self
+    _name = attr.ib()
+    _parent = attr.ib()
 
-    def create_directory(self, path):
+    def __getitem__(self, name):
+        return _NoSuchEntry(parent=self, name=name)
+
+    def create_directory(self, path, with_parents):
+        if with_parents:
+            parent = self._parent.create_directory(
+                path=path,
+                with_parents=with_parents,
+            )
+            directory = parent[self._name].create_directory(
+                path=path,
+                with_parents=False,
+            )
+            return directory
         raise exceptions.FileNotFound(path.parent())
 
     def list_directory(self, path):
@@ -335,9 +350,6 @@ class _NoSuchEntry(object):
         raise exceptions.FileNotFound(path)
 
     lstat = stat
-
-
-_NO_SUCH_ENTRY = _NoSuchEntry()
 
 
 @attr.s(hash=True)
@@ -374,8 +386,8 @@ class _State(object):
             readlink=_fs(self.readlink),
         )()
 
-    def create_directory(self, path):
-        self[path].create_directory(path=path)
+    def create_directory(self, path, with_parents):
+        self[path].create_directory(path=path, with_parents=with_parents)
 
     def list_directory(self, path):
         return self[path].list_directory(path=path)
@@ -386,7 +398,7 @@ class _State(object):
     def temporary_directory(self):
         # TODO: Maybe this isn't good enough.
         directory = Path(uuid4().hex)
-        self.create_directory(path=directory)
+        self.create_directory(path=directory, with_parents=False)
         return directory
 
     def create_file(self, path):
