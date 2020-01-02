@@ -744,6 +744,67 @@ class TestFS(_NonExistingFileMixin):
             dict(exists=True, is_dir=True, is_file=False, is_link=False),
         )
 
+    def test_create_directory_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir / "dir"
+        self.assertFalse(fs.is_dir(path=directory))
+
+        fs.create_directory(path=directory, allow_existing=True)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=directory),
+                is_dir=fs.is_dir(path=directory),
+                is_file=fs.is_file(path=directory),
+                is_link=fs.is_link(path=directory),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=False),
+        )
+
+    def test_create_directory_with_parents_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir / "dir"
+        self.assertFalse(fs.is_dir(path=directory))
+
+        fs.create_directory(
+            path=directory,
+            with_parents=True,
+            allow_existing=True,
+        )
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=directory),
+                is_dir=fs.is_dir(path=directory),
+                is_file=fs.is_file(path=directory),
+                is_link=fs.is_link(path=directory),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=False),
+        )
+
+    def test_create_deep_directory(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        top_dir = tempdir / "dir"
+        directory = top_dir / "sub1" / "sub2" / "sub3"
+        self.assertFalse(fs.is_dir(path=top_dir))
+
+        with self.assertRaises(exceptions.FileNotFound) as e:
+            fs.create_directory(path=directory)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOENT) + ": " + str(directory.parent()),
+        )
+
     def test_create_deep_directory_with_parents(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -754,6 +815,48 @@ class TestFS(_NonExistingFileMixin):
         self.assertFalse(fs.is_dir(path=top_dir))
 
         fs.create_directory(path=directory, with_parents=True)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=directory),
+                is_dir=fs.is_dir(path=directory),
+                is_file=fs.is_file(path=directory),
+                is_link=fs.is_link(path=directory),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=False),
+        )
+
+    def test_create_deep_directory_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        top_dir = tempdir / "dir"
+        directory = top_dir / "sub1" / "sub2" / "sub3"
+        self.assertFalse(fs.is_dir(path=top_dir))
+
+        with self.assertRaises(exceptions.FileNotFound) as e:
+            fs.create_directory(path=directory, allow_existing=True)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOENT) + ": " + str(directory.parent()),
+        )
+
+    def test_create_deep_directory_with_parents_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        top_dir = tempdir / "dir"
+        directory = top_dir / "sub1" / "sub2" / "sub3"
+        self.assertFalse(fs.is_dir(path=top_dir))
+
+        fs.create_directory(
+            path=directory,
+            with_parents=True,
+            allow_existing=True,
+        )
 
         self.assertEqual(
             dict(
@@ -782,7 +885,7 @@ class TestFS(_NonExistingFileMixin):
             os.strerror(errno.EEXIST) + ": " + str(directory),
         )
 
-    def test_create_existing_directory_and_parents(self):
+    def test_create_existing_directory_with_parents(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -797,6 +900,52 @@ class TestFS(_NonExistingFileMixin):
         self.assertEqual(
             str(e.exception),
             os.strerror(errno.EEXIST) + ": " + str(directory),
+        )
+
+    def test_create_existing_directory_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir / "dir"
+        fs.create_directory(path=directory)
+        self.assertTrue(fs.is_dir(path=directory))
+
+        fs.create_directory(path=directory, allow_existing=True)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=directory),
+                is_dir=fs.is_dir(path=directory),
+                is_file=fs.is_file(path=directory),
+                is_link=fs.is_link(path=directory),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=False),
+        )
+
+    def test_create_existing_directory_with_parents_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir / "dir"
+        fs.create_directory(path=directory)
+        self.assertTrue(fs.is_dir(path=directory))
+
+        fs.create_directory(
+            path=directory,
+            with_parents=True,
+            allow_existing=True,
+        )
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=directory),
+                is_dir=fs.is_dir(path=directory),
+                is_file=fs.is_file(path=directory),
+                is_link=fs.is_link(path=directory),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=False),
         )
 
     def test_create_existing_directory_from_file(self):
@@ -831,6 +980,60 @@ class TestFS(_NonExistingFileMixin):
             os.strerror(errno.EEXIST) + ": " + str(not_a_dir),
         )
 
+    def test_create_existing_directory_from_file_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        not_a_dir = tempdir / "not_a_dir"
+        fs.touch(not_a_dir)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.create_directory(path=not_a_dir, allow_existing=True)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(not_a_dir),
+        )
+
+    def test_create_existing_directory_from_file_with_parents_allow_existing(
+            self,
+    ):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        not_a_dir = tempdir / "not_a_dir"
+        fs.touch(not_a_dir)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.create_directory(
+                path=not_a_dir,
+                with_parents=True,
+                allow_existing=True,
+            )
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(not_a_dir),
+        )
+
+    def test_create_existing_directory_from_file_child(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        not_a_dir = tempdir / "not_a_dir"
+        fs.touch(not_a_dir)
+
+        with self.assertRaises(exceptions.NotADirectory) as e:
+            fs.create_directory(path=not_a_dir.descendant("file_child"))
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
+        )
+
     def test_create_existing_directory_from_file_child_with_parents(self):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -843,6 +1046,47 @@ class TestFS(_NonExistingFileMixin):
             fs.create_directory(
                 path=not_a_dir.descendant("file_child"),
                 with_parents=True,
+            )
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
+        )
+
+    def test_create_existing_directory_from_file_child_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        not_a_dir = tempdir / "not_a_dir"
+        fs.touch(not_a_dir)
+
+        with self.assertRaises(exceptions.NotADirectory) as e:
+            fs.create_directory(
+                path=not_a_dir.descendant("file_child"),
+                allow_existing=True,
+            )
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
+        )
+
+    def test_create_existing_directory_from_file_child_with_parents_allow_existing(
+            self,
+    ):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        not_a_dir = tempdir / "not_a_dir"
+        fs.touch(not_a_dir)
+
+        with self.assertRaises(exceptions.NotADirectory) as e:
+            fs.create_directory(
+                path=not_a_dir.descendant("file_child"),
+                with_parents=True,
+                allow_existing=True,
             )
 
         self.assertEqual(
@@ -876,6 +1120,105 @@ class TestFS(_NonExistingFileMixin):
 
         with self.assertRaises(exceptions.FileExists) as e:
             fs.create_directory(path=link, with_parents=True)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(link),
+        )
+
+    # TODO: cover links to all of:
+    #       files
+    #       directories
+    #       non-looping links
+    #       looping links
+    #       non-existent targets
+    #       ?
+    def test_create_existing_directory_from_directory_link_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir / "directory"
+        fs.create_directory(path=directory)
+        link = tempdir / "link"
+        fs.link(source=directory, to=link)
+
+        fs.create_directory(path=link, allow_existing=True)
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=link),
+                is_dir=fs.is_dir(path=link),
+                is_file=fs.is_file(path=link),
+                is_link=fs.is_link(path=link),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=True),
+        )
+
+    def test_create_existing_directory_from_directory_link_with_parents_allow_existing(
+            self,
+    ):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        directory = tempdir / "directory"
+        fs.create_directory(path=directory)
+        link = tempdir / "link"
+        fs.link(source=directory, to=link)
+
+        fs.create_directory(
+            path=link,
+            with_parents=True,
+            allow_existing=True,
+        )
+
+        self.assertEqual(
+            dict(
+                exists=fs.exists(path=link),
+                is_dir=fs.is_dir(path=link),
+                is_file=fs.is_file(path=link),
+                is_link=fs.is_link(path=link),
+            ),
+            dict(exists=True, is_dir=True, is_file=False, is_link=True),
+        )
+
+    def test_create_existing_directory_from_file_link_allow_existing(self):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        file = tempdir / "file"
+        fs.touch(path=file)
+        link = tempdir / "link"
+        fs.link(source=file, to=link)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.create_directory(path=link, allow_existing=True)
+
+        self.assertEqual(
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(link),
+        )
+
+    def test_create_existing_directory_from_file_link_with_parents_allow_existing(
+            self,
+    ):
+        fs = self.FS()
+        tempdir = fs.temporary_directory()
+        self.addCleanup(fs.remove, tempdir)
+
+        file = tempdir / "file"
+        fs.touch(path=file)
+        link = tempdir / "link"
+        fs.link(source=file, to=link)
+
+        with self.assertRaises(exceptions.FileExists) as e:
+            fs.create_directory(
+                path=link,
+                with_parents=True,
+                allow_existing=True,
+            )
 
         self.assertEqual(
             str(e.exception),
