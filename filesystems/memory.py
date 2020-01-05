@@ -271,9 +271,13 @@ class _Link(object):
         return self._entry_at()[name]
 
     def create_directory(self, path, with_parents, allow_existing):
-        # TODO: should this stat stuff really be used here?
-        if allow_existing and stat.S_ISDIR(self.stat(path=path).st_mode):
-            return self
+        if allow_existing:
+            entry = self._entry_at(path=path)
+            return entry.create_directory(
+                path=path,
+                with_parents=with_parents,
+                allow_existing=allow_existing,
+            )
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
