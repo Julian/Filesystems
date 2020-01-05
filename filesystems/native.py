@@ -62,10 +62,6 @@ def _remove_file(fs, path):
 def _create_directory(fs, path, with_parents, allow_existing):
     try:
         if with_parents:
-            # TODO: it works fine without this conditional passing of
-            #       exist_ok=allow_existing.  do we want to leverage the
-            #       py3-only api or just keep it simple and handle the
-            #       exception ourselves even in py3?
             if _PY3:
                 os.makedirs(str(path), exist_ok=allow_existing)
             else:
