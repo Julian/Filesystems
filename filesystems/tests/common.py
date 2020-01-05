@@ -1072,7 +1072,7 @@ class TestFS(_NonExistingFileMixin):
             os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
         )
 
-    def test_create_existing_directory_from_file_child_with_parents_allow_existing(
+    def test_create_existing_directory_from_file_child_with_parents_allow_existing(     # noqa: E501
             self,
     ):
         fs = self.FS()
@@ -1133,7 +1133,7 @@ class TestFS(_NonExistingFileMixin):
     #       looping links
     #       non-existent targets
     #       ?
-    def test_create_existing_directory_from_directory_link_allow_existing(self):
+    def test_create_existing_directory_from_directory_link_allow_existing(self):    # noqa: E501
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -1155,7 +1155,7 @@ class TestFS(_NonExistingFileMixin):
             dict(exists=True, is_dir=True, is_file=False, is_link=True),
         )
 
-    def test_create_existing_directory_from_directory_link_with_parents_allow_existing(
+    def test_create_existing_directory_from_directory_link_with_parents_allow_existing(     # noqa: E501
             self,
     ):
         fs = self.FS()
@@ -1201,7 +1201,7 @@ class TestFS(_NonExistingFileMixin):
             os.strerror(errno.EEXIST) + ": " + str(link),
         )
 
-    def test_create_existing_directory_from_file_link_with_parents_allow_existing(
+    def test_create_existing_directory_from_file_link_with_parents_allow_existing(  # noqa: E501
             self,
     ):
         fs = self.FS()
