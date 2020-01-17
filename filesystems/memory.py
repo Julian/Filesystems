@@ -48,7 +48,7 @@ class _File(object):
     def __getitem__(self, name):
         return _FileChild(parent=self._parent)
 
-    def create_directory(self, path, with_parents):
+    def create_directory(self, path, with_parents, allow_existing):
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -101,7 +101,7 @@ class _FileChild(object):
     def __getitem__(self, name):
         return self
 
-    def create_directory(self, path, with_parents):
+    def create_directory(self, path, with_parents, allow_existing):
         raise exceptions.NotADirectory(path.parent())
 
     def list_directory(self, path):
@@ -159,7 +159,10 @@ class _Directory(object):
     def __delitem__(self, name):
         self._children = self._children.remove(name)
 
-    def create_directory(self, path, with_parents):
+    def create_directory(self, path, with_parents, allow_existing):
+        if allow_existing:
+            return self
+
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -205,7 +208,7 @@ class _DirectoryChild(object):
     def __getitem__(self, name):
         return _NoSuchEntry(parent=self, name=name)
 
-    def create_directory(self, path, with_parents):
+    def create_directory(self, path, with_parents, allow_existing):
         directory = _Directory(
             name=self._name,
             parent=self._parent,
@@ -267,7 +270,14 @@ class _Link(object):
     def __getitem__(self, name):
         return self._entry_at()[name]
 
-    def create_directory(self, path, with_parents):
+    def create_directory(self, path, with_parents, allow_existing):
+        if allow_existing:
+            entry = self._entry_at(path=path)
+            return entry.create_directory(
+                path=path,
+                with_parents=with_parents,
+                allow_existing=allow_existing,
+            )
         raise exceptions.FileExists(path)
 
     def list_directory(self, path):
@@ -312,15 +322,17 @@ class _NoSuchEntry(object):
     def __getitem__(self, name):
         return _NoSuchEntry(parent=self, name=name)
 
-    def create_directory(self, path, with_parents):
+    def create_directory(self, path, with_parents, allow_existing):
         if with_parents:
             parent = self._parent.create_directory(
                 path=path,
                 with_parents=with_parents,
+                allow_existing=allow_existing,
             )
             directory = parent[self._name].create_directory(
                 path=path,
                 with_parents=False,
+                allow_existing=allow_existing,
             )
             return directory
         raise exceptions.FileNotFound(path.parent())
@@ -386,8 +398,12 @@ class _State(object):
             readlink=_fs(self.readlink),
         )()
 
-    def create_directory(self, path, with_parents):
-        self[path].create_directory(path=path, with_parents=with_parents)
+    def create_directory(self, path, with_parents, allow_existing):
+        self[path].create_directory(
+            path=path,
+            with_parents=with_parents,
+            allow_existing=allow_existing,
+        )
 
     def list_directory(self, path):
         return self[path].list_directory(path=path)
@@ -398,7 +414,11 @@ class _State(object):
     def temporary_directory(self):
         # TODO: Maybe this isn't good enough.
         directory = Path(uuid4().hex)
-        self.create_directory(path=directory, with_parents=False)
+        self.create_directory(
+            path=directory,
+            with_parents=False,
+            allow_existing=False,
+        )
         return directory
 
     def create_file(self, path):

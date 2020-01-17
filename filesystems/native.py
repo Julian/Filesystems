@@ -2,7 +2,7 @@ import io
 import os
 import tempfile
 
-from filesystems import Path, common, exceptions
+from filesystems import Path, common, exceptions, _PY3
 
 
 _CREATE_FLAGS = os.O_EXCL | os.O_CREAT | os.O_RDWR | getattr(os, "O_BINARY", 0)
@@ -59,14 +59,19 @@ def _remove_file(fs, path):
         raise
 
 
-def _create_directory(fs, path, with_parents):
+def _create_directory(fs, path, with_parents, allow_existing):
     try:
         if with_parents:
-            os.makedirs(str(path))
+            if _PY3:
+                os.makedirs(str(path), exist_ok=allow_existing)
+            else:
+                os.makedirs(str(path))
         else:
             os.mkdir(str(path))
     except (IOError, OSError) as error:
         if error.errno == exceptions.FileExists.errno:
+            if allow_existing and fs.is_dir(path):
+                return
             raise exceptions.FileExists(path)
         elif error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path.parent())
