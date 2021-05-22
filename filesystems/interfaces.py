@@ -1,7 +1,5 @@
 from zope.interface import Interface
 
-from filesystems import _PY3
-
 
 class Path(Interface):
     def __str__():
@@ -9,21 +7,15 @@ class Path(Interface):
         Render the path as a string.
         """
 
-    if _PY3:
-        def __fspath__():
-            """
-            Render the path as a string.
-            """
+    def __fspath__():
+        """
+        Render the path as a string.
+        """
 
-        def __truediv__(other):
-            """
-            Traverse to a child of this path.
-            """
-    else:
-        def __div__(other):
-            """
-            Traverse to a child of this path.
-            """
+    def __truediv__(other):
+        """
+        Traverse to a child of this path.
+        """
 
     def basename():
         """

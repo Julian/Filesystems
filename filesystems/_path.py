@@ -4,11 +4,8 @@ from pyrsistent import pvector
 from zope.interface import implementer
 import attr
 
-from filesystems import _PY3, interfaces
+from filesystems import interfaces
 from filesystems.exceptions import InvalidPath
-
-if _PY3:
-    basestring = bytes, str
 
 
 @implementer(interfaces.Path)
@@ -18,7 +15,7 @@ class Path(object):
         self.segments = pvector(segments)
 
     def __div__(self, other):
-        if not isinstance(other, basestring):  # FIXME: Unicode paths
+        if not isinstance(other, (bytes, str)):  # FIXME: Unicode paths
             return NotImplemented
         return self.descendant(other)
 
@@ -28,9 +25,8 @@ class Path(object):
     def __str__(self):
         return os.sep + os.sep.join(self.segments)
 
-    if _PY3:
-        __truediv__ = __div__
-        __fspath__ = __str__
+    __truediv__ = __div__
+    __fspath__ = __str__
 
     @classmethod
     def cwd(cls):
@@ -104,7 +100,7 @@ class RelativePath(object):
         self.segments = pvector(segments)
 
     def __div__(self, other):
-        if not isinstance(other, basestring):  # FIXME: Unicode paths
+        if not isinstance(other, (bytes, str)):  # FIXME: Unicode paths
             return NotImplemented
         return self.descendant(other)
 
@@ -114,9 +110,8 @@ class RelativePath(object):
     def __str__(self):
         return os.sep.join(self.segments)
 
-    if _PY3:
-        __truediv__ = __div__
-        __fspath__ = __str__
+    __truediv__ = __div__
+    __fspath__ = __str__
 
     def basename(self):
         return (self.segments or [""])[-1]

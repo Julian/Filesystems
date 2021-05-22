@@ -5,7 +5,7 @@ import stat
 from pyrsistent import pset
 import attr
 
-from filesystems import _PY3, Path, exceptions
+from filesystems import Path, exceptions
 
 
 def _realpath(fs, path, seen=pset()):
@@ -233,10 +233,7 @@ def _is_link(fs, path):
 @attr.s(frozen=True)
 class _FileMode(object):
     activity = attr.ib(default="r")
-    mode = attr.ib(
-        default='',
-        converter=lambda x: x if x != "" else ("t" if _PY3 else "b"),
-    )
+    mode = attr.ib(default='', converter=lambda x: x if x != "" else "t")
     read = attr.ib()
     write = attr.ib()
     append = attr.ib()

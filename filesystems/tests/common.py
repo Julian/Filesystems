@@ -7,7 +7,6 @@ from testscenarios import multiply_scenarios, with_scenarios
 
 from filesystems import Path, exceptions
 from filesystems._path import RelativePath
-from filesystems.common import _PY3
 
 
 @with_scenarios()
@@ -1725,7 +1724,7 @@ class OpenFileMixin(object):
             "native",
             {
                 "expected": "some things!",
-                "bytes": lambda c: c.encode() if _PY3 else c,
+                "bytes": lambda c: c.encode(),
                 "mode": "r",
             },
         ),
@@ -1812,7 +1811,7 @@ class WriteLinesMixin(object):
         (
             "native",
             {
-                "to_write": lambda text: text if _PY3 else text.encode(),
+                "to_write": lambda text: text,
                 "mode": "a",
             },
         ),
