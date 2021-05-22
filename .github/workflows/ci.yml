@@ -22,6 +22,7 @@ jobs:
           - name: pypy-3.7
             toxenv: pypy3-safety
           - name: pypy-3.7
+            toxenv: pypy3-tests
           - name: pypy-3.7-nightly
             toxenv: pypy3-tests
           - name: 3.6
