@@ -4,13 +4,13 @@ from pyrsistent import s
 
 from filesystems import Path, memory
 from filesystems.tests.common import (
-    TestFS,
     InvalidModeMixin,
     NonExistentChildMixin,
-    OpenFileMixin,
     OpenAppendNonExistingFileMixin,
+    OpenFileMixin,
     OpenWriteNonExistingFileMixin,
     SymbolicLoopMixin,
+    TestFS,
     WriteLinesMixin,
 )
 

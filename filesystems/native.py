@@ -2,8 +2,7 @@ import io
 import os
 import tempfile
 
-from filesystems import Path, common, exceptions, _PY3
-
+from filesystems import _PY3, Path, common, exceptions
 
 _CREATE_FLAGS = os.O_EXCL | os.O_CREAT | os.O_RDWR | getattr(os, "O_BINARY", 0)
 

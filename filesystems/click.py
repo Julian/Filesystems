@@ -3,6 +3,7 @@ Click support for `filesystems.Path`.
 """
 
 from __future__ import absolute_import
+
 import click
 
 import filesystems

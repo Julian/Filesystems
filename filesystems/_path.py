@@ -7,7 +7,6 @@ import attr
 from filesystems import _PY3, interfaces
 from filesystems.exceptions import InvalidPath
 
-
 if _PY3:
     basestring = bytes, str
 

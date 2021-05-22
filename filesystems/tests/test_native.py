@@ -2,13 +2,13 @@ from unittest import TestCase
 
 from filesystems import native
 from filesystems.tests.common import (
-    TestFS,
-    NonExistentChildMixin,
     InvalidModeMixin,
-    OpenFileMixin,
+    NonExistentChildMixin,
     OpenAppendNonExistingFileMixin,
+    OpenFileMixin,
     OpenWriteNonExistingFileMixin,
     SymbolicLoopMixin,
+    TestFS,
     WriteLinesMixin,
 )
 

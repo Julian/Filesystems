@@ -6,8 +6,8 @@ from pyrsistent import s
 from testscenarios import multiply_scenarios, with_scenarios
 
 from filesystems import Path, exceptions
-from filesystems.common import _PY3
 from filesystems._path import RelativePath
+from filesystems.common import _PY3
 
 
 @with_scenarios()
