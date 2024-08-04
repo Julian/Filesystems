@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import errno
 import os
 
@@ -10,7 +9,7 @@ from filesystems._path import RelativePath
 
 
 @with_scenarios()
-class _NonExistingFileMixin(object):
+class _NonExistingFileMixin:
 
     scenarios = [
         (
@@ -71,7 +70,7 @@ class TestFS(_NonExistingFileMixin):
                 os.strerror(errno.ENOENT) +
                 ": " +
                 str(tempdir.descendant("unittesting", "file"))
-            )
+            ),
         )
 
     def test_open_directory(self):
@@ -128,7 +127,7 @@ class TestFS(_NonExistingFileMixin):
                 os.strerror(errno.ENOENT) +
                 ": " +
                 str(tempdir.descendant("unittesting", "file"))
-            )
+            ),
         )
 
     def test_create_file(self):
@@ -224,11 +223,11 @@ class TestFS(_NonExistingFileMixin):
         self.addCleanup(fs.remove, tempdir)
 
         with fs.open(tempdir / "unittesting", "wb") as f:
-            f.write(u"שלום".encode("utf-8"))
+            f.write("שלום".encode())
 
         self.assertEqual(
             fs.get_contents(tempdir / "unittesting", mode="t"),
-            u"שלום",
+            "שלום",
         )
 
     def test_get_set_contents_text(self):
@@ -236,10 +235,10 @@ class TestFS(_NonExistingFileMixin):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        fs.set_contents(tempdir / "unittesting", u"שלום", mode="t")
+        fs.set_contents(tempdir / "unittesting", "שלום", mode="t")
         self.assertEqual(
             fs.get_contents(path=tempdir / "unittesting", mode="t"),
-            u"שלום",
+            "שלום",
         )
 
     def test_set_contents_existing_file(self):
@@ -1690,7 +1689,7 @@ class TestFS(_NonExistingFileMixin):
 
 
 @with_scenarios()
-class InvalidModeMixin(object):
+class InvalidModeMixin:
 
     scenarios = [
         ("activity", {"mode": "z"}),
@@ -1710,7 +1709,7 @@ class InvalidModeMixin(object):
 
 
 @with_scenarios()
-class OpenFileMixin(object):
+class OpenFileMixin:
     scenarios = [
         (
             "bytes",
@@ -1731,7 +1730,7 @@ class OpenFileMixin(object):
         (
             "text",
             {
-                "expected": u"some things!",
+                "expected": "some things!",
                 "bytes": lambda c: c.encode(),
                 "mode": "rt",
             },
@@ -1753,12 +1752,12 @@ class OpenFileMixin(object):
 
 
 @with_scenarios()
-class OpenWriteNonExistingFileMixin(object):
+class OpenWriteNonExistingFileMixin:
 
     scenarios = [
-        ("bytes", dict(contents=u"שלום".encode("utf-8"), mode="wb")),
+        ("bytes", dict(contents="שלום".encode(), mode="wb")),
         ("native", dict(contents="שלום", mode="w")),
-        ("text", dict(contents=u"שלום", mode="wt")),
+        ("text", dict(contents="שלום", mode="wt")),
     ]
 
     def test_open_write_non_existing_file(self):
@@ -1774,12 +1773,12 @@ class OpenWriteNonExistingFileMixin(object):
 
 
 @with_scenarios()
-class OpenAppendNonExistingFileMixin(object):
+class OpenAppendNonExistingFileMixin:
 
     scenarios = [
         ("bytes", dict(first=b"some ", second=b"things!", mode="ab")),
         ("native", dict(first="some ", second="things!", mode="a")),
-        ("text", dict(first=u"some ", second=u"things!", mode="at")),
+        ("text", dict(first="some ", second="things!", mode="at")),
     ]
 
     def test_open_append_non_existing_file(self):
@@ -1798,7 +1797,7 @@ class OpenAppendNonExistingFileMixin(object):
 
 
 @with_scenarios()
-class WriteLinesMixin(object):
+class WriteLinesMixin:
 
     scenarios = [
         (
@@ -1829,8 +1828,8 @@ class WriteLinesMixin(object):
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
 
-        text = u"some\nthings!\n"
-        newline = self.to_write(u"\n")
+        text = "some\nthings!\n"
+        newline = self.to_write("\n")
         to_write = self.to_write(text)
 
         with fs.open(tempdir / "unittesting", self.mode) as f:
@@ -1841,7 +1840,7 @@ class WriteLinesMixin(object):
 
 
 @with_scenarios()
-class NonExistentChildMixin(object):
+class NonExistentChildMixin:
 
     scenarios = multiply_scenarios(
         [
@@ -1978,7 +1977,7 @@ class NonExistentChildMixin(object):
 
 
 @with_scenarios()
-class _SymbolicLoopMixin(object):
+class _SymbolicLoopMixin:
 
     scenarios = multiply_scenarios(
         [  # Size of loop

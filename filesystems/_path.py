@@ -10,7 +10,7 @@ from filesystems.exceptions import InvalidPath
 
 @implementer(interfaces.Path)
 @attr.s(these={"segments": attr.ib()}, init=False, repr=False, hash=True)
-class Path(object):
+class Path:
     def __init__(self, *segments):
         self.segments = pvector(segments)
 
@@ -20,7 +20,7 @@ class Path(object):
         return self.descendant(other)
 
     def __repr__(self):
-        return "<Path {}>".format(self)
+        return f"<Path {self}>"
 
     def __str__(self):
         return os.sep + os.sep.join(self.segments)
@@ -45,7 +45,6 @@ class Path(object):
         """
         Create a path out of an OS-specific string.
         """
-
         if not path:
             raise InvalidPath(path)
 
@@ -65,7 +64,6 @@ class Path(object):
         """
         The (top-down) direct ancestors of this path, including itself.
         """
-
         segments = pvector()
         for segment in self.segments[:-1]:
             segments = segments.append(segment)
@@ -89,13 +87,12 @@ class Path(object):
 
         A ``Path`` is always absolute, and therefore always resolves to itself.
         """
-
         return self
 
 
 @implementer(interfaces.Path)
 @attr.s(these={"segments": attr.ib()}, init=False, repr=False, hash=True)
-class RelativePath(object):
+class RelativePath:
     def __init__(self, *segments):
         self.segments = pvector(segments)
 
@@ -105,7 +102,7 @@ class RelativePath(object):
         return self.descendant(other)
 
     def __repr__(self):
-        return "<Path {}>".format(self)
+        return f"<Path {self}>"
 
     def __str__(self):
         return os.sep.join(self.segments)
@@ -126,7 +123,6 @@ class RelativePath(object):
         """
         The (top-down) direct ancestors of this path, including itself.
         """
-
         segments = pvector()
         for segment in self.segments[:-1]:
             segments = segments.append(segment)
@@ -143,5 +139,4 @@ class RelativePath(object):
         """
         Resolve this path against another ``Path``.
         """
-
         return path.descendant(*self.segments)

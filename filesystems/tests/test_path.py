@@ -155,7 +155,7 @@ class TestPath(TestCase):
     def test_repr(self):
         self.assertEqual(
             repr(Path("a", "b", "c")),
-            "<Path /a/b/c>"
+            "<Path /a/b/c>",
         )
 
     def test_expanded(self):
@@ -199,7 +199,7 @@ class TestRelativePath(TestCase):
     def test_repr(self):
         self.assertEqual(
             repr(RelativePath("a", "b", "c")),
-            "<Path a/b/c>"
+            "<Path a/b/c>",
         )
 
     def test_basename(self):

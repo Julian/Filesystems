@@ -1,7 +1,15 @@
+"""
+Interface definitions for filesystems.
+"""
+
 from zope.interface import Interface
 
 
 class Path(Interface):
+    """
+    The interface all path objects adhere to.
+    """
+
     def __str__():
         """
         Render the path as a string.
@@ -12,7 +20,7 @@ class Path(Interface):
         Render the path as a string.
         """
 
-    def __truediv__(other):
+    def __truediv__(other):  # noqa: PLE0302
         """
         Traverse to a child of this path.
         """

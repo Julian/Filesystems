@@ -1,3 +1,6 @@
+"""
+Filesystem exceptions, likely many of which should now be builtin exceptions.
+"""
 import errno
 import os
 import platform
@@ -25,7 +28,7 @@ class _FileSystemError(Exception):
     def __str__(self):
         if self.value is None:
             return self.message
-        return "{self.message}: {self.value}".format(self=self)
+        return f"{self.message}: {self.value}"
 
 
 class FileNotFound(_FileSystemError):

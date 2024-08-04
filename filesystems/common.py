@@ -1,3 +1,6 @@
+"""
+Common helpers for filesystems.
+"""
 from contextlib import contextmanager
 from fnmatch import fnmatch
 import stat
@@ -10,12 +13,13 @@ from filesystems import Path, exceptions
 
 def _realpath(fs, path, seen=pset()):
     """
+    The realpath of the given path.
+
     .. warning::
 
         The ``os.path`` module's realpath does not error or warn about
         loops, but we do, following the behavior of GNU ``realpath(1)``!
     """
-
     real = Path.root()
     for segment in path.segments:
         current = real / segment
@@ -192,7 +196,6 @@ def _is_dir(fs, path):
 
     E.g., should EPERM or ELOOP be raised, an exception will bubble up.
     """
-
     try:
         return stat.S_ISDIR(fs.stat(path).st_mode)
     except exceptions.FileNotFound:
@@ -223,7 +226,6 @@ def _is_link(fs, path):
 
     E.g., should EPERM or ELOOP be raised, an exception will bubble up.
     """
-
     try:
         return stat.S_ISLNK(fs.lstat(path).st_mode)
     except exceptions.FileNotFound:
@@ -231,9 +233,9 @@ def _is_link(fs, path):
 
 
 @attr.s(frozen=True)
-class _FileMode(object):
+class _FileMode:
     activity = attr.ib(default="r")
-    mode = attr.ib(default='', converter=lambda x: x if x != "" else "t")
+    mode = attr.ib(default="", converter=lambda x: x if x != "" else "t")
     read = attr.ib()
     write = attr.ib()
     append = attr.ib()
@@ -266,10 +268,7 @@ class _FileMode(object):
 
         if value not in options:
             raise exceptions.InvalidMode(
-                "Mode must start with one of {} but found {}".format(
-                    repr(options),
-                    repr(value),
-                )
+                f"Mode must start with one of {options!r} but found {value!r}",
             )
 
     @mode.validator
@@ -278,10 +277,7 @@ class _FileMode(object):
 
         if value not in options:
             raise exceptions.InvalidMode(
-                "Mode must start with one of {} but found {}".format(
-                    repr(options),
-                    repr(value),
-                )
+                f"Mode must start with one of {options!r} but found {value!r}",
             )
 
     def io_open_string(self):

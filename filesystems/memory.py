@@ -1,3 +1,6 @@
+"""
+A transient in-memory filesystem.
+"""
 from io import BytesIO, TextIOWrapper
 from uuid import uuid4
 import os
@@ -11,11 +14,11 @@ from filesystems import Path, common, exceptions
 
 class _BytesIOIsTerrible(BytesIO):
     def __repr__(self):
-        return "<BytesIOIsTerrible contents={!r}>".format(self.bytes)
+        return f"<BytesIOIsTerrible contents={self.bytes!r}>"
 
     def close(self):
         self._hereismyvalue = self.getvalue()
-        super(_BytesIOIsTerrible, self).close()
+        super().close()
 
     @property
     def bytes(self):
@@ -25,6 +28,9 @@ class _BytesIOIsTerrible(BytesIO):
 
 
 def FS():
+    """
+    Create an in-memory filesystem.
+    """
     return _State().FS(name="MemoryFS")
 
 
@@ -36,7 +42,7 @@ def _fs(fn):
 
 
 @attr.s(hash=True)
-class _File(object):
+class _File:
     """
     A file.
     """
@@ -91,7 +97,7 @@ class _File(object):
 
 
 @attr.s(hash=True)
-class _FileChild(object):
+class _FileChild:
     """
     The attempted "child" of a file, which well, shouldn't have children.
     """
@@ -132,7 +138,7 @@ class _FileChild(object):
 
 
 @attr.s(hash=True)
-class _Directory(object):
+class _Directory:
     """
     A directory.
     """
@@ -195,7 +201,7 @@ class _Directory(object):
 
 
 @attr.s(hash=True)
-class _DirectoryChild(object):
+class _DirectoryChild:
     """
     A node that doesn't exist, but is within an existing directory.
 
@@ -260,7 +266,7 @@ class _DirectoryChild(object):
 
 
 @attr.s(hash=True)
-class _Link(object):
+class _Link:
 
     _name = attr.ib()
     _parent = attr.ib(repr=False)
@@ -309,7 +315,7 @@ class _Link(object):
 
 
 @attr.s(hash=True)
-class _NoSuchEntry(object):
+class _NoSuchEntry:
     """
     A non-existent node that also cannot be created alone.
 
@@ -329,12 +335,11 @@ class _NoSuchEntry(object):
                 with_parents=with_parents,
                 allow_existing=allow_existing,
             )
-            directory = parent[self._name].create_directory(
+            return parent[self._name].create_directory(
                 path=path,
                 with_parents=False,
                 allow_existing=allow_existing,
             )
-            return directory
         raise exceptions.FileNotFound(path.parent())
 
     def list_directory(self, path):
@@ -365,7 +370,7 @@ class _NoSuchEntry(object):
 
 
 @attr.s(hash=True)
-class _State(object):
+class _State:
 
     _root = attr.ib(factory=_Directory.root)
 
