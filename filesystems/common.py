@@ -1,6 +1,7 @@
 """
 Common helpers for filesystems.
 """
+
 from contextlib import contextmanager
 from fnmatch import fnmatch
 import stat
@@ -52,22 +53,17 @@ def _recursive_remove(fs, path):
 
 def create(
     name,
-
     create_file,
     open_file,
     remove_file,
-
     create_directory,
     list_directory,
     remove_empty_directory,
     temporary_directory,
-
     stat,
-
     lstat,
     link,
     readlink,
-
     realpath=_realpath,
     remove=_recursive_remove,
 ):
@@ -87,40 +83,39 @@ def create(
     methods = dict(
         create=create_file,
         open=lambda fs, path, mode="r": open_file(
-            fs=fs, path=path, mode=mode,
+            fs=fs,
+            path=path,
+            mode=mode,
         ),
         remove_file=remove_file,
-
         create_directory=_create_directory,
         list_directory=list_directory,
         remove_empty_directory=remove_empty_directory,
         temporary_directory=temporary_directory,
-
         get_contents=lambda fs, path, mode="": _get_contents(
-            fs=fs, path=path, mode=mode,
+            fs=fs,
+            path=path,
+            mode=mode,
         ),
         set_contents=lambda fs, path, contents, mode="": _set_contents(
-            fs=fs, path=path, contents=contents, mode=mode,
+            fs=fs,
+            path=path,
+            contents=contents,
+            mode=mode,
         ),
         create_with_contents=_create_with_contents,
-
         remove=remove,
         removing=_removing,
-
         stat=stat,
-
         lstat=lstat,
         link=link,
         readlink=readlink,
         realpath=realpath,
-
         exists=_exists,
         is_dir=_is_dir,
         is_file=_is_file,
         is_link=_is_link,
-
         touch=_touch,
-
         children=_children,
         glob_children=_glob_children,
     )
@@ -156,9 +151,7 @@ def _children(fs, path):
 
 def _glob_children(fs, path, glob):
     return pset(
-        path / p
-        for p in fs.list_directory(path=path)
-        if fnmatch(p, glob)
+        path / p for p in fs.list_directory(path=path) if fnmatch(p, glob)
     )
 
 

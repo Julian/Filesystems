@@ -1,6 +1,7 @@
 """
 A transient in-memory filesystem.
 """
+
 from io import BytesIO, TextIOWrapper
 from uuid import uuid4
 import os
@@ -386,18 +387,14 @@ class _State:
     def FS(self, name):
         return common.create(
             name=name,
-
             create_file=_fs(self.create_file),
             open_file=_fs(self.open_file),
             remove_file=_fs(self.remove_file),
-
             create_directory=_fs(self.create_directory),
             list_directory=_fs(self.list_directory),
             remove_empty_directory=_fs(self.remove_empty_directory),
             temporary_directory=_fs(self.temporary_directory),
-
             stat=_fs(self.stat),
-
             lstat=_fs(self.lstat),
             link=lambda fs, *args, **kwargs: self.link(*args, fs=fs, **kwargs),
             readlink=_fs(self.readlink),

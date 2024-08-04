@@ -15,28 +15,36 @@ class _NonExistingFileMixin:
         (
             "read_bytes",
             dict(act_on=lambda fs, path: fs.open(path=path, mode="rb")),
-        ), (
+        ),
+        (
             "read_native",
             dict(act_on=lambda fs, path: fs.open(path=path, mode="r")),
-        ), (
+        ),
+        (
             "read_text",
             dict(act_on=lambda fs, path: fs.open(path=path, mode="rt")),
-        ), (
+        ),
+        (
             "stat",
             dict(act_on=lambda fs, path: fs.stat(path=path)),
-        ), (
+        ),
+        (
             "lstat",
             dict(act_on=lambda fs, path: fs.lstat(path=path)),
-        ), (
+        ),
+        (
             "list_directory",
             dict(act_on=lambda fs, path: fs.list_directory(path=path)),
-        ), (
+        ),
+        (
             "remove_empty_directory",
             dict(act_on=lambda fs, path: fs.remove_empty_directory(path=path)),
-        ), (
+        ),
+        (
             "remove_file",
             dict(act_on=lambda fs, path: fs.remove_file(path=path)),
-        ), (
+        ),
+        (
             "readlink",
             dict(act_on=lambda fs, path: fs.readlink(path=path)),
         ),
@@ -66,10 +74,11 @@ class TestFS(_NonExistingFileMixin):
             fs.open(tempdir.descendant("unittesting", "file"))
 
         self.assertEqual(
-            str(e.exception), (
-                os.strerror(errno.ENOENT) +
-                ": " +
-                str(tempdir.descendant("unittesting", "file"))
+            str(e.exception),
+            (
+                os.strerror(errno.ENOENT)
+                + ": "
+                + str(tempdir.descendant("unittesting", "file"))
             ),
         )
 
@@ -123,10 +132,11 @@ class TestFS(_NonExistingFileMixin):
             fs.open(tempdir.descendant("unittesting", "file"), "ab")
 
         self.assertEqual(
-            str(e.exception), (
-                os.strerror(errno.ENOENT) +
-                ": " +
-                str(tempdir.descendant("unittesting", "file"))
+            str(e.exception),
+            (
+                os.strerror(errno.ENOENT)
+                + ": "
+                + str(tempdir.descendant("unittesting", "file"))
             ),
         )
 
@@ -153,11 +163,8 @@ class TestFS(_NonExistingFileMixin):
             fs.create(tempdir / "unittesting")
 
         self.assertEqual(
-            str(e.exception), (
-                os.strerror(errno.EEXIST) +
-                ": " +
-                str(tempdir / "unittesting")
-            ),
+            str(e.exception),
+            (os.strerror(errno.EEXIST) + ": " + str(tempdir / "unittesting")),
         )
 
     def test_create_file_existing_directory(self):
@@ -171,11 +178,8 @@ class TestFS(_NonExistingFileMixin):
             fs.create(tempdir / "unittesting")
 
         self.assertEqual(
-            str(e.exception), (
-                os.strerror(errno.EEXIST) +
-                ": " +
-                str(tempdir / "unittesting")
-            ),
+            str(e.exception),
+            (os.strerror(errno.EEXIST) + ": " + str(tempdir / "unittesting")),
         )
 
     def test_create_file_existing_link(self):
@@ -190,7 +194,8 @@ class TestFS(_NonExistingFileMixin):
             fs.create(to)
 
         self.assertEqual(
-            str(e.exception), os.strerror(errno.EEXIST) + ": " + str(to),
+            str(e.exception),
+            os.strerror(errno.EEXIST) + ": " + str(to),
         )
 
     def test_get_contents(self):
@@ -329,7 +334,8 @@ class TestFS(_NonExistingFileMixin):
                 is_dir=fs.is_dir(path=to),
                 is_file=fs.is_file(path=to),
                 is_link=fs.is_link(path=to),
-            ), dict(
+            ),
+            dict(
                 exists=True,
                 is_dir=False,
                 is_file=True,
@@ -352,7 +358,8 @@ class TestFS(_NonExistingFileMixin):
                 is_dir=fs.is_dir(path=to),
                 is_file=fs.is_file(path=to),
                 is_link=fs.is_link(path=to),
-            ), dict(
+            ),
+            dict(
                 exists=True,
                 is_dir=True,
                 is_file=False,
@@ -398,7 +405,8 @@ class TestFS(_NonExistingFileMixin):
                 is_dir=fs.is_dir(path=to),
                 is_file=fs.is_file(path=to),
                 is_link=fs.is_link(path=to),
-            ), dict(
+            ),
+            dict(
                 exists=False,
                 is_dir=False,
                 is_file=False,
@@ -471,7 +479,8 @@ class TestFS(_NonExistingFileMixin):
                 is_dir=fs.is_dir(path=to),
                 is_file=fs.is_file(path=to),
                 is_link=fs.is_link(path=to),
-            ), dict(
+            ),
+            dict(
                 exists=False,
                 is_dir=False,
                 is_file=False,
@@ -699,7 +708,8 @@ class TestFS(_NonExistingFileMixin):
         fs.remove(path=link)
 
         self.assertEqual(
-            fs.children(path=directory), s(directory / "a"),
+            fs.children(path=directory),
+            s(directory / "a"),
         )
 
     def test_create_directory(self):
@@ -995,7 +1005,7 @@ class TestFS(_NonExistingFileMixin):
         )
 
     def test_create_existing_directory_from_file_with_parents_allow_existing(
-            self,
+        self,
     ):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -1070,8 +1080,8 @@ class TestFS(_NonExistingFileMixin):
             os.strerror(errno.ENOTDIR) + ": " + str(not_a_dir),
         )
 
-    def test_create_existing_directory_from_file_child_with_parents_allow_existing(     # noqa: E501
-            self,
+    def test_create_existing_directory_from_file_child_with_parents_allow_existing(  # noqa: E501
+        self,
     ):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -1131,7 +1141,9 @@ class TestFS(_NonExistingFileMixin):
     #       looping links
     #       non-existent targets
     #       ?
-    def test_create_existing_directory_from_directory_link_allow_existing(self):    # noqa: E501
+    def test_create_existing_directory_from_directory_link_allow_existing(
+        self,
+    ):
         fs = self.FS()
         tempdir = fs.temporary_directory()
         self.addCleanup(fs.remove, tempdir)
@@ -1153,8 +1165,8 @@ class TestFS(_NonExistingFileMixin):
             dict(exists=True, is_dir=True, is_file=False, is_link=True),
         )
 
-    def test_create_existing_directory_from_directory_link_with_parents_allow_existing(     # noqa: E501
-            self,
+    def test_create_existing_directory_from_directory_link_with_parents_allow_existing(  # noqa: E501
+        self,
     ):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -1200,7 +1212,7 @@ class TestFS(_NonExistingFileMixin):
         )
 
     def test_create_existing_directory_from_file_link_with_parents_allow_existing(  # noqa: E501
-            self,
+        self,
     ):
         fs = self.FS()
         tempdir = fs.temporary_directory()
@@ -1404,10 +1416,11 @@ class TestFS(_NonExistingFileMixin):
         with self.assertRaises(exceptions._UnlinkNonFileError) as e:
             fs.remove_file(path=child)
         self.assertEqual(
-            str(e.exception), (
-                os.strerror(exceptions._UnlinkNonFileError.errno) +
-                ": " +
-                str(child)
+            str(e.exception),
+            (
+                os.strerror(exceptions._UnlinkNonFileError.errno)
+                + ": "
+                + str(child)
             ),
         )
 
@@ -1424,10 +1437,11 @@ class TestFS(_NonExistingFileMixin):
         with self.assertRaises(exceptions._UnlinkNonFileError) as e:
             fs.remove_file(path=child)
         self.assertEqual(
-            str(e.exception), (
-                os.strerror(exceptions._UnlinkNonFileError.errno) +
-                ": " +
-                str(child)
+            str(e.exception),
+            (
+                os.strerror(exceptions._UnlinkNonFileError.errno)
+                + ": "
+                + str(child)
             ),
         )
 
@@ -1443,7 +1457,8 @@ class TestFS(_NonExistingFileMixin):
             fs.remove_file(path=child)
 
         self.assertEqual(
-            str(e.exception), os.strerror(errno.ENOENT) + ": " + str(child),
+            str(e.exception),
+            os.strerror(errno.ENOENT) + ": " + str(child),
         )
 
     def test_non_existing_file_types(self):
@@ -1640,7 +1655,8 @@ class TestFS(_NonExistingFileMixin):
             fs.readlink(child)
 
         self.assertEqual(
-            str(e.exception), os.strerror(errno.EINVAL) + ": " + str(child),
+            str(e.exception),
+            os.strerror(errno.EINVAL) + ": " + str(child),
         )
 
     def test_readlink_directory(self):
@@ -1652,7 +1668,8 @@ class TestFS(_NonExistingFileMixin):
             fs.readlink(tempdir)
 
         self.assertEqual(
-            str(e.exception), os.strerror(errno.EINVAL) + ": " + str(tempdir),
+            str(e.exception),
+            os.strerror(errno.EINVAL) + ": " + str(tempdir),
         )
 
     def test_readlink_relative(self):
@@ -1845,96 +1862,129 @@ class NonExistentChildMixin:
     scenarios = multiply_scenarios(
         [
             (
-                "directory", dict(
+                "directory",
+                dict(
                     Exception=exceptions.FileNotFound,
                     create=lambda fs, path: fs.create_directory(path=path),
                 ),
-            ), (
-                "file", dict(
+            ),
+            (
+                "file",
+                dict(
                     Exception=exceptions.NotADirectory,
                     create=lambda fs, path: fs.touch(path=path),
                 ),
-            ), (
-                "link_to_file", dict(
+            ),
+            (
+                "link_to_file",
+                dict(
                     Exception=exceptions.FileNotFound,
                     create=lambda fs, path: fs.touch(  # Sorry :/
                         path=path.sibling("source"),
-                    ) and fs.link(source=path.sibling("source"), to=path),
+                    )
+                    and fs.link(source=path.sibling("source"), to=path),
                 ),
-                "link_to_directory", dict(
+                "link_to_directory",
+                dict(
                     Exception=exceptions.FileNotFound,
                     create=lambda fs, path: fs.create_directory(  # Sorry :/
                         path=path.sibling("source"),
-                    ) and fs.link(source=path.sibling("source"), to=path),
+                    )
+                    and fs.link(source=path.sibling("source"), to=path),
                 ),
-                "loop", dict(
+                "loop",
+                dict(
                     Exception=exceptions.SymbolicLoop,
                     create=lambda fs, path: fs.link(source=path, to=path),
                 ),
             ),
-        ], [
+        ],
+        [
             (
-                "create_directory", dict(
+                "create_directory",
+                dict(
                     act_on=lambda fs, path: fs.create_directory(path=path),
                     error_on_child=False,
                 ),
-            ), (
+            ),
+            (
                 "list_directory",
                 dict(act_on=lambda fs, path: fs.list_directory(path=path)),
-            ), (
+            ),
+            (
                 "create_file",
                 dict(act_on=lambda fs, path: fs.create(path=path)),
-            ), (
+            ),
+            (
                 "remove_file",
                 dict(act_on=lambda fs, path: fs.remove_file(path=path)),
-            ), (
-                "remove_empty_directory", dict(
+            ),
+            (
+                "remove_empty_directory",
+                dict(
                     act_on=lambda fs, path: fs.remove_empty_directory(
                         path=path,
                     ),
                 ),
-            ), (
+            ),
+            (
                 "read_bytes",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="rb")),
-            ), (
+            ),
+            (
                 "read_native",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="r")),
-            ), (
+            ),
+            (
                 "read_text",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="rt")),
-            ), (
+            ),
+            (
                 "write_bytes",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="wb")),
-            ), (
+            ),
+            (
                 "write_native",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="w")),
-            ), (
+            ),
+            (
                 "write_text",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="wt")),
-            ), (
+            ),
+            (
                 "append_bytes",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="ab")),
-            ), (
+            ),
+            (
                 "append_native",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="a")),
-            ), (
+            ),
+            (
                 "append_text",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="at")),
-            ), (
-                "link", dict(
+            ),
+            (
+                "link",
+                dict(
                     act_on=lambda fs, path: fs.link(source=path, to=path),
                     error_on_child=False,
                 ),
-            ), (
-                "readlink", dict(
+            ),
+            (
+                "readlink",
+                dict(
                     act_on=lambda fs, path: fs.readlink(path=path),
                 ),
-            ), (
-                "stat", dict(
+            ),
+            (
+                "stat",
+                dict(
                     act_on=lambda fs, path: fs.stat(path=path),
                 ),
-            ), (
-                "lstat", dict(
+            ),
+            (
+                "lstat",
+                dict(
                     act_on=lambda fs, path: fs.lstat(path=path),
                 ),
             ),
@@ -1993,46 +2043,60 @@ class _SymbolicLoopMixin:
             (
                 "realpath",
                 dict(act_on=lambda fs, path: fs.realpath(path=path)),
-            ), (
+            ),
+            (
                 "list_directory",
                 dict(act_on=lambda fs, path: fs.list_directory(path=path)),
-            ), (
+            ),
+            (
                 "read_bytes",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="rb")),
-            ), (
+            ),
+            (
                 "read_native",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="r")),
-            ), (
+            ),
+            (
                 "read_text",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="rt")),
-            ), (
+            ),
+            (
                 "write_bytes",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="wb")),
-            ), (
+            ),
+            (
                 "write_native",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="w")),
-            ), (
+            ),
+            (
                 "write_text",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="wt")),
-            ), (
+            ),
+            (
                 "append_bytes",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="ab")),
-            ), (
+            ),
+            (
                 "append_native",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="a")),
-            ), (
+            ),
+            (
                 "append_text",
                 dict(act_on=lambda fs, path: fs.open(path=path, mode="at")),
-            ), (
+            ),
+            (
                 "stat",
                 dict(act_on=lambda fs, path: fs.stat(path=path)),
-            ), (
+            ),
+            (
                 "exists",
                 dict(act_on=lambda fs, path: fs.exists(path=path)),
-            ), (
+            ),
+            (
                 "is_dir",
                 dict(act_on=lambda fs, path: fs.is_dir(path=path)),
-            ), (
+            ),
+            (
                 "is_file",
                 dict(act_on=lambda fs, path: fs.is_file(path=path)),
             ),
@@ -2184,7 +2248,9 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
             os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
-            os.strerror(errno.ELOOP) + ": " + str(
+            os.strerror(errno.ELOOP)
+            + ": "
+            + str(
                 loop.descendant("child", "path"),
             ),
         }
@@ -2216,7 +2282,9 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
             os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
-            os.strerror(errno.ELOOP) + ": " + str(
+            os.strerror(errno.ELOOP)
+            + ": "
+            + str(
                 loop.descendant("child", "path"),
             ),
         }
@@ -2248,7 +2316,9 @@ class SymbolicLoopMixin(_SymbolicLoopMixin):
         acceptable = {
             os.strerror(errno.ELOOP) + ": " + str(loop),
             os.strerror(errno.ELOOP) + ": " + str(loop / "child"),
-            os.strerror(errno.ELOOP) + ": " + str(
+            os.strerror(errno.ELOOP)
+            + ": "
+            + str(
                 loop.descendant("child", "path"),
             ),
         }

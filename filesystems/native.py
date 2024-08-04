@@ -1,6 +1,7 @@
 """
 Native filesystems speak to some real (non-in-memory) filesystem.
 """
+
 import os
 import tempfile
 
@@ -168,18 +169,14 @@ def _lstat(fs, path):
 
 FS = common.create(
     name="NativeFS",
-
     create_file=_create_file,
     open_file=_open_file,
     remove_file=_remove_file,
-
     create_directory=_create_directory,
     list_directory=_list_directory,
     remove_empty_directory=_remove_empty_directory,
     temporary_directory=lambda fs: Path.from_string(tempfile.mkdtemp()),
-
     stat=_stat,
-
     lstat=_lstat,
     link=_link,
     readlink=_readlink,

@@ -42,7 +42,8 @@ class TestPath(TestCase):
 
     def test_heritage(self):
         self.assertEqual(
-            list(Path("a", "b", "c", "d").heritage()), [
+            list(Path("a", "b", "c", "d").heritage()),
+            [
                 Path("a"),
                 Path("a", "b"),
                 Path("a", "b", "c"),
@@ -79,14 +80,7 @@ class TestPath(TestCase):
     def test_from_string_repeated_separator(self):
         self.assertEqual(
             Path.from_string(
-                (
-                    os.sep * 3 +
-                    "a" +
-                    os.sep * 2 +
-                    "b" +
-                    os.sep +
-                    "c"
-                ),
+                (os.sep * 3 + "a" + os.sep * 2 + "b" + os.sep + "c"),
             ),
             Path("", "", "a", "", "b", "c"),
         )
@@ -94,22 +88,22 @@ class TestPath(TestCase):
     def test_from_string_relative_repeated_separator(self):
         self.assertEqual(
             Path.from_string("a" + os.sep * 3 + "b" + os.sep * 2 + "c"),
-            RelativePath("a", "", "", "b",  "", "c"),
+            RelativePath("a", "", "", "b", "", "c"),
         )
 
     def test_from_string_parent(self):
         self.assertEqual(
             Path.from_string(
                 (
-                    os.pardir +
-                    os.sep +
-                    "a" +
-                    os.sep +
-                    "b" +
-                    os.sep +
-                    os.pardir +
-                    os.sep +
-                    "b"
+                    os.pardir
+                    + os.sep
+                    + "a"
+                    + os.sep
+                    + "b"
+                    + os.sep
+                    + os.pardir
+                    + os.sep
+                    + "b"
                 ),
             ),
             RelativePath(os.pardir, "a", "b", os.pardir, "b"),
@@ -193,7 +187,8 @@ class TestRelativePath(TestCase):
 
     def test_str(self):
         self.assertEqual(
-            str(RelativePath("a", "b", "c")), os.path.join("a", "b", "c"),
+            str(RelativePath("a", "b", "c")),
+            os.path.join("a", "b", "c"),
         )
 
     def test_repr(self):
@@ -216,7 +211,8 @@ class TestRelativePath(TestCase):
 
     def test_heritage(self):
         self.assertEqual(
-            list(RelativePath("a", "b", "c", "d").heritage()), [
+            list(RelativePath("a", "b", "c", "d").heritage()),
+            [
                 RelativePath("a"),
                 RelativePath("a", "b"),
                 RelativePath("a", "b", "c"),
