@@ -21,7 +21,7 @@ class InvalidMode(Exception):
     """
 
 
-@attr.s(hash=True)
+@attr.s(unsafe_hash=True)
 class _FileSystemError(Exception):
 
     value = attr.ib(default=None)

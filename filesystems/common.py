@@ -119,7 +119,7 @@ def create(
         children=_children,
         glob_children=_glob_children,
     )
-    return attr.s(hash=True)(type(name, (object,), methods))
+    return attr.s(unsafe_hash=True)(type(name, (object,), methods))
 
 
 @contextmanager

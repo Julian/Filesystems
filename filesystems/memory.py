@@ -42,7 +42,7 @@ def _fs(fn):
     return lambda fs, *args, **kwargs: fn(*args, **kwargs)
 
 
-@attr.s(hash=True)
+@attr.s(unsafe_hash=True)
 class _File:
     """
     A file.
@@ -97,7 +97,7 @@ class _File:
     lstat = stat
 
 
-@attr.s(hash=True)
+@attr.s(unsafe_hash=True)
 class _FileChild:
     """
     The attempted "child" of a file, which well, shouldn't have children.
@@ -138,7 +138,7 @@ class _FileChild:
     lstat = stat
 
 
-@attr.s(hash=True)
+@attr.s(unsafe_hash=True)
 class _Directory:
     """
     A directory.
@@ -201,7 +201,7 @@ class _Directory:
     lstat = stat
 
 
-@attr.s(hash=True)
+@attr.s(unsafe_hash=True)
 class _DirectoryChild:
     """
     A node that doesn't exist, but is within an existing directory.
@@ -266,7 +266,7 @@ class _DirectoryChild:
     lstat = stat
 
 
-@attr.s(hash=True)
+@attr.s(unsafe_hash=True)
 class _Link:
 
     _name = attr.ib()
@@ -315,7 +315,7 @@ class _Link:
         return os.stat_result((stat.S_IFLNK,) + (0,) * 9)
 
 
-@attr.s(hash=True)
+@attr.s(unsafe_hash=True)
 class _NoSuchEntry:
     """
     A non-existent node that also cannot be created alone.
@@ -370,7 +370,7 @@ class _NoSuchEntry:
     lstat = stat
 
 
-@attr.s(hash=True)
+@attr.s(unsafe_hash=True)
 class _State:
 
     _root = attr.ib(factory=_Directory.root)

@@ -9,7 +9,12 @@ from filesystems.exceptions import InvalidPath
 
 
 @implementer(interfaces.Path)
-@attr.s(these={"segments": attr.ib()}, init=False, repr=False, hash=True)
+@attr.s(
+    these={"segments": attr.ib()},
+    init=False,
+    repr=False,
+    unsafe_hash=True,
+)
 class Path:
     def __init__(self, *segments):
         self.segments = pvector(segments)
@@ -91,7 +96,12 @@ class Path:
 
 
 @implementer(interfaces.Path)
-@attr.s(these={"segments": attr.ib()}, init=False, repr=False, hash=True)
+@attr.s(
+    these={"segments": attr.ib()},
+    init=False,
+    repr=False,
+    unsafe_hash=True,
+)
 class RelativePath:
     def __init__(self, *segments):
         self.segments = pvector(segments)

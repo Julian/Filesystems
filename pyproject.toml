@@ -30,7 +30,7 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-  "attrs>=22.2.0",
+  "attrs>=24.1.0",
   "pyrsistent",
   "zope.interface",
 ]
