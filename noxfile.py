@@ -79,7 +79,13 @@ def build(session):
     """
     session.install("build", "twine")
     with TemporaryDirectory() as tmpdir:
-        session.run("python", "-m", "build", ROOT, "--outdir", tmpdir)
+        session.run(
+            "pyproject-build",
+            "--installer=uv",
+            ROOT,
+            "--outdir",
+            tmpdir,
+        )
         session.run("twine", "check", "--strict", tmpdir + "/*")
 
 
