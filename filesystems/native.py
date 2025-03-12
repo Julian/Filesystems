@@ -31,7 +31,7 @@ def _open_file(fs, path, mode):
     mode = common._parse_mode(mode)
 
     try:
-        return open(str(path), mode.io_open_string())  # noqa: SIM115
+        return open(str(path), mode.io_open_string())
     except OSError as error:
         if error.errno == exceptions.FileNotFound.errno:
             raise exceptions.FileNotFound(path)
