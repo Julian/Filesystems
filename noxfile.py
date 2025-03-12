@@ -16,7 +16,7 @@ REQUIREMENTS_IN = [  # this is actually ordered, as files depend on each other
 ]
 
 
-SUPPORTED = ["pypy3.10", "3.11", "3.12"]
+SUPPORTED = ["pypy3.10", "3.11", "3.12", "3.13"]
 LATEST = SUPPORTED[-1]
 
 nox.options.default_venv_backend = "uv|virtualenv"
