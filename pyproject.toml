@@ -113,7 +113,9 @@ ignore = [
   "FIX",  # Yes thanks, if I could it wouldn't be there
   "N",  # These naming rules are silly
   "PERF203",  # try/excepts in loops are sometimes needed
-  "PLR0912",  # These metrics are fine to be aware of but not to enforce
+  "PLC0415", # too noisy, there are too many cases this is fine
+  "PLR0911", # These metrics are fine to be aware of but not to enforce
+  "PLR0912",
   "PLR0913",
   "PLR0915",
   "PLW2901",  # Shadowing for loop variables is occasionally fine.
@@ -125,12 +127,11 @@ ignore = [
   "RET505",  # These push you to use `if` instead of `elif`, but for no reason
   "RET506",
   "RSE102",  # Ha, what, who even knew you could leave the parens off. But no.
+  "RUF043",  # This rule makes no sense. "foo.*bar" is a string containing a regex
   "SIM300", # Not sure what heuristic this uses, but it's easily incorrect
   "SLF001",  # Private usage within this package itself is fine
   "TD",  # These TODO style rules are also silly
   "TRY003",  # Some exception classes are essentially intended for free-form
-  "UP007",  # We support 3.8 + 3.9
-  "UP038",  # The tuple syntax is dumb but I don't see what benefit this has.
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
